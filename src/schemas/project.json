@@ -1,0 +1,66 @@
+{
+    "$id": "http://example.com/schemas/project.json",
+    "title": "Project",
+    "description": "A work made by some group of people to achieve something in the Senior Design Marketplace",
+    "$ref": "#/definitions/Project",
+    "definitions": {
+        "Project": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the project",
+                    "type": "string"
+                },
+                "contributors": {
+                    "description": "The people who are working on the project",
+                    "type": "array",
+                    "items": {
+                        "$ref": "user.json#/definitions/User"
+                    }
+                },
+                "comments": {
+                    "description": "Discussion surrounding the project",
+                    "type": "array",
+                    "items": {
+                        "$ref": "comment.json#/definitions/Comment"
+                    }
+                },
+                "advisor": {
+                    "description": "The advisor for the project",
+                    "$ref": "user.json#/definitions/User"
+                },
+                "difficulty": {
+                    "description": "A difficulty rating for the project on a scale of 1.0-10.0",
+                    "type": "number",
+                    "minimum": 1.0,
+                    "maximum": 10.0
+                },
+                "descriptionAttributes": {
+                    "description": "The description of the project",
+                    "$ref": "descriptionAttributes.json#/definitions/DescriptionAttributes"
+                },
+                "id": {
+                    "description": "The unique identifier for the project",
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "contact": {
+                    "description": "The person who should be contacted for questions related to the project",
+                    "$ref": "user.json#/definitions/User"
+                },
+                "admininstrators": {
+                    "description": "People with elevated privileges on this project",
+                    "$ref": "user.json#/definitions/User"
+                },
+                "sponsors": {
+                    "description": "Entities who are helping to facilitate the project",
+                    "type": "array",
+                    "items": {
+                        "$ref": "sponsor.json#/definitions/Sponsor"
+                    }
+                }
+            },
+            "required": ["name"]
+        }
+    }
+}

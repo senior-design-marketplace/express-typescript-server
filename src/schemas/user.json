@@ -1,0 +1,35 @@
+{
+    "$id": "http://example.com/schemas/user.json",
+    "title": "User",
+    "description": "A person who is using the Senior Design Marketplace system",
+    "$ref": "#/definitions/User",
+    "definitions": {
+        "User": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "description": "The first name of the user",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                },
+                "lastName": {
+                    "description": "The last name of the user",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                },
+                "email": {
+                    "description": "The user's email address",
+                    "type": "string",
+                    "format": "email"
+                },
+                "id": {
+                    "description": "A unique identifier of the user",
+                    "type": "string",
+                    "format": "uuid"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "$id": "http://example.com/schemas/comment.json",
+    "title": "Comment",
+    "description": "A comment about a project",
+    "$ref": "#/definitions/Comment",
+    "definitions": {
+        "Comment": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "user.json#/definitions/User"
+                },
+                "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "replies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Comment"
+                    }
+                }
+            }
+        }
+    }
+}

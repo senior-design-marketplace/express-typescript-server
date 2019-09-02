@@ -1,0 +1,18 @@
+{
+    "$id": "http://example.com/schemas/sponsor.json",
+    "title": "Sponsor",
+    "description": "An entity helping to facilitate a project",
+    "$ref": "#/definitions/Sponsor",
+    "definitions": {
+        "Sponsor": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the sponsor",
+                    "minLength": 1,
+                    "maxLength": 256
+                }
+            }
+        }
+    }
+}
