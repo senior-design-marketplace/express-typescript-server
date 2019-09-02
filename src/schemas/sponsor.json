@@ -12,7 +12,10 @@
                     "minLength": 1,
                     "maxLength": 256
                 }
-            }
+            },
+            "required": [
+                "name"
+            ]
         }
     }
 }

@@ -11,21 +11,24 @@
                     "$ref": "user.json#/definitions/User"
                 },
                 "body": {
+                    "description": "The content of the comment",
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 256
                 },
                 "timestamp": {
+                    "description": "When the comment was created",
                     "type": "string",
                     "format": "date-time"
                 },
-                "replies": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Comment"
-                    }
+                "parent": {
+                    "description": "The comment to which this comment is replying",
+                    "$ref": "#/definitions/Comment"
                 }
-            }
+            },
+            "required": [
+                "body"
+            ]
         }
     }
 }

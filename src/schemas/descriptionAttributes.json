@@ -22,9 +22,16 @@
                 "tags": {
                     "description": "Tags associated with the project",
                     "type": "array",
-                    "minItems": 0
+                    "minItems": 0,
+                    "items": {
+                        "$ref": "tag.json#/definitions/Tag"
+                    }
                 }
-            }
+            },
+            "required": [
+                "title",
+                "body"
+            ]
         }
     }
 }
