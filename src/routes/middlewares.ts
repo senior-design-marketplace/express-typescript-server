@@ -9,7 +9,7 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
         req.headers.cognitoIdentityId = decoded.requestContext.identity.cognitoIdentityId;
         next();
     } catch (e) {
-        return res.status(400);
+        return res.sendStatus(403);
     }
 }
 
