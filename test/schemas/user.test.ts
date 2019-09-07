@@ -1,41 +1,37 @@
-import AJV from 'ajv';
+describe('A user is', () => {
+    const validate = require('../../src/schemas/build/user');
+    const validId = 'us-east-1:00000000-0000-0000-0000-000000000000';
 
-const user = require('../../src/schemas/user')
-
-const ajv = new AJV();
-ajv.addSchema(user, 'user');
-
-const validId = 'us-east-1:00000000-0000-0000-0000-000000000000';
-
-test('A user without an id is not valid', () => {
-    const instance = {};
-    expect(ajv.validate('user', instance)).toBe(false);
-})
-
-test('A user with a non-Cognito id is not valid', () => {
-    const instance = {
-        id: 'foo'
-    }
-    expect(ajv.validate('user', instance)).toBe(false);
-})
-
-test('Anything surrounding a valid id makes it invalid', () => {
-    const instance = {
-        id: ' ' + validId + ' '
-    }
-    expect(ajv.validate('user', instance)).toBe(false);
-})
-
-test('Multiple ids are invalid', () => {
-    const instance = {
-        id: validId.repeat(2)
-    }
-    expect(ajv.validate('user', instance)).toBe(false);
-})
-
-test('A user with a Cognito id is valid', () => {
-    const instance = {
-        id: validId
-    }
-    expect(ajv.validate('user', instance)).toBe(true);
+    test('not valid without an id', () => {
+        const instance = {};
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with a non-Cognito id', () => {
+        const instance = {
+            id: 'foo'
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with anything surrounding a valid id', () => {
+        const instance = {
+            id: ' ' + validId + ' '
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with multiple ids', () => {
+        const instance = {
+            id: validId.repeat(2)
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('valid with a Cognito id', () => {
+        const instance = {
+            id: validId
+        }
+        expect(validate(instance)).toBe(true);
+    })
 })

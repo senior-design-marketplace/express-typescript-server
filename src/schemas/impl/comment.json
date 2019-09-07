@@ -1,0 +1,27 @@
+{
+    "title": "Comment",
+    "description": "A comment about a project",
+    "type": "object",
+    "properties": {
+        "author": {
+            "$ref": "user.json#"
+        },
+        "body": {
+            "description": "The content of the comment",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+        },
+        "timestamp": {
+            "description": "When the comment was created",
+            "type": "string",
+            "format": "date-time"
+        },
+        "parent": {
+            "$ref": "#"
+        }
+    },
+    "required": [
+        "body"
+    ]
+}

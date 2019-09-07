@@ -1,0 +1,8 @@
+{
+    "title": "Tag",
+    "description": "A tag attached to a project denoting some interest",
+    "enum": [
+        "Computer Science",
+        "Programming"
+    ]
+}

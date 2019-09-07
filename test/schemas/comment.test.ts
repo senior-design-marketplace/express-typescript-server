@@ -1,36 +1,29 @@
-import AJV from 'ajv';
+describe('A comment is', () => {
+    const validate = require('../../src/schemas/build/comment');
 
-const comment = require('../../src/schemas/comment');
-const user = require('../../src/schemas/user');
-
-const ajv = new AJV();
-ajv.addSchema(comment, 'comment');
-ajv.addSchema([
-    user
-])
-
-test('A comment without any content is not valid', () => {
-    const instance = {}
-    expect(ajv.validate('comment', instance)).toBe(false);
-})
-
-test('A comment with an empty body is not valid', () => {
-    const instance = {
-        body: ''
-    }
-    expect(ajv.validate('comment', instance)).toBe(false);
-})
-
-test('A comment with too much content is not valid', () => {
-    const instance = {
-        body: ' '.repeat(256 + 1)
-    }
-    expect(ajv.validate('comment', instance)).toBe(false);
-})
-
-test('A comment with content is valid', () => {
-    const instance = { 
-        body: 'test'
-    }
-    expect(ajv.validate('comment', instance)).toBe(true);
+    test('not valid without any content', () => {
+        const instance = {}
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with empty content', () => {
+        const instance = {
+            body: ''
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with too much content', () => {
+        const instance = {
+            body: ' '.repeat(256 + 1)
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('valid with a little content', () => {
+        const instance = { 
+            body: 'test'
+        }
+        expect(validate(instance)).toBe(true);
+    })
 })

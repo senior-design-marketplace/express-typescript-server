@@ -1,21 +1,18 @@
-import AJV from 'ajv';
+describe('A tag is', () => {
+    const validate = require('../../src/schemas/build/tag');
 
-const tag = require('../../src/schemas/tag')
-
-const ajv = new AJV();
-ajv.addSchema(tag, 'tag');
-
-test('An empty tag is not valid', () => {
-    const instance = '';
-    expect(ajv.validate('tag', instance)).toBe(false);
-})
-
-test('Any non-allowed tag is not valid', () => {
-    const instance = 'Foo';
-    expect(ajv.validate('tag', instance)).toBe(false);
-})
-
-test('One of the allowed tags is valid', () => {
-    const instance = 'Programming';
-    expect(ajv.validate('tag', instance)).toBe(true);
+    test('not valid if empty', () => {
+        const instance = '';
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid if not allowed', () => {
+        const instance = 'Foo';
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('valid if allowed', () => {
+        const instance = 'Programming';
+        expect(validate(instance)).toBe(true);
+    })
 })

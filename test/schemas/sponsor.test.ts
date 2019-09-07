@@ -1,32 +1,29 @@
-import AJV from 'ajv';
+describe('A sponsor is', () => {
+    const validate = require('../../src/schemas/build/sponsor');
 
-const sponsor = require('../../src/schemas/sponsor')
-
-const ajv = new AJV();
-ajv.addSchema(sponsor, 'sponsor');
-
-test('A sponsor without a name is not valid', () => {
-    const instance = {}
-    expect(ajv.validate('sponsor', instance)).toBe(false);
+    test('not valid without a name', () => {
+        const instance = {}
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with an empty name', () => {
+        const instance = {
+            name: ''
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('not valid with too long a name', () => {
+        const instance = {
+            name: ' '.repeat(256 + 1)
+        }
+        expect(validate(instance)).toBe(false);
+    })
+    
+    test('valid with a short name', () => {
+        const instance = {
+            name: 'test'
+        };
+        expect(validate(instance)).toBe(true);
+    });
 })
-
-test('A sponsor with an empty name is not valid', () => {
-    const instance = {
-        name: ''
-    }
-    expect(ajv.validate('sponsor', instance)).toBe(false);
-})
-
-test('A sponsor with too long a name is not valid', () => {
-    const instance = {
-        name: ' '.repeat(256 + 1)
-    }
-    expect(ajv.validate('sponsor', instance)).toBe(false);
-})
-
-test('A sponsor with a name is valid', () => {
-    const instance = {
-        name: 'test'
-    };
-    expect(ajv.validate('sponsor', instance)).toBe(true);
-});

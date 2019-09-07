@@ -2,15 +2,15 @@
     "compilerOptions": {
       "target": "es6",
       "module": "commonjs",
-      "declaration": true,
+      "moduleResolution": "node",
       "outDir": "build",
       "strict": true,
       "removeComments": true,
       "experimentalDecorators": true,
-      "noImplicitAny": true,
-      "moduleResolution": "node",
+      "noImplicitAny": false, //some generated code produces js which when imported throws 'implicit any' errors
       "esModuleInterop": true,
-      "resolveJsonModule": true
+      "resolveJsonModule": true,
+      "allowJs": true
     },
     "include": [
       "src/**/*"

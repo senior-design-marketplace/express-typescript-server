@@ -1,0 +1,31 @@
+{
+    "title": "Description Attributes",
+    "description": "A set of descriptors for a given project",
+    "type": "object",
+    "properties": {
+        "title": {
+            "description": "The title of the project",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+        },
+        "body": {
+            "description": "The body of the description",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+        },
+        "tags": {
+            "description": "Tags associated with the project",
+            "type": "array",
+            "minItems": 0,
+            "items": {
+                "$ref": "tag.json#"
+            }
+        }
+    },
+    "required": [
+        "title",
+        "body"
+    ]
+}
