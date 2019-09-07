@@ -4,6 +4,9 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
+    "integ-dev": "jest -c jest.config.integ.dev.js",
+    "integ-stage": "jest -c jest.config.integ.stage.js",
+    "unit": "jest -c jest.config.unit.js",
     "test": "jest",
     "bundle": "node src/schemas/bundle && tsc",
     "claudia": "tsc && claudia generate-serverless-express-proxy --express-module build/app"
