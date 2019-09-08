@@ -1,6 +1,7 @@
 import { Server } from '@overnightjs/core';
 import { Application } from 'express';
-import { HandleInternalError, HandleAuthenticationError } from './routes/middlewares';
+import { HandleErrors } from './routes/middlewares';
+import { AuthenticationError, BadRequestError, InternalError } from './error/error';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import cors from 'cors';
 import * as routes from './routes/routes';
@@ -12,8 +13,14 @@ class App extends Server {
 
     constructor() {
         super();
-        this.enableMiddleware();
         this.enableRoutes();
+
+        /**
+         * load global middlewares LAST because they include error-handling which must
+         * be loaded last -- otherwise a middleware that gets loaded after them which 
+         * throws will not be able to pass the error onto the handlers.
+         */
+        this.enableMiddleware();
     }
 
     /**
@@ -24,8 +31,11 @@ class App extends Server {
     private enableMiddleware(): void {
         this.app.use(
             cors(),
-            HandleInternalError,
-            HandleAuthenticationError
+            HandleErrors([
+                AuthenticationError,
+                BadRequestError,
+                InternalError
+            ])
         )
     }
 

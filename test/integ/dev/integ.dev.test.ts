@@ -23,7 +23,7 @@ test('Provide a bad reqest', async () => {
         requestContext: {
             stage: 'dev',
             identity: {
-                cognitoIdentityId: '' //provide credentials
+                cognitoIdentityId: 'test' //provide credentials
             }
         }
     })

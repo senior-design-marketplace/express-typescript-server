@@ -1,8 +1,7 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { Controller, Middleware, Get, Post, Put, Delete } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { RequiresAuth, HandleErrors } from '../../middlewares';
-import { InternalError } from '../../../error/error';
+import { RequiresAuth } from '../../middlewares';
 import { Verified } from '../../middlewares';
 
 enum SearchableTerms {
@@ -28,7 +27,7 @@ export default class ProjectsController {
     }
 
     @Post()
-    @Middleware([RequiresAuth, Verified('project'), HandleErrors([InternalError])])
+    @Middleware([RequiresAuth, Verified('project')])
     public async newProject(req: Request, res: Response) {
         //TODO
         res.sendStatus(200);

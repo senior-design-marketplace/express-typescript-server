@@ -24,7 +24,6 @@ This gets even worse if you're planning on sending more than just a simple `500`
 
 ```typescript
 @Get()
-@Middleware(HandleErrors[InternalError])
 public foo(req: Request, res: Response) {
     try {
         await bar.makeRiskyCall();
@@ -34,7 +33,7 @@ public foo(req: Request, res: Response) {
     }
 }
 ```
-As you can see, all you need to do is list the types of errors that you want to include on this function and throw them when needed.
+But where is the middleware?  The application is structured to register all error-handling middleware at the root level, meaning that every route will have these error handlers available -- all you need to do is throw an error when you need it.  Of course, not every error will do -- please check `src/errors/impl` for all of the supported errors.
 
 #### Request Validation
 When you're developing controllers, some of them will have an incoming payload that you will want to validate against some schema.  We store these as [json-schema](https://json-schema.org/) documents.
