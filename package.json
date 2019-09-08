@@ -8,8 +8,8 @@
     "integ-stage": "jest -c jest.config.integ.stage.js",
     "unit": "jest -c jest.config.unit.js",
     "test": "jest",
-    "bundle": "node src/schemas/bundle && tsc",
-    "claudia": "tsc && claudia generate-serverless-express-proxy --express-module build/app"
+    "bundle": "node src/schemas/bundle",
+    "claudia": "claudia generate-serverless-express-proxy --express-module build/app"
   },
   "repository": {
     "type": "git",
