@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { InternalError, AuthenticationError, BadRequestError } from '../error/error';
-
-const validators = {
-    project: require('../schemas/build/project')
-}
+import { CustomError } from 'ts-custom-error';
+import CodedError from '../error/CodedError';
 
 //extract the api gateway event header and pull it onto the request
 export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
@@ -11,15 +9,25 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
         const event: string = req.headers['x-apigateway-event'] as string;
         const decoded: any = JSON.parse(decodeURIComponent(event));
         req.headers.cognitoIdentityId = decoded.requestContext.identity.cognitoIdentityId;
-        next();
+        
+        if (!req.headers.cognitoIdentityId) {
+            next(new AuthenticationError('No identity supplied with request'))
+        } else {
+            next();
+        }
     } catch (e) {
-        return res.sendStatus(403);
+        //TODO: maybe a bad request?
+        next(new AuthenticationError('Could not parse identity information from request'));
     }
 }
 
 //provide a middleware to the calling route to verify incoming requests against
 //a known JSON schema
 export function Verified(schema: string) {
+    const validators = {
+        project: require('../schemas/build/project')
+    }
+
     return (req: Request, res: Response, next: any) => {
         //first, go get the bundled schema for this model (maybe later for this route?  Could we auto-infer this somehow?)
         const validator = validators[schema];
@@ -32,34 +40,18 @@ export function Verified(schema: string) {
     }
 }
 
-//use an error handling chain with typed errors to take the burden of error
-//handling off of our routes -- declare many more
-export const HandleInternalError: any = (error: any, req: Request, res: Response, next: any) => {
-    if (error instanceof InternalError) {
-        return res.status(500).json({
-            type: 'InternalError',
-            message: error.message
-        });
+export function HandleErrors(errors: typeof CodedError[]) {
+    return (error: Error, req: Request, res: Response, next: any) => {
+        //make sure that the given error is one that we are checking for on this route
+        for(let clazz of errors) {
+            if(error instanceof clazz) {
+                return res.status(error.code).json({
+                    type: error.name,
+                    message: error.message
+                })
+            }
+        }
+        //we didn't have it in our checked errors, pass it on
+        next(error);
     }
-    next(error);
-}
-
-export const HandleAuthenticationError: any = (error: any, req: Request, res: Response, next: any) => {
-    if (error instanceof AuthenticationError) {
-        return res.status(403).json({
-            type: 'AuthenticationError',
-            message: error.message
-        })
-    }
-    next(error);
-}
-
-export const HandleBadRequestError: any = (error: any, req: Request, res: Response, next: any) => {
-    if (error instanceof BadRequestError) {
-        return res.status(400).json({
-            type: 'BadRequestError',
-            message: error.message
-        })
-    }
-    next(error);
 }

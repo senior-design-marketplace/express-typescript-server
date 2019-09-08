@@ -1,7 +1,9 @@
-export default class AuthenticationError extends Error {
+import CodedError from '../CodedError';
+import HttpStatus from 'http-status-codes';
+
+export default class AuthenticationError extends CodedError {
+
     constructor(message: string) {
-        super(message);
-        this.name = 'AuthenticationError'
-        Object.setPrototypeOf(this, AuthenticationError.prototype);
+        super(message, HttpStatus.FORBIDDEN);
     }
 }
