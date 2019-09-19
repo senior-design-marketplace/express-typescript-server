@@ -1,0 +1,36 @@
+{
+    "title": "FilterAndSortParams",
+    "description": "Basic query parameters to filter incoming data off of",
+    "type": "object",
+    "properties": {
+        "sort_by": {
+            "description": "Sort the output of the query",
+            "enum": [
+                "new",
+                "popular"
+            ]
+        },
+        "tag": {
+            "$ref": "tag.json#"
+        },
+        "advisor_id": {
+            "type": "string"
+        },
+        "requested_major": {
+            "type": "string"
+        },
+        "accepting_applications": {
+            "type": "string"
+        },
+        "order": {
+            "description": "Order the output of the query",
+            "enum": [
+                "reverse"
+            ]
+        },
+        "next": {
+            "description": "Pagination token to get next page of results",
+            "type": "string"
+        }
+    }
+}

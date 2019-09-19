@@ -3,77 +3,62 @@
     "description": "A work made by some group of people to achieve something in the Senior Design Marketplace",
     "type": "object",
     "properties": {
-        "name": {
-            "description": "The name of the project",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-        },
-        "contributors": {
-            "description": "The people who are working on the project",
-            "type": "array",
-            "items": {
-                "$ref": "user.json#"
-            }
-        },
-        "comments": {
-            "description": "Discussion surrounding the project",
-            "type": "array",
-            "items": {
-                "$ref": "comment.json#"
-            }
-        },
-        "advisor": {
-            "description": "The advisor for the project",
-            "$ref": "user.json#"
-        },
-        "difficulty": {
-            "description": "A difficulty rating for the project on a scale of 1.0-10.0",
-            "type": "number",
-            "minimum": 1.0,
-            "maximum": 10.0
-        },
-        "descriptionAttributes": {
-            "description": "The description of the project",
-            "$ref": "descriptionAttributes.json#"
-        },
         "id": {
             "description": "The unique identifier for the project",
             "type": "string",
             "format": "uuid"
         },
-        "contact": {
-            "description": "The person who should be contacted for questions related to the project",
-            "$ref": "user.json#"
+        "title": {
+            "description": "The title of the project",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
         },
-        "admininstrators": {
-            "description": "People with elevated privileges on this project",
-            "$ref": "user.json#"
+        "body": {
+            "description": "The body of the description",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
         },
-        "sponsors": {
-            "description": "Entities who are helping to facilitate the project",
+        "descriptionAttributes": {
+            "description": "The description of the project",
+            "$ref": "descriptionAttributes.json#"
+        },
+        "tags": {
+            "description": "Tags associated with the project",
             "type": "array",
+            "minItems": 0,
             "items": {
-                "$ref": "sponsor.json#"
+                "$ref": "tag.json#"
             }
         },
-        "thumbnail": {
+        "thumbnailLink": {
             "description": "A small picture to represent the project",
             "type": "string",
             "contentEncoding": "base64",
             "contentMediaType": "image/png"
         },
-        "photos": {
-            "description": "Links to S3 files of photographs for this project",
+        "advisor": {
+            "description": "The advisor for the project",
+            "$ref": "user.json#"
+        },    
+        "requested_majors": {
             "type": "array",
             "items": {
-                "type": "string",
-                "pattern": "(?=^.{3,63}$)(?!^(\\d+\\.)+\\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])$)"
+                "$ref": "major.json#"
             }
+        },    
+        "accepting_applications": {
+            "description": "A flag set by the advisor to prevent further applications",
+            "type": "boolean"
+        },
+        "stars": {
+            "type": "number",
+            "minValue": 0
         }
     },
     "required": [
-        "name",
-        "descriptionAttributes"
+        "title",
+        "body"
     ]
 }

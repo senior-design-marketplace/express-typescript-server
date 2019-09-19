@@ -1,0 +1,29 @@
+{
+    "title": "Team Information",
+    "description": "Information about the people working on the project",
+    "type": "object",
+    "properties": {
+        "admininstrators": {
+            "description": "People with elevated privileges on this project",
+            "$ref": "user.json#"
+        },
+        "contributors": {
+            "description": "The people who are working on the project",
+            "type": "array",
+            "items": {
+                "$ref": "user.json#"
+            }
+        },
+        "contact": {
+            "description": "The person who should be contacted for questions related to the project",
+            "$ref": "user.json#"
+        },
+        "sponsors": {
+            "description": "Entities who are helping to facilitate the project",
+            "type": "array",
+            "items": {
+                "$ref": "sponsor.json#"
+            }
+        }
+    }
+}

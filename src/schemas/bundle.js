@@ -12,6 +12,7 @@ fse.readdir(inputDirectory, (err, files) => {
 
     const ajv = new AJV({ sourceCode: true });
     const pack = require('ajv-pack');
+
     for (let file of files) {
         $RefParser.bundle(path.join(inputDirectory, file))
             .then(bundle => {

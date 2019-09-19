@@ -25,7 +25,8 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
 //a known JSON schema
 export function Verified(schema: string) {
     const validators = {
-        project: require('../schemas/build/project')
+        project: require('../schemas/build/project'),
+        filterAndSortParams: require('../schemas/build/filterAndSortParams')
     }
 
     return (req: Request, res: Response, next: any) => {

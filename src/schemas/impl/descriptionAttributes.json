@@ -3,29 +3,20 @@
     "description": "A set of descriptors for a given project",
     "type": "object",
     "properties": {
-        "title": {
-            "description": "The title of the project",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-        },
-        "body": {
-            "description": "The body of the description",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 2048
-        },
-        "tags": {
-            "description": "Tags associated with the project",
+        "photos": {
+            "description": "Links to S3 files of photographs for this project",
             "type": "array",
-            "minItems": 0,
             "items": {
-                "$ref": "tag.json#"
+                "type": "string",
+                "pattern": "(?=^.{3,63}$)(?!^(\\d+\\.)+\\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])$)"
+            }
+        },
+        "comments": {
+            "description": "Discussion surrounding the project",
+            "type": "array",
+            "items": {
+                "$ref": "comment.json#"
             }
         }
-    },
-    "required": [
-        "title",
-        "body"
-    ]
+    }
 }
