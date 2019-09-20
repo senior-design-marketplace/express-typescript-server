@@ -2,14 +2,19 @@ import { Server } from '@overnightjs/core';
 import { Application } from 'express';
 import { HandleErrors } from './routes/middlewares';
 import { AuthenticationError, BadRequestError, InternalError } from './error/error';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import cors from 'cors';
 import * as routes from './routes/routes';
+import * as config from './aws_config.json';
 
 import AWS from 'aws-sdk';
+import HitTracker from './routes/helpers/hitTracker';
 AWS.config.update({ region: 'us-east-1' });
 
 class App extends Server {
+
+    static sqs = new AWS.SQS();
+    static documentClient = new AWS.DynamoDB.DocumentClient();
+    static hitTracker = new HitTracker(App.sqs, config.sqs.projects);
 
     constructor() {
         super();
@@ -42,10 +47,8 @@ class App extends Server {
     //basically a doctor with all these injections
     private enableRoutes(): void {
         const controllers: any[] = []
-        controllers.push(new routes.ProjectsController(new DocumentClient()));
-        controllers.push(new routes.ProjectsIdController(new DocumentClient()));
-        controllers.push(new routes.CommentsController(new DocumentClient));
-        controllers.push(new routes.CommentsIdController(new DocumentClient));
+        controllers.push(new routes.ProjectsController(App.documentClient, App.hitTracker));
+        controllers.push(new routes.CommentsController(App.documentClient));
 
         super.addControllers(controllers);
     }

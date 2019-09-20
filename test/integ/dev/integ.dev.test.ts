@@ -8,10 +8,26 @@ test('Run a sample test', async () => {
         httpMethod: 'GET',
         body: '',
         path: '/projects',
-        queryStringParameters: {}
+        queryStringParameters: {
+            test: null,
+            foo: 'bar'
+        }
     });
 
     expect(response.statusCode).toBe(200);
+})
+
+test('Provide a request with bad query params', async () => {
+    const response: any = await runLocalGatewayEvent({
+        httpMethod: 'GET',
+        body: '',
+        path: '/projects',
+        queryStringParameters: {
+            sort_by: 'foo' //not a valid sort parameter
+        }
+    })
+
+    expect(response.statusCode).toBe(400);
 })
 
 test('Provide a bad reqest', async () => {

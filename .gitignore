@@ -9,3 +9,5 @@ api-gateway-event.json
 
 # claudia-generated lambda
 lambda.js
+
+aws_config.json
