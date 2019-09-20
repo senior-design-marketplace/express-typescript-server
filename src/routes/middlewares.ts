@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { InternalError, AuthenticationError, BadRequestError } from '../error/error';
-import { CustomError } from 'ts-custom-error';
+import { AuthenticationError, BadRequestError } from '../error/error';
 import CodedError from '../error/CodedError';
 
 //extract the api gateway event header and pull it onto the request
@@ -16,14 +15,13 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
             next();
         }
     } catch (e) {
-        //TODO: maybe a bad request?
         next(new AuthenticationError('Could not parse identity information from request'));
     }
 }
 
 //provide a middleware to the calling route to verify incoming requests against
 //a known JSON schema
-export function Verified(schema: string) {
+export function Verified(schema: string, options?: any) {
     const validators = {
         project: require('../schemas/build/project'),
         filterAndSortParams: require('../schemas/build/filterAndSortParams')
@@ -34,9 +32,14 @@ export function Verified(schema: string) {
         const validator = validators[schema];
         if (!validator) throw new Error(`Unknown schema for name ${schema}, did you add this in ${__filename}?`)
         
+        //they can pass in an option to validate the query parameter instead of the body
+        const validatee = options && options.query ? req.query : req.body
+
         //if the request isn't valid, pass the error onto the handler
-        if (!(validator(req.body))) {
+        if (!(validator(validatee))) {
             next(new BadRequestError(`Request failed validation against schema: ${schema}`));
+        } else {
+            next();
         }
     }
 }
