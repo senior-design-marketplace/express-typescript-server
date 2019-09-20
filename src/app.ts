@@ -1,10 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { Server } from '@overnightjs/core';
 import { Application } from 'express';
 import { HandleErrors } from './routes/middlewares';
 import { AuthenticationError, BadRequestError, InternalError } from './error/error';
 import cors from 'cors';
 import * as routes from './routes/routes';
-import * as config from './aws_config.json';
 
 import AWS from 'aws-sdk';
 import HitTracker from './routes/helpers/hitTracker';
@@ -14,7 +16,7 @@ class App extends Server {
 
     static sqs = new AWS.SQS();
     static documentClient = new AWS.DynamoDB.DocumentClient();
-    static hitTracker = new HitTracker(App.sqs, config.sqs.projects);
+    static hitTracker = new HitTracker(App.sqs, process.env.SQS_ENDPOINT as string);
 
     constructor() {
         super();
