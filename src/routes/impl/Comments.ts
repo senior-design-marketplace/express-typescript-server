@@ -1,4 +1,4 @@
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { Access } from '../helpers/dynamoAccessor';
 import { Controller, Middleware, Get, Post, Put, Delete } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { RequiresAuth } from '../middlewares';
@@ -6,7 +6,7 @@ import { RequiresAuth } from '../middlewares';
 @Controller('projects/:id/comments')
 export default class CommentsController {
 
-    constructor(private readonly documentClient: DocumentClient) {}
+    constructor(private readonly dynamoAccessor: Access.DynamoAccessor) {}
 
     @Post()
     @Middleware(RequiresAuth)
@@ -22,21 +22,21 @@ export default class CommentsController {
         res.sendStatus(200);
     }
 
-    @Post('/:id')
+    @Post(':id')
     @Middleware(RequiresAuth)
     public async newReply(req: Request, res: Response) {
         //TODO
         res.sendStatus(200);
     }
 
-    @Put('/:id')
+    @Put(':id')
     @Middleware(RequiresAuth)
     public async editComment(req: Request, res: Response) {
         //TODO
         res.sendStatus(200);
     }
 
-    @Delete('/:id')
+    @Delete(':id')
     @Middleware(RequiresAuth)
     public async deleteComment(req: Request, res: Response) {
         //TODO

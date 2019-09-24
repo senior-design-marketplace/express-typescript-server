@@ -5,6 +5,8 @@ import { Server } from '@overnightjs/core';
 import { Application } from 'express';
 import { HandleErrors } from './routes/middlewares';
 import { AuthenticationError, BadRequestError, InternalError } from './error/error';
+import { Access } from './routes/helpers/dynamoAccessor';
+
 import cors from 'cors';
 import * as routes from './routes/routes';
 
@@ -15,7 +17,7 @@ AWS.config.update({ region: 'us-east-1' });
 class App extends Server {
 
     static sqs = new AWS.SQS();
-    static documentClient = new AWS.DynamoDB.DocumentClient();
+    static dynamoAccessor = new Access.DynamoAccessor(new AWS.DynamoDB.DocumentClient());
     static hitTracker = new HitTracker(App.sqs, process.env.SQS_ENDPOINT as string);
 
     constructor() {
@@ -49,8 +51,8 @@ class App extends Server {
     //basically a doctor with all these injections
     private enableRoutes(): void {
         const controllers: any[] = []
-        controllers.push(new routes.ProjectsController(App.documentClient, App.hitTracker));
-        controllers.push(new routes.CommentsController(App.documentClient));
+        controllers.push(new routes.ProjectsController(App.dynamoAccessor, App.hitTracker));
+        controllers.push(new routes.CommentsController(App.dynamoAccessor));
 
         super.addControllers(controllers);
     }
