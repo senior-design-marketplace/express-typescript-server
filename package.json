@@ -2,7 +2,10 @@
   "name": "express-typescript-server",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "files": [
+    "build"
+  ],
+  "main": "lambda.js",
   "scripts": {
     "integ-dev": "jest -c jest.config.integ.dev.js",
     "integ-stage": "jest -c jest.config.integ.stage.js",

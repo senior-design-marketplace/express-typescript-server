@@ -58,3 +58,16 @@ test('Attempt to access an authenticated route without credentials', async () =>
 
     expect(response.statusCode).toBe(403);
 })
+
+test('Get a specific project', async () => {
+    const response: any = await runLocalGatewayEvent({
+        httpMethod: 'GET',
+        body: '',
+        path: '/projects/sample_id',
+        queryStringParameters: {},
+        requestContext: {}
+    })
+
+    console.log(response);
+    expect(response.statusCode).toBe(200);
+})
