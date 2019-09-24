@@ -1,16 +1,15 @@
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { Controller, Middleware, Get, Post, Put, Delete } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { RequiresAuth } from '../middlewares';
 import { Verified } from '../middlewares';
-import { InternalError } from '../../error/error';
 import { OK, CREATED } from 'http-status-codes';
+import { Access } from '../helpers/dynamoAccessor';
 import HitTracker from '../helpers/hitTracker';
 
 @Controller('projects')
 export default class ProjectsController {
 
-    constructor(private readonly documentClient: DocumentClient,
+    constructor(private readonly dynamoAccessor: Access.DynamoAccessor,
                 private readonly hitTracker: HitTracker) {}
 
     @Get()
@@ -32,20 +31,11 @@ export default class ProjectsController {
         //tack on the corresponding information, such as the
         //cognito identity, then send it up
 
-        const params: any = {
-            TableName: 'marqetplace-projects',
-            Item: req.body
-        }
-
-        try {
-            await this.documentClient.put(params).promise();
-            res.sendStatus(CREATED);
-        } catch (e) {
-            throw new InternalError('Call to dynamo failed');
-        }
+        //TODO: open up a batch write request on the dynamo
+        //accessor
     }
 
-    @Delete('/:id')
+    @Delete(':id')
     @Middleware(RequiresAuth)
     public async deleteProject(req: Request, res: Response) {
         //firstly, pull down the project with that id, if there
@@ -55,22 +45,14 @@ export default class ProjectsController {
         res.sendStatus(200);
     }
 
-    @Get('/:id')
+    @Get(':id')
     public async getProjectById(req: Request, res: Response) {
         //TODO: Can we wrap this into a hit-tracking middleware instead?
-        await this.hitTracker.hit(req.params.id);
+        // await this.hitTracker.hit(req.params.id);
 
-        //now try to go get this thing
-        const params: any = {
-            TableName: 'marqetplace-projects',
-            Key: { id: req.params.id }
-        }
+        const response = await this.dynamoAccessor.getProjectById(req.params.id);
 
-        try {
-            const response = await this.documentClient.get(params).promise();
-            res.status(OK).json(response.Item);
-        } catch(e) {
-            throw new InternalError('Call to dynamo failed');
-        }
+        //TODO: format and return the response from dynamo
+        res.status(OK).json(response);
     }
 }

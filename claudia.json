@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "express-typescript-server-executor",
+    "name": "express-typescript-server",
+    "region": "us-east-1"
+  }
+}

@@ -1,16 +1,18 @@
 import ProjectsController from '../../../src/routes/impl/Projects';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { Access } from '../../../src/routes/helpers/dynamoAccessor';
 import { mockReq, mockRes } from 'sinon-express-mock';
 import HitTracker from '../../../src/routes/helpers/hitTracker';
 import sinon, { assert } from 'sinon';
 
-const documentClient = sinon.createStubInstance(DocumentClient); 
+const dynamoAccessor = sinon.createStubInstance(Access.DynamoAccessor); 
 const hitTracker = sinon.createStubInstance(HitTracker);
-const controller = new ProjectsController(documentClient as any, hitTracker as any);
+const controller = new ProjectsController(dynamoAccessor as any, hitTracker as any);
 
 describe('The projects controller', () => {
+    const expected = { Item: 'test' };
+
     beforeAll(() => {
-        documentClient.get.returns({ promise: () => { return Promise.resolve({ Item: 'test' })}} as any);
+        dynamoAccessor.getProjectById.returns(expected as any);
     })
 
     test('returns a 200 for a get request', async () => {
@@ -30,6 +32,6 @@ describe('The projects controller', () => {
         await controller.getProjectById(req, res);
 
         assert.calledOnce(res.json)
-        assert.calledWith(res.json.firstCall, 'test');
+        assert.calledWith(res.json.firstCall, expected);
     })
 })
