@@ -1,19 +1,17 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthenticationError, BadRequestError } from '../error/error';
 import CodedError from '../error/CodedError';
 
-//extract the api gateway event header and pull it onto the request
+//TODO: handle idempotency as a middleware
 export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
     try {
-        const event: string = req.headers['x-apigateway-event'] as string;
-        const decoded: any = JSON.parse(decodeURIComponent(event));
-        req.headers.cognitoIdentityId = decoded.requestContext.identity.cognitoIdentityId;
-        
-        if (!req.headers.cognitoIdentityId) {
-            next(new AuthenticationError('No identity supplied with request'))
-        } else {
-            next();
-        }
+        // TODO: pull in the cookie from the request header, if no cookie, throw an authentication error
+
+        // TODO: make a call to shibboleth with the cookie
+
+        // TODO: place a user-specific key onto the incoming request and allow it to pass through
+
+        next();
     } catch (e) {
         next(new AuthenticationError('Could not parse identity information from request'));
     }
@@ -24,7 +22,7 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
 export function Verified(schema: string, options?: any) {
     const validators = {
         project: require('../schemas/build/project'),
-        filterAndSortParams: require('../schemas/build/filterAndSortParams')
+        queryParams: require('../schemas/build/queryParams')
     }
 
     return (req: Request, res: Response, next: any) => {

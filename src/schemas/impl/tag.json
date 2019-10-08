@@ -1,7 +1,7 @@
 {
     "title": "Tag",
     "description": "A tag attached to a project denoting some interest.  All majors are tags by default",
-    "anyOf": [
+    "oneOf": [
         {
             "$ref": "major.json#"
         },
@@ -16,7 +16,7 @@
                 "Augmented Reality",
                 "Automotive",
                 "Robotics",
-                "Mechatronics /Automation",
+                "Mechatronics / Automation",
                 "Thermal / fluids",
                 "Aviation / Aerospace Systems",
                 "Biomedical",

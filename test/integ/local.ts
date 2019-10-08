@@ -1,5 +1,5 @@
 //BORROWED FROM DOCS: https://github.com/awslabs/aws-serverless-express/tree/master/examples/basic-starter
-import { handler } from '../../../lambda.js';
+import { handler } from '../../lambda.js';
 import { Server } from 'http';
 
 /**
@@ -10,18 +10,28 @@ import { Server } from 'http';
  * Regardless of what happens, close the express server on the other
  * side, we'll just keep opening more servers to simulate real calls.
  */
-const runLocalGatewayEvent: any = (event: any) => {
-    return new Promise((resolve, reject) => {
-        const server: Server = handler(event, {
+export default class GatewayRunner {
+
+    private server?: Server;
+
+    public runEvent(event: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.server = handler(event, {
             succeed: (val: any) => {
+                console.log(val);
                 resolve(val);
-                server.close();
             },
             fail: (err: Error | string) => {
+                console.error(err);
                 reject(err);
             }
+            })
         })
-    })
-}
+    }
 
-export default runLocalGatewayEvent
+    public close() {
+        if (this.server) {
+            this.server.close();
+        }
+    }
+}

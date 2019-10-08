@@ -15,4 +15,9 @@ describe('A tag is', () => {
         const instance = 'Programming';
         expect(validate(instance)).toBe(true);
     })
+
+    test('valid if a major', () => {
+        const instance = 'Software Engineering';
+        expect(validate(instance)).toBe(true);
+    })
 })
