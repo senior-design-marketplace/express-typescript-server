@@ -1,11 +1,9 @@
 import Project from './models/project';
-import { Project as ProjectSchema } from '../schemas/build/project';
-import { QueryParams, FilterParams } from '../schemas/build/queryParams';
-import { Model, QueryBuilder } from 'objection';
 import knex from 'knex';
-import * as config from './env.json';
-
-Model.knex(knex(config));
+import { Project as ProjectSchema } from '../schemas/build/project';
+import { SortParams, FilterParams } from '../schemas/build/queryParams';
+import { Model, QueryBuilder, ColumnRef } from 'objection';
+import { NotFoundError } from '../error/error';
 
 export namespace Access {
 
@@ -22,45 +20,64 @@ export namespace Access {
         has_advisor: QueryFunction
     }
 
-    //TODO: can we somehow extend the interface with this?
-    export const filterMapping: FilterMapping = {
-        //provide the projects for this advisor
+    export const mapping: FilterMapping = {
         advisor_id: (query: ProjectQuery, id: string) => {
             return query.joinRelation('advisors').where('userId', id);
         },
-        //provide the projets with this tag
         tag: (query: ProjectQuery, value: string) => {
             return query.joinRelation('tags').where('tag', value);
         },
-        //provide the projects requesting this major
         requested_major: (query: ProjectQuery, value: string) => {
             return query.joinRelation('requestedMajors').where('major', value);
         },
-        //provide projects accepting applications
         accepting_applications: (query: ProjectQuery, value: boolean) => {
             return query.where('accepting_applications', true);
         },
-        //provide projects that have an advisor
         has_advisor: (query: ProjectQuery, value: boolean) => {
             return query.whereExists(query.joinRelation('advisors').where('projectId', 'id'));
         }
     }
 
+    //TODO: find a better way to do this
+    function sortOutput(query: ProjectQuery, sorts: SortParams): ProjectQuery {
+        if (sorts.sort_by === 'new') {
+            return sorts.order ? query.orderBy('created_at', 'desc') : query.orderBy('created_at');
+        }
+        if (sorts.sort_by === 'popular') {
+            query.joinRelation('stars').where('projectId', 'id').count('users.id as popularity');
+            return sorts.order ? query.orderBy('popularity', 'desc') : query.orderBy('popularity')
+        }
+        return query;
+    }
+
     export class Repository {
 
-        public async getProjectStubs(params: FilterParams) {
+        constructor(config: knex.Config) {
+            Model.knex(knex(config));
+        }
+
+        public async getProjectStubs(filters: FilterParams, sorts: SortParams) {
             const query = Project.query();
-            for(let param of Object.keys(params)) {
-                filterMapping[param](query, params[param]);
+            for(let param of Object.keys(filters)) {
+                mapping[param](query, filters[param]);
             }
+
+            //tack on the sorting parameters
+            sortOutput(query, sorts);
+
+            //always chop amount to 25 items
+            query.limit(25);
 
             return await query;
         }
 
+        // allow a NotFoundError to pass back to the client if not found
         public async getProjectDetails(id: string)  {
-            return await Project.query().findById(id);
+            return await Project.query().findById(id).throwIfNotFound();
         }
 
+        // * idempotency: if you go to delete and the item is not found,
+        // * just return a 200.
         public async createProject(project: ProjectSchema) {
             return await Project.query().insert(project);
         }
@@ -71,8 +88,16 @@ export namespace Access {
             return await Project.query().update(project);
         }
 
-        public async deleteProject(id: string) {
-            return await Project.query().deleteById(id);
+        // * idempotency: if you go to delete and the item is not found,
+        // * just return a 200.
+        public async deleteProject(id: string): Promise<void> {
+            try {
+                await Project.query().deleteById(id).throwIfNotFound();
+            } catch (e) {
+                if (e instanceof NotFoundError) {
+                    return;
+                }
+            }
         }
     }
 }
