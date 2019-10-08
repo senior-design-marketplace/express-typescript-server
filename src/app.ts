@@ -1,24 +1,22 @@
-import dotenv from 'dotenv';
-dotenv.config();
+//access layer
+import { Access } from './access/dao';
 
+//service layer
 import { Server } from '@overnightjs/core';
 import { Application } from 'express';
 import { HandleErrors } from './routes/middlewares';
-import { AuthenticationError, BadRequestError, InternalError } from './error/error';
-import { Access } from './routes/helpers/dynamoAccessor';
+import { AuthenticationError, BadRequestError, InternalError, NotFoundError } from './error/error';
 
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import * as routes from './routes/routes';
 
 import AWS from 'aws-sdk';
-import HitTracker from './routes/helpers/hitTracker';
 AWS.config.update({ region: 'us-east-1' });
 
 class App extends Server {
 
-    static sqs = new AWS.SQS();
-    static dynamoAccessor = new Access.DynamoAccessor(new AWS.DynamoDB.DocumentClient());
-    static hitTracker = new HitTracker(App.sqs, process.env.SQS_ENDPOINT as string);
+    static repository = new Access.Repository();
 
     constructor() {
         super();
@@ -40,9 +38,11 @@ class App extends Server {
     private enableMiddleware(): void {
         this.app.use(
             cors(),
+            cookieParser(),
             HandleErrors([
                 AuthenticationError,
                 BadRequestError,
+                NotFoundError,
                 InternalError
             ])
         )
@@ -51,8 +51,8 @@ class App extends Server {
     //basically a doctor with all these injections
     private enableRoutes(): void {
         const controllers: any[] = []
-        controllers.push(new routes.ProjectsController(App.dynamoAccessor, App.hitTracker));
-        controllers.push(new routes.CommentsController(App.dynamoAccessor));
+        controllers.push(new routes.ProjectsController(App.repository));
+        controllers.push(new routes.CommentsController(App.repository));
 
         super.addControllers(controllers);
     }

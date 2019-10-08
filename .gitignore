@@ -10,5 +10,9 @@ api-gateway-event.json
 # claudia-generated lambda
 lambda.js
 
-# ignore aws secrets and other environment variables
-.env
+# development db
+dev.db
+
+# secrets
+knexfile.js
+env.json
