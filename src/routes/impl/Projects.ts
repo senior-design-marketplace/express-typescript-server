@@ -5,7 +5,7 @@ import { Verified } from '../middlewares';
 import { OK } from 'http-status-codes';
 import { Access } from '../../access/dao';
 import asyncHandler from 'express-async-handler';
-import { QueryParams } from '../../schemas/build/queryParams';
+import { FilterParams, SortParams } from '../../schemas/build/queryParams';
 
 @ClassWrapper(asyncHandler)
 @Controller('projects')
@@ -16,22 +16,21 @@ export default class ProjectsController {
     @Get()
     @Middleware([Verified('queryParams', { query: true })])
     public async getProjects(req: Request, res: Response) {
-        const params: QueryParams = {}
+        const filters: FilterParams = {}
 
         //TODO: just check that it exists on the access layer
-        if(req.query.tag) params.tag = req.query.tag;
-        if(req.query.advisor_id) params.advisor_id = req.query.advisor_id;
-        if(req.query.has_advisor) params.has_advisor = req.query.has_advisor;
-        if(req.query.requested_major) params.requested_major = req.query.requested_major;
-        if(req.query.accepting_applications) params.accepting_applications = req.query.accepting_applications;
+        if(req.query.tag) filters.tag = req.query.tag;
+        if(req.query.advisor_id) filters.advisor_id = req.query.advisor_id;
+        if(req.query.has_advisor) filters.has_advisor = req.query.has_advisor;
+        if(req.query.requested_major) filters.requested_major = req.query.requested_major;
+        if(req.query.accepting_applications) filters.accepting_applications = req.query.accepting_applications;
 
-        if(req.query.sort_by) params.sort_by = req.query.sort_by;
-        if(req.query.order) params.order = req.query.order;
-        if(req.query.next) params.next = req.query.next;
+        const sorts: SortParams = {};
+        if(req.query.sort_by) sorts.sort_by = req.query.sort_by;
+        if(req.query.order) sorts.order = req.query.order;
+        if(req.query.next) sorts.next = req.query.next;
 
-        console.log(params);
-
-        const projects = await this.repository.getProjectStubs(params);
+        const projects = await this.repository.getProjectStubs(filters, sorts);
 
         res.status(OK).json(projects);
     }
