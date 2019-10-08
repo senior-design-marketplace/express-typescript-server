@@ -1,28 +1,29 @@
 import ProjectsController from '../../../src/routes/impl/Projects';
-import { Access } from '../../../src/routes/helpers/dynamoAccessor';
+import { Access } from '../../../src/access/dao';
 import { mockReq, mockRes } from 'sinon-express-mock';
-import HitTracker from '../../../src/routes/helpers/hitTracker';
 import sinon, { assert } from 'sinon';
 
-const dynamoAccessor = sinon.createStubInstance(Access.DynamoAccessor); 
-const hitTracker = sinon.createStubInstance(HitTracker);
-const controller = new ProjectsController(dynamoAccessor as any, hitTracker as any);
+const repository = sinon.createStubInstance(Access.Repository); 
+const controller = new ProjectsController(repository);
 
 describe('The projects controller', () => {
-    const expected = { Item: 'test' };
+    const expected = {};
 
     beforeAll(() => {
-        dynamoAccessor.getProjectById.returns(expected as any);
+        repository.getProjectDetails.returns(expected as any);
     })
 
     test('returns a 200 for a get request', async () => {
-        const req = mockReq();
+        const req = mockReq({
+            advisor_id: 'foo',
+            accepting_applications: true
+        });
         const res = mockRes();
 
         await controller.getProjects(req, res);
 
-        assert.calledOnce(res.sendStatus);
-        assert.calledWith(res.sendStatus.firstCall, 200);
+        assert.calledOnce(res.status);
+        assert.calledWith(res.status.firstCall, 200);
     })
 
     test('returns a 200 for a specific get request', async () => {

@@ -1,5 +1,5 @@
 describe('Query params for a project are', () => {
-    const validate = require('../../src/schemas/build/filterAndSortParams');
+    const validate = require('../../src/schemas/build/queryParams');
 
     test('not valid with two sorting options', () => {
         const instance = {
@@ -42,6 +42,14 @@ describe('Query params for a project are', () => {
     test('not valid with an invalid order option', () => {
         const instance = {
             order: 'foo'
+        }
+
+        expect(validate(instance)).toBe(false);
+    })
+
+    test('not valid with an extraneous option', () => {
+        const instance = {
+            foo: 'bar'
         }
 
         expect(validate(instance)).toBe(false);

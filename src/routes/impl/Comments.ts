@@ -1,4 +1,4 @@
-import { Access } from '../helpers/dynamoAccessor';
+import { Access } from '../../access/dao';
 import { Controller, Middleware, Get, Post, Put, Delete } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { RequiresAuth } from '../middlewares';
@@ -6,7 +6,7 @@ import { RequiresAuth } from '../middlewares';
 @Controller('projects/:id/comments')
 export default class CommentsController {
 
-    constructor(private readonly dynamoAccessor: Access.DynamoAccessor) {}
+    constructor(private readonly repository: Access.Repository) {}
 
     @Post()
     @Middleware(RequiresAuth)

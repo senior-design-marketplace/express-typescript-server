@@ -1,6 +1,6 @@
 {
-    "title": "FilterAndSortParams",
-    "description": "Basic query parameters to filter incoming data off of",
+    "title": "SortParams",
+    "description": "Query parameters to sort results of queries by",
     "type": "object",
     "properties": {
         "sort_by": {
@@ -9,18 +9,6 @@
                 "new",
                 "popular"
             ]
-        },
-        "tag": {
-            "$ref": "tag.json#"
-        },
-        "advisor_id": {
-            "type": "string"
-        },
-        "requested_major": {
-            "type": "string"
-        },
-        "accepting_applications": {
-            "type": "string"
         },
         "order": {
             "description": "Order the output of the query",
@@ -32,5 +20,6 @@
             "description": "Pagination token to get next page of results",
             "type": "string"
         }
-    }
+    },
+    "additionalProperties": false
 }
