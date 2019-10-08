@@ -1,9 +1,18 @@
 import { Model } from 'objection';
 import { join } from 'path';
+import { NotFoundError } from '../../error/error';
 
 export default class Project extends Model {
 
     static tableName = 'projects';
+
+    /**
+     * Override to provide our own error that
+     * our handler can pick up
+     */
+    static createNotFoundError() {
+        return new NotFoundError('Project not found');
+    }
 
     readonly id!: string;
     

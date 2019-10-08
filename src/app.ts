@@ -1,5 +1,6 @@
 //access layer
 import { Access } from './access/dao';
+import * as config from './access/env.json';
 
 //service layer
 import { Server } from '@overnightjs/core';
@@ -16,7 +17,7 @@ AWS.config.update({ region: 'us-east-1' });
 
 class App extends Server {
 
-    static repository = new Access.Repository();
+    static repository = new Access.Repository(config);
 
     constructor() {
         super();
