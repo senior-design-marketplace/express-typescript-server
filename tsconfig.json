@@ -18,7 +18,7 @@
     ],
     //keep build steps out of deployment
     "exclude": [
-        "src/schemas/bundle.js",
-        "src/access/env.js"
+        "src/schemas/bundle.ts",
+        "src/access/export.ts"
     ]
   }
