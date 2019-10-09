@@ -1,5 +1,6 @@
 //access layer
 import { Access } from './access/dao';
+import Knex from 'knex';
 import * as config from './access/env.json';
 
 //service layer
@@ -17,7 +18,7 @@ AWS.config.update({ region: 'us-east-1' });
 
 class App extends Server {
 
-    static repository = new Access.Repository(config);
+    static repository = new Access.Repository(Knex(config));
 
     constructor() {
         super();
@@ -34,7 +35,7 @@ class App extends Server {
     /**
      * The ONLY middlewares that should be registered at the root level are those
      * which are guaranteed to be available on each and every route in the application.
-     * Currently, those middlewares are CORS and error-handling.
+     * Currently, those middlewares are CORS, cookie parsing, and error-handling.
      */
     private enableMiddleware(): void {
         this.app.use(

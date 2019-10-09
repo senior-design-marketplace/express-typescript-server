@@ -1,74 +1,70 @@
 import Project from './models/project';
-import knex from 'knex';
+import Knex from 'knex';
 import { Project as ProjectSchema } from '../schemas/build/project';
 import { SortParams, FilterParams } from '../schemas/build/queryParams';
-import { Model, QueryBuilder, ColumnRef } from 'objection';
+import { Model, QueryBuilder } from 'objection';
 import { NotFoundError } from '../error/error';
 
 export namespace Access {
 
     type ProjectQuery = QueryBuilder<Project, Project[], Project[]>;
 
-    type QueryFunction = (query: ProjectQuery, value: any) => any;
-
-    //TODO: can we somehow extend the interface with this?
-    interface FilterMapping {
-        advisor_id: QueryFunction,
-        tag: QueryFunction,
-        requested_major: QueryFunction,
-        accepting_applications: QueryFunction,
-        has_advisor: QueryFunction
-    }
-
-    export const mapping: FilterMapping = {
+    const filtering = {
         advisor_id: (query: ProjectQuery, id: string) => {
             return query.joinRelation('advisors').where('userId', id);
         },
-        tag: (query: ProjectQuery, value: string) => {
-            return query.joinRelation('tags').where('tag', value);
+        tag: (query: ProjectQuery, tag: string) => {
+            return query.joinRelation('tags').where('tag', tag);
         },
-        requested_major: (query: ProjectQuery, value: string) => {
-            return query.joinRelation('requestedMajors').where('major', value);
+        requested_major: (query: ProjectQuery, major: string) => {
+            return query.joinRelation('requestedMajors').where('major', major);
         },
-        accepting_applications: (query: ProjectQuery, value: boolean) => {
+        accepting_applications: (query: ProjectQuery, _: boolean) => {
             return query.where('accepting_applications', true);
         },
-        has_advisor: (query: ProjectQuery, value: boolean) => {
-            return query.whereExists(query.joinRelation('advisors').where('projectId', 'id'));
+        has_advisor: (query: ProjectQuery, _: boolean) => {
+            //must be distinct to avoid duplicating projects with multiple advisors
+            return query.joinRelation('advisors').distinct('projects.*');
         }
     }
 
-    //TODO: find a better way to do this
-    function sortOutput(query: ProjectQuery, sorts: SortParams): ProjectQuery {
-        if (sorts.sort_by === 'new') {
-            return sorts.order ? query.orderBy('created_at', 'desc') : query.orderBy('created_at');
+    const sorting = {
+        new: (query: ProjectQuery, order: string | undefined) => {
+            return addOrdering(query, 'created_at', order);
+        },
+        popular: (query: ProjectQuery, order: string | undefined) => {
+            query.select(['projects.*', Project.relatedQuery('stars').count().as('popularity')])
+            return addOrdering(query, 'popularity', order);
         }
-        if (sorts.sort_by === 'popular') {
-            query.joinRelation('stars').where('projectId', 'id').count('users.id as popularity');
-            return sorts.order ? query.orderBy('popularity', 'desc') : query.orderBy('popularity')
-        }
-        return query;
+    }
+
+    function addOrdering(query: ProjectQuery, column: string, order: string | undefined): ProjectQuery {
+        if (order)
+            return query.orderBy(column, 'desc');
+        else
+            return query.orderBy(column);
     }
 
     export class Repository {
 
-        constructor(config: knex.Config) {
-            Model.knex(knex(config));
+        constructor(knex: Knex<any, unknown[]>) {
+            Model.knex(knex);
         }
 
         public async getProjectStubs(filters: FilterParams, sorts: SortParams) {
             const query = Project.query();
-            for(let param of Object.keys(filters)) {
-                mapping[param](query, filters[param]);
+            for(let filter of Object.keys(filters)) {
+                filtering[filter](query, filters[filter]);
             }
 
-            //tack on the sorting parameters
-            sortOutput(query, sorts);
+            // tack on the sorting parameters
+            const { order, sort_by } = sorts;
+            if (sort_by) {
+                sorting[sort_by](query, order);
+            }
 
             //always chop amount to 25 items
-            query.limit(25);
-
-            return await query;
+            return await query.limit(25);
         }
 
         // allow a NotFoundError to pass back to the client if not found
@@ -82,15 +78,15 @@ export namespace Access {
             return await Project.query().insert(project);
         }
 
-        // TODO: should be patching it
-        // https://vincit.github.io/objection.js/guide/query-examples.html#update-queries
+        // * idempotency: go ahead and just reprocess it.  If it is the
+        // * same request, it will not alter the object.
         public async updateProject(project: ProjectSchema) {
-            return await Project.query().update(project);
+            return await Project.query().patch(project);
         }
 
         // * idempotency: if you go to delete and the item is not found,
         // * just return a 200.
-        public async deleteProject(id: string): Promise<void> {
+        public async deleteProject(id: string) {
             try {
                 await Project.query().deleteById(id).throwIfNotFound();
             } catch (e) {

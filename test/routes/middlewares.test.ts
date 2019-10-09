@@ -14,9 +14,9 @@ describe('The request validation middleware', () => {
         //fragile test, be careful modifying built schemas
         const validator = Verified('project');
 
-        const params: Request = {
-            body: {} //invalid for schema
-        } as any
+        const params = {
+            body: {} // invalid for schema
+        }
 
         const req: any = mockReq(params);
         const res: any = mockRes();
@@ -31,7 +31,7 @@ describe('The request validation middleware', () => {
 describe('The error handling middleware', () => {
     
     test('passes on errors that are not checked for', () => {
-        const handler = HandleErrors([InternalError]);
+        const handler = HandleErrors([ InternalError ]);
 
         const req: any = mockReq();
         const res: any = mockRes();
@@ -43,7 +43,7 @@ describe('The error handling middleware', () => {
     })
 
     test('handles errors which are checked for', () => {
-        const handler = HandleErrors([InternalError]);
+        const handler = HandleErrors([ InternalError ]);
 
         const req: any = mockReq();
         const res: any = mockRes();
