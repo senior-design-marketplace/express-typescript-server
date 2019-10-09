@@ -59,6 +59,7 @@
     "ajv-merge-patch": "^4.1.0",
     "ajv-pack": "^0.3.1",
     "claudia": "^5.8.0",
+    "faker": "^4.1.0",
     "fs-extra": "^8.1.0",
     "jest": "^24.9.0",
     "json-schema-merge-allof": "^0.7.0",

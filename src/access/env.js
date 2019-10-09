@@ -9,7 +9,7 @@ async function writeSecrets() {
     const config = secrets[env];
     try {
         await fse.writeJson(join(__dirname, './env.json'), config, { spaces: '\t' });
-        console.log('Successfully exported environment information');
+        console.log(`Successfully exported environment information for: ${env}`);
     } catch (e) {
         console.error(e);
     }
