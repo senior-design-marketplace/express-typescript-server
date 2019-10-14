@@ -2,9 +2,20 @@ language: node_js
 node_js:
   - node
 before_script:
-  - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d  
+  - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d
   - npm run db:export:stage
   - npm run db:deploy:local
   - npm run db:deploy:stage
   - npm run schema:bundle
 script: npm run test:integ:stage
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: npm run claudia:deploy:stage
+    on:
+      branch: staging
+  - provider: script
+    skip_cleanup: true
+    script: npm run claudia:promote:production
+    on:
+      branch: master
