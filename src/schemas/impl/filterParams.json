@@ -1,29 +1,31 @@
 {
-    "title": "FilterParams",
-    "description": "Filtering parameters to use when retrieving information from a database",
-    "type": "object",
-    "properties": {
-        "tag": {
-            "description": "A tag to filter off of",
-            "$ref": "tag.json#"
-        },
-        "advisor_id": {
-            "description": "The id of an advisor",
-            "type": "string",
-            "format": "uuid"
-        },
-        "has_advisor": {
-            "description": "Whether or not the project has an advisor guiding it",
-            "type": "boolean"
-        },
-        "requested_major": {
-            "description": "A major of students that the project has requested",
-            "type": "string"
-        },
-        "accepting_applications": {
-            "description": "Whether or not the project is accepting applications",
-            "type": "boolean"
-        }
-    },
-    "additionalProperties": false
+	"title": "FilterParams",
+	"description": "Filtering parameters to use when retrieving information from a database",
+	"type": "object",
+	"properties": {
+		"tag": {
+			"description": "A tag to filter off of",
+			"$ref": "tag.json#"
+		},
+		"advisor_id": {
+			"description": "The id of an advisor",
+			"type": "string",
+			"format": "uuid"
+		},
+		"has_advisor": {
+			"description": "Whether or not the project has an advisor guiding it",
+			"type": "string",
+			"maxLength": 0
+		},
+		"requested_major": {
+			"description": "A major of students that the project has requested",
+			"type": "string"
+		},
+		"accepting_applications": {
+			"description": "Whether or not the project is accepting applications",
+			"type": "string",
+			"maxLength": 0
+		}
+	},
+	"additionalProperties": false
 }

@@ -1,38 +1,36 @@
 {
-    "title": "User",
-    "description": "A person who is using the Senior Design Marketplace system",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "The Cognito identity of the user",
-            "type": "string",
-            "pattern": "^(?:us(?:-gov)?|ap|ca|cn|eu|sa)-(?:central|(?:north|south)?(?:east|west)?)-\\d:[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$"
-        },
-        "firstName": {
-            "description": "The first name of the user",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-        },
-        "lastName": {
-            "description": "The last name of the user",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-        },
-        "email": {
-            "description": "The user's email address",
-            "type": "string",
-            "format": "email"
-        },
-        "avatar": {
-            "description": "A small photo of the user",
-            "type": "string",
-            "contentEncoding": "base64",
-            "contentMediaType": "image/png"
-        }
-    },
-    "required": [
-        "id"
-    ]
+	"title": "User",
+	"description": "A person who is using the Senior Design Marketplace system",
+	"type": "object",
+	"properties": {
+		"id": {
+			"description": "The Cognito identity of the user",
+			"type": "string",
+			"pattern": "^(?:us(?:-gov)?|ap|ca|cn|eu|sa)-(?:central|(?:north|south)?(?:east|west)?)-\\d:[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$"
+		},
+		"firstName": {
+			"description": "The first name of the user",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"lastName": {
+			"description": "The last name of the user",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"email": {
+			"description": "The user's email address",
+			"type": "string",
+			"format": "email"
+		},
+		"avatar": {
+			"description": "A small photo of the user",
+			"type": "string",
+			"contentEncoding": "base64",
+			"contentMediaType": "image/png"
+		}
+	},
+	"required": ["id"]
 }

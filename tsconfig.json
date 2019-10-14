@@ -1,24 +1,19 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "outDir": "build",
-      "strict": true,
-      "removeComments": true,
-      "experimentalDecorators": true,
-      "emitDecoratorMetadata": true,
-      "noImplicitAny": false, //some generated code produces js which when imported throws 'implicit any' errors
-      "esModuleInterop": true,
-      "resolveJsonModule": true,
-      "allowJs": true
-    },
-    "include": [
-      "src/**/*"
-    ],
-    //keep build steps out of deployment
-    "exclude": [
-        "src/schemas/bundle.ts",
-        "src/access/export.ts"
-    ]
-  }
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"outDir": "build",
+		"strict": true,
+		"removeComments": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"noImplicitAny": false, //some generated code produces js which when imported throws 'implicit any' errors
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"allowJs": true
+	},
+	"include": ["src/**/*"],
+	//keep build steps out of deployment
+	"exclude": ["src/schemas/bundle.ts", "src/access/export.ts"]
+}

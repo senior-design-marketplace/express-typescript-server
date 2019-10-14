@@ -1,15 +1,13 @@
 {
-    "title": "Sponsor",
-    "description": "An entity helping to facilitate a project",
-    "type": "object",
-    "properties": {
-        "name": {
-            "description": "The name of the sponsor",
-            "minLength": 1,
-            "maxLength": 256
-        }
-    },
-    "required": [
-        "name"
-    ]
+	"title": "Sponsor",
+	"description": "An entity helping to facilitate a project",
+	"type": "object",
+	"properties": {
+		"name": {
+			"description": "The name of the sponsor",
+			"minLength": 1,
+			"maxLength": 256
+		}
+	},
+	"required": ["name"]
 }
