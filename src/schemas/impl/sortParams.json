@@ -1,25 +1,20 @@
 {
-    "title": "SortParams",
-    "description": "Query parameters to sort results of queries by",
-    "type": "object",
-    "properties": {
-        "sort_by": {
-            "description": "Sort the output of the query",
-            "enum": [
-                "new",
-                "popular"
-            ]
-        },
-        "order": {
-            "description": "Order the output of the query",
-            "enum": [
-                "reverse"
-            ]
-        },
-        "next": {
-            "description": "Pagination token to get next page of results",
-            "type": "string"
-        }
-    },
-    "additionalProperties": false
+	"title": "SortParams",
+	"description": "Query parameters to sort results of queries by",
+	"type": "object",
+	"properties": {
+		"sort_by": {
+			"description": "Sort the output of the query",
+			"enum": ["new", "popular"]
+		},
+		"order": {
+			"description": "Order the output of the query",
+			"enum": ["reverse"]
+		},
+		"next": {
+			"description": "Pagination token to get next page of results",
+			"type": "string"
+		}
+	},
+	"additionalProperties": false
 }

@@ -14,5 +14,5 @@ lambda.js
 dev.db
 
 # secrets
-knexfile.js
+knexfile.ts
 env.json

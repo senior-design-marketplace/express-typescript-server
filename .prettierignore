@@ -1,0 +1,12 @@
+# local testing db
+dev.db
+
+# encrypted secrets
+knexfile.ts.enc
+
+# production code
+build
+
+# ignores
+.prettierignore
+.gitignore

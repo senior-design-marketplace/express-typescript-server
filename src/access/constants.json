@@ -1,4 +1,104 @@
 {
-    "SMALL": 64,
-    "MEDIUM": 256
+	"tables": {
+		"projects": {
+			"columns": {
+				"id": "id",
+				"title": "title",
+				"tagline": "tagline",
+				"acceptingApplications": "accepting_applications",
+				"createdAt": "created_at",
+				"thumbnailLink": "thumbnail_link"
+			}
+		},
+		"boardItems": {
+			"columns": {
+				"id": "id",
+				"document": "document",
+				"createdAt": "created_at",
+				"updatedAt": "updated_at",
+				"projectId": "project_id"
+			}
+		},
+		"majorsValues": {
+			"columns": {
+				"value": "value"
+			}
+		},
+		"majors": {
+			"columns": {
+				"projectId": "project_id",
+				"major": "major"
+			}
+		},
+		"tagsValues": {
+			"columns": {
+				"value": "value"
+			}
+		},
+		"tags": {
+			"columns": {
+				"projectId": "project_id",
+				"tag": "tag"
+			}
+		},
+		"users": {
+			"columns": {
+				"id": "id",
+				"firstName": "first_name",
+				"lastName": "last_name",
+				"email": "email",
+				"bio": "bio",
+				"thumbnailLink": "thumbnail_link"
+			}
+		},
+		"stars": {
+			"columns": {
+				"projectId": "project_id",
+				"userId": "user_id"
+			}
+		},
+		"contributors": {
+			"columns": {
+				"projectId": "project_id",
+				"userId": "user_id"
+			}
+		},
+		"administrators": {
+			"columns": {
+				"projectId": "project_id",
+				"userId": "user_id"
+			}
+		},
+		"advisors": {
+			"columns": {
+				"projectId": "project_id",
+				"userId": "user_id"
+			}
+		},
+		"statuses": {
+			"columns": {
+				"value": "value"
+			}
+		},
+		"requests": {
+			"columns": {
+				"id": "id",
+				"updatedAt": "updated_at",
+				"advisorId": "advisor_id",
+				"requestedById": "requested_by_id",
+				"status": "status"
+			}
+		},
+		"applications": {
+			"columns": {
+				"id": "id",
+				"updatedAt": "updated_at",
+				"projectId": "project_id",
+				"userId": "user_id",
+				"status": "status"
+			}
+		}
+	},
+	"SMALL": 64,
+	"MEDIUM": 256
 }
