@@ -10,7 +10,7 @@
 		"prettier": "prettier --write './**/*.*' --ignore-path ./.prettierignore --use-tabs true",
 		"test:integ:local": "cross-env NODE_ENV=test npm run test:integ:child",
 		"test:integ:stage": "cross-env NODE_ENV=staging npm run test:integ:child",
-		"test:integ:child": "npm run db:export:child && tsc && npm run claudia:build && jest -c jest.config.integ.js",
+		"test:integ:child": "npm run db:export:child && tsc && npm run claudia:build && jest -c jest.config.integ.js --forceExit",
 		"test:unit": "jest -c jest.config.unit.js",
 		"schema:bundle": "ts-node src/schemas/bundle",
 		"claudia:build": "claudia generate-serverless-express-proxy --express-module build/app",
