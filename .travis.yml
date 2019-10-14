@@ -2,11 +2,9 @@ language: node_js
 node_js:
   - node
 before_script:
-  - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.js.enc -out knexfile.js -d
-  - npm run export-db-env
-  - npm run deploy-db-local
-  - npm run deploy-db-stage
-  - npm run bundle
-  - tsc
-  - npm run claudia
-script: npm run integ-stage
+  - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d  
+  - npm run db:export:stage
+  - npm run db:deploy:local
+  - npm run db:deploy:stage
+  - npm run schema:bundle
+script: npm run test:integ:stage

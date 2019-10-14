@@ -1,64 +1,61 @@
 {
-    "title": "Project",
-    "description": "A work made by some group of people to achieve something in the Senior Design Marketplace",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "The unique identifier for the project",
-            "type": "string",
-            "format": "uuid"
-        },
-        "title": {
-            "description": "The title of the project",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-        },
-        "body": {
-            "description": "The body of the description",
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 2048
-        },
-        "descriptionAttributes": {
-            "description": "The description of the project",
-            "$ref": "descriptionAttributes.json#"
-        },
-        "tags": {
-            "description": "Tags associated with the project",
-            "type": "array",
-            "minItems": 0,
-            "items": {
-                "$ref": "tag.json#"
-            }
-        },
-        "thumbnailLink": {
-            "description": "A small picture to represent the project",
-            "type": "string",
-            "contentEncoding": "base64",
-            "contentMediaType": "image/png"
-        },
-        "advisor": {
-            "description": "The advisor for the project",
-            "$ref": "user.json#"
-        },    
-        "requested_majors": {
-            "type": "array",
-            "items": {
-                "$ref": "major.json#"
-            }
-        },    
-        "accepting_applications": {
-            "description": "A flag set by the advisor to prevent further applications",
-            "type": "boolean"
-        },
-        "stars": {
-            "type": "number",
-            "minValue": 0
-        }
-    },
-    "required": [
-        "title",
-        "body"
-    ]
+	"title": "Project",
+	"description": "A work made by some group of people to achieve something in the Senior Design Marketplace",
+	"type": "object",
+	"properties": {
+		"id": {
+			"description": "The unique identifier for the project",
+			"type": "string",
+			"format": "uuid"
+		},
+		"title": {
+			"description": "The title of the project",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"body": {
+			"description": "The body of the description",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 2048
+		},
+		"descriptionAttributes": {
+			"description": "The description of the project",
+			"$ref": "descriptionAttributes.json#"
+		},
+		"tags": {
+			"description": "Tags associated with the project",
+			"type": "array",
+			"minItems": 0,
+			"items": {
+				"$ref": "tag.json#"
+			}
+		},
+		"thumbnailLink": {
+			"description": "A small picture to represent the project",
+			"type": "string",
+			"contentEncoding": "base64",
+			"contentMediaType": "image/png"
+		},
+		"advisor": {
+			"description": "The advisor for the project",
+			"$ref": "user.json#"
+		},
+		"requested_majors": {
+			"type": "array",
+			"items": {
+				"$ref": "major.json#"
+			}
+		},
+		"accepting_applications": {
+			"description": "A flag set by the advisor to prevent further applications",
+			"type": "boolean"
+		},
+		"stars": {
+			"type": "number",
+			"minValue": 0
+		}
+	},
+	"required": ["title", "body"]
 }
