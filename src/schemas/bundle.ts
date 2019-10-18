@@ -26,10 +26,7 @@ async function bundle() {
 		try {
 			// validator functions
 			const bundledSchema = await $RefParser.bundle(join(inputDirectory, file));
-			const mergedSchema = mergeAllOf(bundledSchema, {
-				ignoreAdditionalProperties: true
-			});
-			const validator = pack(ajv, ajv.compile(mergedSchema));
+			const validator = pack(ajv, ajv.compile(bundledSchema));
 			fileWriting.push(
 				outputFile(fileNameWithoutExtension + extensions.js, validator)
 			);

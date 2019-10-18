@@ -1,6 +1,6 @@
 {
-	"title": "Project",
-	"description": "A work made by some group of people to achieve something in the Senior Design Marketplace",
+    "title": "Project",
+	"description": "An effort made by some group of people to achieve something in the Marqetplace",
 	"type": "object",
 	"properties": {
 		"id": {
@@ -13,16 +13,22 @@
 			"type": "string",
 			"minLength": 1,
 			"maxLength": 256
-		},
+        },
+        "tagline": {
+            "description": "A short description of the project",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+        },
 		"body": {
 			"description": "The body of the description",
 			"type": "string",
 			"minLength": 1,
 			"maxLength": 2048
-		},
-		"descriptionAttributes": {
-			"description": "The description of the project",
-			"$ref": "descriptionAttributes.json#"
+        },
+        "thumbnailLink": {
+			"description": "A link to a small picture to represent the project",
+			"type": "string"
 		},
 		"tags": {
 			"description": "Tags associated with the project",
@@ -31,31 +37,19 @@
 			"items": {
 				"$ref": "tag.json#"
 			}
-		},
-		"thumbnailLink": {
-			"description": "A small picture to represent the project",
-			"type": "string",
-			"contentEncoding": "base64",
-			"contentMediaType": "image/png"
-		},
-		"advisor": {
-			"description": "The advisor for the project",
-			"$ref": "user.json#"
-		},
-		"requested_majors": {
-			"type": "array",
+        },
+        "requestedMajors": {
+            "description": "Majors of students that are needed for the project",
+            "type": "array",
+            "minItems": 0,
 			"items": {
 				"$ref": "major.json#"
 			}
 		},
-		"accepting_applications": {
-			"description": "A flag set by the advisor to prevent further applications",
+		"acceptingApplications": {
+			"description": "A flag set by the advisor to prevent or enable further applications",
 			"type": "boolean"
-		},
-		"stars": {
-			"type": "number",
-			"minValue": 0
-		}
+        }
 	},
-	"required": ["title", "body"]
+	"required": ["title", "tagline"]
 }

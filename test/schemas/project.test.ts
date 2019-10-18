@@ -9,15 +9,15 @@ describe("A project is", () => {
 	test("not valid with an empty title", () => {
 		const instance = {
 			title: "",
-			body: "test"
+			tagline: "test"
 		};
 		expect(validate(instance)).toBe(false);
 	});
 
-	test("valid with a title and body", () => {
+	test("valid with a title and tagline", () => {
 		const instance = {
 			title: "test",
-			body: "test"
+			tagline: "test"
 		};
 		expect(validate(instance)).toBe(true);
 	});

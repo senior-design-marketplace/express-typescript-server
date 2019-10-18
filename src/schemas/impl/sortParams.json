@@ -15,6 +15,5 @@
 			"description": "Pagination token to get next page of results",
 			"type": "string"
 		}
-	},
-	"additionalProperties": false
+	}
 }
