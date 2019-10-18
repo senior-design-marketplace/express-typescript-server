@@ -4,9 +4,8 @@
 	"type": "object",
 	"properties": {
 		"id": {
-			"description": "The Cognito identity of the user",
-			"type": "string",
-			"pattern": "^(?:us(?:-gov)?|ap|ca|cn|eu|sa)-(?:central|(?:north|south)?(?:east|west)?)-\\d:[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$"
+			"description": "The identity of the user",
+			"type": "string"
 		},
 		"firstName": {
 			"description": "The first name of the user",
@@ -25,11 +24,9 @@
 			"type": "string",
 			"format": "email"
 		},
-		"avatar": {
-			"description": "A small photo of the user",
-			"type": "string",
-			"contentEncoding": "base64",
-			"contentMediaType": "image/png"
+		"avatarLink": {
+			"description": "A link to a small photo of the user",
+			"type": "string"
 		}
 	},
 	"required": ["id"]

@@ -41,12 +41,12 @@ describe("Query params for a project are", () => {
 		expect(validate(instance)).toBe(false);
 	});
 
-	test("not valid with an extraneous option", () => {
+	test("valid with an extraneous option", () => {
 		const instance = {
 			foo: "bar"
 		};
 
-		expect(validate(instance)).toBe(false);
+		expect(validate(instance)).toBe(true);
 	});
 
 	test("valid with no options", () => {

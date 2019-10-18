@@ -1,5 +1,5 @@
 {
-	"title": "QueryParams",
+    "title": "QueryParams",
 	"description": "Basic query parameters to filter and sort incoming data off of",
 	"allOf": [{ "$ref": "filterParams.json#" }, { "$ref": "sortParams.json#" }]
 }

@@ -1,5 +1,5 @@
 {
-	"title": "Major",
+    "title": "Major",
 	"description": "A major offered by the university",
 	"enum": [
 		"Software Engineering",

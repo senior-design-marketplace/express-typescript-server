@@ -19,13 +19,12 @@
 		},
 		"requested_major": {
 			"description": "A major of students that the project has requested",
-			"type": "string"
+			"$ref": "major.json#"
 		},
 		"accepting_applications": {
 			"description": "Whether or not the project is accepting applications",
 			"type": "string",
 			"maxLength": 0
 		}
-	},
-	"additionalProperties": false
+	}
 }
