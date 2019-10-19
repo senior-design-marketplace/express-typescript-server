@@ -16,3 +16,6 @@ dev.db
 # secrets
 knexfile.ts
 env.json
+
+# editor
+.vscode
