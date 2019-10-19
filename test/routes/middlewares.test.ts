@@ -1,17 +1,9 @@
-import {
-	RequiresAuth,
-	Verified,
-	HandleErrors
-} from "../../src/routes/middlewares";
+import { RequiresAuth, Verified, HandleErrors } from "../../src/routes/middlewares";
 import { mockReq, mockRes } from "sinon-express-mock";
 import { Request, Response } from "express";
 import sinon, { SinonStub } from "sinon";
 import assert from "assert";
-import {
-	BadRequestError,
-	InternalError,
-	AuthenticationError
-} from "../../src/error/error";
+import { BadRequestError, InternalError, AuthenticationError } from "../../src/error/error";
 
 describe("The request validation middleware", () => {
 	test("throws an error for unknown schemas", () => {
@@ -20,7 +12,7 @@ describe("The request validation middleware", () => {
 
 	test("passes a BadRequestError for invalid requests", () => {
 		//fragile test, be careful modifying built schemas
-		const validator = Verified("project");
+		const validator = Verified("Project");
 
 		const params = {
 			body: {} // invalid for schema
