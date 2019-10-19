@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/queryParams";
+
 describe("Query params for a project are", () => {
-	const validate = require("../../src/schemas/build/queryParams");
 
 	test("not valid with two sorting options", () => {
 		const instance = {

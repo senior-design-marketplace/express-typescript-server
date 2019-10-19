@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/filterParams";
+
 describe("Filter params for a project are", () => {
-	const validate = require("../../src/schemas/build/filterParams");
 
 	test("not valid with an invalid tag", () => {
 		const instance = {

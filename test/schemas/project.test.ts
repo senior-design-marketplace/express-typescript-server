@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/project";
+
 describe("A project is", () => {
-	const validate = require("../../src/schemas/build/project");
 
 	test("not valid without a title or description", () => {
 		const instance = {};
