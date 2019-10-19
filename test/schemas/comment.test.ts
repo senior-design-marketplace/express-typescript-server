@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/comment";
+
 describe("A comment is", () => {
-	const validate = require("../../src/schemas/build/comment");
 
 	test("not valid without any content", () => {
 		const instance = {};

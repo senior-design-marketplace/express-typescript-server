@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/sponsor";
+
 describe("A sponsor is", () => {
-	const validate = require("../../src/schemas/build/sponsor");
 
 	test("not valid without a name", () => {
 		const instance = {};

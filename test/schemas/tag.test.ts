@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/tag";
+
 describe("A tag is", () => {
-	const validate = require("../../src/schemas/build/tag");
 
 	test("not valid if empty", () => {
 		const instance = "";

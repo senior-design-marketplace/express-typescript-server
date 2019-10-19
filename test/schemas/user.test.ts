@@ -1,5 +1,6 @@
+import validate from "../../src/schemas/build/validators/user";
+
 describe("A user is", () => {
-	const validate = require("../../src/schemas/build/user");
 
 	test("not valid without an id", () => {
 		const instance = {};

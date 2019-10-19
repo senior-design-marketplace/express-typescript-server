@@ -14,7 +14,7 @@ import { Verified } from "../middlewares";
 import { OK } from "http-status-codes";
 import { Access } from "../../access/dao";
 import asyncHandler from "express-async-handler";
-import { FilterParams, SortParams } from "../../schemas/build/queryParams";
+import { FilterParams, SortParams } from "../../schemas/build/types/queryParams";
 
 @ClassWrapper(asyncHandler)
 @Controller("projects")
