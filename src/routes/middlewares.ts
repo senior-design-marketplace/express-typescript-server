@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, BadRequestError } from "../error/error";
 import CodedError from "../error/CodedError";
+import ProjectValidator from '../schemas/build/validators/project';
+import QueryParamsValidator from '../schemas/build/validators/queryParams';
+
+import { keys } from 'ts-transformer-keys';
+import { Project } from '../schemas/build/types/project';
+import { QueryParams } from "../schemas/build/types/queryParams";
+import _ from 'lodash';
 
 //TODO: handle idempotency as a middleware
 export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
@@ -21,31 +28,48 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
 	}
 };
 
+interface Extractor {
+    validator: (obj) => boolean,
+    extract: (string | number)[]
+}
+
+const extractors: Record<string, Extractor> = {
+    'Project': {
+        validator: ProjectValidator,
+        extract: keys<Project>()
+    },
+    'QueryParams': {
+        validator: QueryParamsValidator,
+        extract: keys<QueryParams>()
+    }
+}
+
+// extend the request interface to support our verified object
+declare global {
+    namespace Express {
+        export interface Request {
+            verified?: any
+        }
+    }
+}
+
 //provide a middleware to the calling route to verify incoming requests against
 //a known JSON schema
 export function Verified(schema: string, query?: boolean) {
-	const validators = {
-		project: require("../schemas/build/project"),
-		queryParams: require("../schemas/build/queryParams")
-	};
-
 	return (req: Request, res: Response, next: any) => {
-		//first, go get the bundled schema for this model (maybe later for this route?  Could we auto-infer this somehow?)
-		const validator = validators[schema];
+		//first, go get the bundled schema for this model
+		const validator = extractors[schema]?.validator;
 		if (!validator)
-			throw new Error(
-				`Unknown schema for name ${schema}, did you add this in ${__filename}?`
-			);
+			throw new Error(`Unknown schema for name ${schema}, did you add this in ${__filename}?`);
 
 		const validatee = query ? req.query : req.body;
 
 		//if the request isn't valid, pass the error onto the handler
 		if (!validator(validatee)) {
-			console.log(
-				`${req.method} request on ${req.path} failed validation against schema: ${schema}`
-			);
+			console.log(`${req.method} request on ${req.path} failed validation against schema: ${schema}`);
 			next(new BadRequestError(`Malformed request`));
 		} else {
+            req.verified = _.pick(req.body, extractors[schema].extract);
 			next();
 		}
 	};
