@@ -69,7 +69,7 @@ export function Verified(schema: string, query?: boolean) {
 			console.log(`${req.method} request on ${req.path} failed validation against schema: ${schema}`);
 			next(new BadRequestError(`Malformed request`));
 		} else {
-            req.verified = _.pick(req.body, extractors[schema].extract);
+            req.verified = _.pick(validatee, ...extractors[schema].extract);
 			next();
 		}
 	};
