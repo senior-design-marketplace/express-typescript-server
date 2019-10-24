@@ -1,7 +1,7 @@
 import Project from "./models/project";
 import Knex from "knex";
-import { Project as ProjectSchema } from "../schemas/build/types/project";
-import { SortParams, FilterParams } from "../schemas/build/types/queryParams";
+import { ProjectMaster as ProjectSchema } from "../schemas/build/project/projectMaster/type";
+import { SortParams, FilterParams } from "../schemas/build/queryParams/type";
 import { Model, QueryBuilder } from "objection";
 import { NotFoundError } from "../error/error";
 import * as constants from "./constants.json";

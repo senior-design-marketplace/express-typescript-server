@@ -12,7 +12,7 @@ describe("The request validation middleware", () => {
 
 	test("passes a BadRequestError for invalid requests", () => {
 		//fragile test, be careful modifying built schemas
-		const validator = Verified("Project");
+		const validator = Verified("ProjectImmutable");
 
 		const params = {
 			body: {} // invalid for schema

@@ -1,6 +1,6 @@
 {
-	"title": "Tag",
-	"description": "A tag attached to a project denoting some interest.  All majors are tags by default",
+    "title": "Tag",
+    "description": "A tag attached to a project denoting some interest.  All majors are tags by default",
 	"oneOf": [
 		{
 			"$ref": "major.json"

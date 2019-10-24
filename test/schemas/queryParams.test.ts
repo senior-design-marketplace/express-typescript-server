@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/validators/queryParams";
+import validate from "../../src/schemas/build/queryParams/validator";
 
 describe("Query params for a project are", () => {
 
