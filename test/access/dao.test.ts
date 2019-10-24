@@ -8,6 +8,10 @@ import Project from "../../src/access/models/project";
 const knex: Knex<any, any> = Knex(Config.test);
 const repository = new Access.Repository(knex);
 
+beforeAll(async () => {
+    await knex.seed.run();
+})
+
 // setup to test locally, this takes on a sort of integration test
 // style, as we cannot really mock out the access layer
 describe("The access layer", () => {
@@ -35,8 +39,8 @@ describe("The access layer", () => {
 			sort_by: "new"
 		};
 
-		const response = await repository.getProjectStubs(filters, sorts);
-		const dates = extract(response, "created_at");
+        const response = await repository.getProjectStubs(filters, sorts);
+        const dates = extract(response, "created_at");
 		assertOrder(dates, true);
 	});
 
@@ -81,7 +85,7 @@ describe("The access layer", () => {
 
 	function extract(data: Project[], field: string): any[] {
 		return data.map((project: Project) => {
-			const json = project.toJSON();
+            const json = project.toJSON();
 			return json[field];
 		});
 	}
