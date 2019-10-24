@@ -19,8 +19,8 @@ test("Run a sample test", async () => {
 		queryStringParameters: {
 			accepting_applications: null
 		}
-	});
-
+    });
+    
 	expect(response.statusCode).toBe(200);
 });
 
@@ -52,7 +52,7 @@ test("Provide a boolean query parameter", async () => {
 
 test("Create a new project", async () => {
 	const response: any = await runner.runEvent({
-		httpMethod: "POST",
+        httpMethod: "POST",
         headers: {
             "content-type": "application/json"
         },
@@ -67,6 +67,38 @@ test("Create a new project", async () => {
 
 	expect(response.statusCode).toBe(200);
 });
+
+test("Update the title of a project", async () => {
+    //dual POST should work via idempotency
+    const create: any = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: "00000000-0000-0000-0000-000000000000",
+            title: "Unga bunga me make marqetplace bunga bunga",
+            tagline: "Ong brother find shiny rock many year ago. He make it into cup. He drink from cup. Now Ong brother no think good. Ong think he no get enough magic potato juice, but other tribe man think it because of shiny cup. Why Ong brother dumb now?"
+        }),
+        path: "/projects",
+        queryStringParameters: {}
+    })
+
+    const update: any = await runner.runEvent({
+        httpMethod: "PATCH",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            title: "Ooga booga, Grung make update"
+        }),
+        path: "/projects/00000000-0000-0000-0000-000000000000",
+        queryStringParameters: {}
+    })
+
+    expect(create.statusCode).toBe(200);
+    expect(update.statusCode).toBe(200);
+})
 
 test("Get a specific project which does not exist", async () => {
 	const response: any = await runner.runEvent({

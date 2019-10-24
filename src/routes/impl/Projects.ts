@@ -1,4 +1,4 @@
-import { Controller, Middleware, Get, Post, Put, Delete, ClassWrapper, Wrapper } from "@overnightjs/core";
+import { Controller, Middleware, Get, Post, Patch, Delete, ClassWrapper, Wrapper } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { RequiresAuth } from "../middlewares";
 import { Verified } from "../middlewares";
@@ -44,10 +44,11 @@ export default class ProjectsController {
 		res.status(OK).json(output);
 	}
 
-    @Put(":id")
-    @Middleware([RequiresAuth])
+    @Patch(":id")
+    @Middleware([RequiresAuth, Verified("ProjectMutable")])
 	public async updateProject(req: Request, res: Response) {
-		res.status(OK);
+        await this.repository.updateProject(req.params.id, req.verified);
+		res.sendStatus(OK);
 	}
 
 	@Delete(":id")
