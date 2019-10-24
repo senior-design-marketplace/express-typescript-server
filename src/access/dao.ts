@@ -85,30 +85,27 @@ export namespace Access {
 				.throwIfNotFound();
 		}
 
-		// * idempotency: if you go to delete and the item is not found,
-		// * just return a 200.
+        // * idempotency: if you go to insert and the primary key
+        // * fails, succeed anyways
 		public async createProject(project: ProjectSchema) {
-			return await Project.query().insert(project);
+			try {
+                await Project.query().insert(project);
+            } catch (e) {
+                // nothing
+            }
 		}
 
 		// * idempotency: go ahead and just reprocess it.  If it is the
 		// * same request, it will not alter the object.
-		public async updateProject(project: ProjectSchema) {
-			return await Project.query().patch(project);
+		public async updateProject(id: string, project: ProjectSchema) {
+			await Project.query().findById(id).patch(project).throwIfNotFound();
 		}
 
 		// * idempotency: if you go to delete and the item is not found,
-		// * just return a 200.
+		// * just return a 200 -- do not throw.
 		public async deleteProject(id: string) {
-			try {
-				await Project.query()
-					.deleteById(id)
-					.throwIfNotFound();
-			} catch (e) {
-				if (e instanceof NotFoundError) {
-					return;
-				}
-			}
+            await Project.query()
+                .deleteById(id);
 		}
 	}
 }
