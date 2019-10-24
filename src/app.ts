@@ -7,14 +7,10 @@ import * as config from "./access/env.json";
 import { Server } from "@overnightjs/core";
 import { Application } from "express";
 import { HandleErrors } from "./routes/middlewares";
-import {
-	AuthenticationError,
-	BadRequestError,
-	InternalError,
-	NotFoundError
-} from "./error/error";
+import { AuthenticationError, BadRequestError, InternalError, NotFoundError } from "./error/error";
 
 import cors from "cors";
+import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import * as routes from "./routes/routes";
 
@@ -25,26 +21,33 @@ class App extends Server {
 	static repository = new Access.Repository(Knex(config));
 
 	constructor() {
-		super();
+        super();
+
+        /**
+         * enable parsing and other middlewares before routes so that
+         * they are available on the routes.
+         */
+        this.enablePreRouteMiddleware();
 		this.enableRoutes();
 
 		/**
-		 * load global middlewares LAST because they include error-handling which must
-		 * be loaded last -- otherwise a middleware that gets loaded after them which
-		 * throws will not be able to pass the error onto the handlers.
+		 * load error handling middleware last, otherwise a middleware
+         * that gets loaded after them which throws will not be able
+         * to pass the error onto the handlers.
 		 */
-		this.enableMiddleware();
-	}
+		this.enableErrorHandlingMiddleware();
+    }
+    
+    private enablePreRouteMiddleware(): void {
+        this.app.use(
+            cors(),
+            cookieParser(),
+            bodyParser.json()
+        );
+    }
 
-	/**
-	 * The ONLY middlewares that should be registered at the root level are those
-	 * which are guaranteed to be available on each and every route in the application.
-	 * Currently, those middlewares are CORS, cookie parsing, and error-handling.
-	 */
-	private enableMiddleware(): void {
+	private enableErrorHandlingMiddleware(): void {
 		this.app.use(
-			cors(),
-			cookieParser(),
 			HandleErrors([
 				AuthenticationError,
 				BadRequestError,
