@@ -1,5 +1,5 @@
 import { Access } from "../../src/access/dao";
-import { FilterParams, SortParams } from "../../src/schemas/build/types/queryParams";
+import { FilterParams, SortParams } from "../../src/schemas/build/queryParams/type";
 import Config from "../../knexfile";
 import Knex from "knex";
 import Project from "../../src/access/models/project";

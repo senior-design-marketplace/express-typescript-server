@@ -1,13 +1,8 @@
 {
-    "title": "Project",
+    "title": "ProjectMutable",
 	"description": "An effort made by some group of people to achieve something in the Marqetplace",
 	"type": "object",
 	"properties": {
-		"id": {
-			"description": "The unique identifier for the project",
-			"type": "string",
-			"format": "uuid"
-		},
 		"title": {
 			"description": "The title of the project",
 			"type": "string",
@@ -26,16 +21,12 @@
 			"minLength": 1,
 			"maxLength": 2048
         },
-        "thumbnailLink": {
-			"description": "A link to a small picture to represent the project",
-			"type": "string"
-		},
 		"tags": {
 			"description": "Tags associated with the project",
 			"type": "array",
 			"minItems": 0,
 			"items": {
-				"$ref": "tag.json#"
+				"$ref": "../tag.json"
 			}
         },
         "requestedMajors": {
@@ -43,13 +34,12 @@
             "type": "array",
             "minItems": 0,
 			"items": {
-				"$ref": "major.json#"
+				"$ref": "../major.json"
 			}
 		},
 		"acceptingApplications": {
 			"description": "A flag set by the advisor to prevent or enable further applications",
 			"type": "boolean"
         }
-	},
-	"required": ["title", "tagline"]
+    }
 }

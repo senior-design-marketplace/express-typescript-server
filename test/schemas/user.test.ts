@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/validators/user";
+import validate from "../../src/schemas/build/user/validator";
 
 describe("A user is", () => {
 

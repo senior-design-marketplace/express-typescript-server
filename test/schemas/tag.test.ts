@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/validators/tag";
+import validate from "../../src/schemas/build/tag/validator";
 
 describe("A tag is", () => {
 

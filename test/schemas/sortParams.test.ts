@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/validators/sortParams";
+import validate from "../../src/schemas/build/sortParams/validator";
 
 describe("Sort params for a project are", () => {
 

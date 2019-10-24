@@ -1,15 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthenticationError, BadRequestError } from "../error/error";
 import CodedError from "../error/CodedError";
-import ProjectValidator from '../schemas/build/validators/project';
-import QueryParamsValidator from '../schemas/build/validators/queryParams';
+import ProjectMutableValidator from '../schemas/build/project/projectMutable/validator';
+import ProjectImmutableValidator from '../schemas/build/project/projectImmutable/validator';
+import QueryParamsValidator from '../schemas/build/queryParams/validator';
 
 import { keys } from 'ts-transformer-keys';
-import { Project } from '../schemas/build/types/project';
-import { QueryParams } from "../schemas/build/types/queryParams";
+import { ProjectMutable } from '../schemas/build/project/projectMutable/type';
+import { ProjectImmutable } from '../schemas/build/project/projectImmutable/type';
+import { QueryParams } from "../schemas/build/queryParams/type";
 import _ from 'lodash';
 
-//TODO: handle idempotency as a middleware
 export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
 	try {
 		// TODO: pull in the cookie from the request header, if no cookie, throw an authentication error
@@ -20,11 +21,7 @@ export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
 
 		next();
 	} catch (e) {
-		next(
-			new AuthenticationError(
-				"Could not parse identity information from request"
-			)
-		);
+		next(new AuthenticationError("Could not parse identity information from request"));
 	}
 };
 
@@ -34,9 +31,13 @@ interface Extractor {
 }
 
 const extractors: Record<string, Extractor> = {
-    'Project': {
-        validator: ProjectValidator,
-        extract: keys<Project>()
+    'ProjectMutable': {
+        validator: ProjectMutableValidator,
+        extract: keys<ProjectMutable>()
+    },
+    'ProjectImmutable': {
+        validator: ProjectImmutableValidator,
+        extract: keys<ProjectImmutable>()
     },
     'QueryParams': {
         validator: QueryParamsValidator,

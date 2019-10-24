@@ -5,7 +5,7 @@ import { Verified } from "../middlewares";
 import { OK } from "http-status-codes";
 import { Access } from "../../access/dao";
 import asyncHandler from "express-async-handler";
-import { FilterParams, SortParams } from "../../schemas/build/types/queryParams";
+import { FilterParams, SortParams } from "../../schemas/build/queryParams/type";
 import { keys } from "ts-transformer-keys";
 import _ from 'lodash';
 
@@ -32,9 +32,9 @@ export default class ProjectsController {
 	}
 
 	@Post()
-	@Middleware([RequiresAuth, Verified("Project")])
+	@Middleware([RequiresAuth, Verified("ProjectImmutable")])
 	public async newProject(req: Request, res: Response) {
-		await this.repository.updateProject(req.verified);
+        await this.repository.createProject(req.verified);
 		res.sendStatus(OK);
 	}
 
