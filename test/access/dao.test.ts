@@ -81,7 +81,15 @@ describe("The access layer", () => {
 
 		const response = await repository.getProjectStubs(filters, sorts);
 		expect(response.length).toBeGreaterThanOrEqual(1);
-	});
+    });
+    
+    test("returns correct info when asking for project details", async () => {
+        const id = "5a4fe8c2-02c7-4596-a4a7-b7788defb8e1"; // The Matrix
+        const userId = "005cbaec-13e0-40fc-920e-bc2f5a65a74e"; // Jeremiah Smith
+
+        const response = await repository.getProjectDetails(id, userId);
+        expect(response.id).toBe(id);
+    })
 
 	function extract(data: Project[], field: string): any[] {
 		return data.map((project: Project) => {
