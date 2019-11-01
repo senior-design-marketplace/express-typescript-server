@@ -12,8 +12,8 @@ export async function up(knex: Knex): Promise<any> {
 			//required
 			table.string("title", constants.SMALL).notNullable();
 
-			table.string("tagline", constants.MEDIUM).notNullable();
-
+            table.string("tagline", constants.MEDIUM).notNullable();
+            
 			table
 				.boolean("accepting_applications")
 				.notNullable()
@@ -25,7 +25,9 @@ export async function up(knex: Knex): Promise<any> {
 				.defaultTo(knex.fn.now());
 
 			//not-required
-			table.string("thumbnail_link", constants.MEDIUM);
+            table.string("thumbnail_link", constants.MEDIUM);
+            
+            table.string("body", constants.LARGE);
 		})
 		.createTable("boardItems", table => {
 			table.uuid("id").primary();
