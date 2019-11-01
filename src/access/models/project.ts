@@ -3,7 +3,11 @@ import { join } from "path";
 import { NotFoundError } from "../../error/error";
 
 export default class Project extends Model {
-	static tableName = "projects";
+    static tableName = "projects";
+    
+    static get relatedFindQueryMutates() {
+        return false;
+    }
 
 	/**
 	 * Override to provide our own error that
@@ -54,7 +58,7 @@ export default class Project extends Model {
 		},
 
 		//many-to-many
-		contibutors: {
+		contributors: {
 			relation: Model.ManyToManyRelation,
 			modelClass: join(__dirname, "user"),
 			join: {
