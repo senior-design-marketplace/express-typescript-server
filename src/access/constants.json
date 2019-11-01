@@ -100,5 +100,6 @@
 		}
 	},
 	"SMALL": 64,
-	"MEDIUM": 256
+    "MEDIUM": 256,
+    "LARGE": 2048
 }
