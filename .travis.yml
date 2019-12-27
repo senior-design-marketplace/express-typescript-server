@@ -4,7 +4,6 @@ node_js:
 before_script:
   - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d
   - npm run db:export:stage
-  - npm run db:deploy:local
   - npm run db:deploy:stage
   - npm run schema:bundle
 script: npm run test:integ:stage
