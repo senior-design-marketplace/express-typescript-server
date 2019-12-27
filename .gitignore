@@ -10,9 +10,6 @@ api-gateway-event.json
 # claudia-generated lambda
 lambda.js
 
-# development db
-dev.db
-
 # secrets
 knexfile.ts
 env.json
