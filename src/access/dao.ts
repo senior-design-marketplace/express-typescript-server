@@ -8,8 +8,13 @@ import _ from "lodash";
 import * as constants from "./constants.json";
 import { User } from "../schemas/build/user/type";
 
+import pg from 'pg';
+
+//override postgres 64 bit ints to native 32 bit ints in Node
+pg.types.setTypeParser(20, parseInt);
+
 export namespace Access {
-	type ProjectQuery = QueryBuilder<Project, Project[], Project[]>;
+	type ProjectQuery = QueryBuilder<Project, Project[]>;
 
 	const columns = constants.tables.projects.columns;
 
