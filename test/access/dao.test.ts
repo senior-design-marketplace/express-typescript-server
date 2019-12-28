@@ -40,7 +40,7 @@ describe("The access layer", () => {
 		};
 
         const response = await repository.getProjectStubs(filters, sorts);
-        const dates = extract(response, "created_at");
+        const dates = extract(response, "created_at").map((date) => new Date(date).getTime());
 		assertOrder(dates, true);
 	});
 
@@ -52,7 +52,7 @@ describe("The access layer", () => {
 		};
 
 		const response = await repository.getProjectStubs(filters, sorts);
-		const dates = extract(response, "created_at");
+		const dates = extract(response, "created_at").map((date) => new Date(date).getTime());
 		assertOrder(dates);
 	});
 
@@ -63,7 +63,7 @@ describe("The access layer", () => {
 			order: "reverse"
 		};
 
-		const response = await repository.getProjectStubs(filters, sorts);
+        const response = await repository.getProjectStubs(filters, sorts);
 		const stars = extract(response, "popularity");
 		assertOrder(stars, true);
 	});
@@ -98,10 +98,11 @@ describe("The access layer", () => {
 		});
 	}
 
-	//FIXME: O(n^2) operation.  Please reduce to O(n).
+    // FIXME: O(n^2) operation.  Please reduce to O(n).
+    // can do this with a basic offset for loop
 	function assertOrder(data: number[], reverse?: boolean) {
-		if (data.length < 2) return;
-
+        if (data.length < 2) return;
+        
 		if (reverse) expect(data[0]).toBeGreaterThanOrEqual(data[1]);
 		else expect(data[0]).toBeLessThanOrEqual(data[1]);
 
