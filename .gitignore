@@ -13,6 +13,7 @@ lambda.js
 # secrets
 knexfile.ts
 env.json
+creds.ts
 secrets.ts
 
 # editor
