@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { AuthenticationError, BadRequestError } from "../error/error";
+import { Request, Response } from "express";
+import { Access } from '../access/dao';
+import { AuthenticationError, BadRequestError, AuthorizationError } from "../error/error";
 import CodedError from "../error/CodedError";
 import ProjectMutableValidator from '../schemas/build/project/projectMutable/validator';
 import ProjectImmutableValidator from '../schemas/build/project/projectImmutable/validator';
@@ -9,21 +10,73 @@ import { keys } from 'ts-transformer-keys';
 import { ProjectMutable } from '../schemas/build/project/projectMutable/type';
 import { ProjectImmutable } from '../schemas/build/project/projectImmutable/type';
 import { QueryParams } from "../schemas/build/queryParams/type";
+import { verify, Claims } from '../access/auth/verify';
 import _ from 'lodash';
 
+// extend the request interface to support our verified object
+declare global {
+    namespace Express {
+        export interface Request {
+            claims: Claims,
+            verified?: any
+        }
+    }
+}
+
+const extractClaims = (req: Request, next: any): void => {
+    if (!req.query.id_token)
+        next(new AuthenticationError("No token provided"));
+
+    const verificationResult = verify(req.query.id_token);
+    if (verificationResult.error) {
+        next(new AuthenticationError("Verification failed"));
+    }
+
+    req.claims = verificationResult.claims;
+}
+
 export const RequiresAuth: any = (req: Request, res: Response, next: any) => {
-	try {
-		// TODO: pull in the cookie from the request header, if no cookie, throw an authentication error
-
-		// TODO: make a call to shibboleth with the cookie
-
-		// TODO: place a user-specific key onto the incoming request and allow it to pass through
-
-		next();
-	} catch (e) {
-		next(new AuthenticationError("Could not parse identity information from request"));
-	}
+    extractClaims(req, next);
+    next();
 };
+
+export const RequiresSelf = (param: string) => {
+    return (req: Request, res: Response, next: any) => {
+        extractClaims(req, next);
+
+        if (req.claims.username !== req.params[param]) {
+            next(new AuthorizationError("Forbidden"));
+        } else {
+            next();
+        }
+    }
+}
+
+export const RequiresContributor = (repository: Access.Repository, param: string) => {
+    return async (req: Request, res: Response, next: any) => {
+        extractClaims(req, next);
+
+        const isContributor = await repository.isContributor(req.claims.username, req.params[param]);
+        if (!isContributor) {
+            next(new AuthorizationError("Forbidden"));
+        };
+        
+        next();
+    }
+}
+
+export const RequiresAdministrator = (repository: Access.Repository, param: string) => {
+    return async (req: Request, res: Response, next: any) => {
+        extractClaims(req, next);
+
+        const isAdministrator = await repository.isAdministrator(req.claims.username, req.params[param]);
+        if (!isAdministrator) {
+            next(new AuthorizationError("Forbidden"));
+        }
+
+        next();
+    }
+}
 
 interface Extractor {
     validator: (obj) => boolean,
@@ -42,15 +95,6 @@ const extractors: Record<string, Extractor> = {
     'QueryParams': {
         validator: QueryParamsValidator,
         extract: keys<QueryParams>()
-    }
-}
-
-// extend the request interface to support our verified object
-declare global {
-    namespace Express {
-        export interface Request {
-            verified?: any
-        }
     }
 }
 

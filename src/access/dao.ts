@@ -1,4 +1,6 @@
 import Project from "./models/project";
+import Contributor from "./models/contributor";
+import Administrator from "./models/administrator";
 import Knex from "knex";
 import { ProjectMaster as ProjectSchema, Tag } from "../schemas/build/project/projectMaster/type";
 import { SortParams, FilterParams } from "../schemas/build/queryParams/type";
@@ -151,5 +153,17 @@ export namespace Access {
             await Project.query()
                 .deleteById(id);
 		}
+
+        public async isContributor(userId: string, projectId: string): Promise<boolean> {
+            return Boolean(await Contributor.query()
+                .findById([projectId, userId])
+                .resultSize());
+        }
+
+        public async isAdministrator(userId: string, projectId: string): Promise<boolean> {
+            return Boolean(await Administrator.query()
+                .findById([projectId, userId])
+                .resultSize());
+        }        
 	}
 }
