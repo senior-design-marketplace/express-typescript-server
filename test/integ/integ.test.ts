@@ -1,4 +1,6 @@
 import GatewayRunner from "./local";
+import TokenFactory from './tokenFactory';
+import creds from './creds';
 
 // * the gateway runner is just a local copy of the gateway.
 // * you can configure it to point to the staging db or a local
@@ -6,9 +8,14 @@ import GatewayRunner from "./local";
 // * instance will leave open handles and prevent Jest from
 // * exiting.
 const runner: GatewayRunner = new GatewayRunner();
+const tokenFactory: TokenFactory = new TokenFactory();
+
+beforeAll(async () => {
+    await tokenFactory.login();
+});
 
 afterAll(async () => {
-	await runner.close();
+    await runner.close();
 });
 
 test("Run a sample test", async () => {
@@ -62,10 +69,12 @@ test("Create a new project", async () => {
             tagline: "Ong brother find shiny rock many year ago. He make it into cup. He drink from cup. Now Ong brother no think good. Ong think he no get enough magic potato juice, but other tribe man think it because of shiny cup. Why Ong brother dumb now?"
         }),
 		path: "/projects",
-		queryStringParameters: {}
-	});
+		queryStringParameters: {
+            id_token: tokenFactory.getToken()
+        }
+    });
 
-	expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
 });
 
 test("Update the title of a project", async () => {
@@ -81,7 +90,9 @@ test("Update the title of a project", async () => {
             tagline: "Ong brother find shiny rock many year ago. He make it into cup. He drink from cup. Now Ong brother no think good. Ong think he no get enough magic potato juice, but other tribe man think it because of shiny cup. Why Ong brother dumb now?"
         }),
         path: "/projects",
-        queryStringParameters: {}
+        queryStringParameters: {
+            id_token: tokenFactory.getToken()
+        }
     })
 
     const update: any = await runner.runEvent({
@@ -93,7 +104,9 @@ test("Update the title of a project", async () => {
             title: "Ooga booga, Grung make update"
         }),
         path: "/projects/00000000-0000-0000-0000-000000000000",
-        queryStringParameters: {}
+        queryStringParameters: {
+            id_token: tokenFactory.getToken()
+        }
     })
 
     expect(create.statusCode).toBe(200);
@@ -105,8 +118,7 @@ test("Get a specific project which does not exist", async () => {
 		httpMethod: "GET",
 		body: "",
 		path: "/projects/ffffffff-ffff-ffff-ffff-ffffffffffff",
-		queryStringParameters: {},
-		requestContext: {}
+		queryStringParameters: {}
 	});
 
 	expect(response.statusCode).toBe(404);
