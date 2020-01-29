@@ -112,7 +112,7 @@ export function Verified(schema: string, query?: boolean) {
 		//if the request isn't valid, pass the error onto the handler
 		if (!validator(validatee)) {
 			console.log(`${req.method} request on ${req.path} failed validation against schema: ${schema}`);
-			next(new BadRequestError(`Malformed request`));
+			next(new BadRequestError('Malformed request'));
 		} else {
             req.verified = _.pick(validatee, ...extractors[schema].extract);
 			next();
