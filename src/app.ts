@@ -7,7 +7,7 @@ import * as config from "./access/env.json";
 import { Server } from "@overnightjs/core";
 import { Application } from "express";
 import { HandleErrors } from "./routes/middlewares";
-import { AuthenticationError, BadRequestError, InternalError, NotFoundError } from "./error/error";
+import { AuthenticationError, AuthorizationError, BadRequestError, InternalError, NotFoundError } from "./error/error";
 
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -49,7 +49,8 @@ class App extends Server {
 	private enableErrorHandlingMiddleware(): void {
 		this.app.use(
 			HandleErrors([
-				AuthenticationError,
+                AuthenticationError,
+                AuthorizationError,
 				BadRequestError,
 				NotFoundError,
 				InternalError
