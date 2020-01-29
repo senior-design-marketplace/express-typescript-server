@@ -144,25 +144,29 @@ export namespace Access {
 		// * idempotency: go ahead and just reprocess it.  If it is the
 		// * same request, it will not alter the object.
 		public async updateProject(id: string, project: ProjectSchema) {
-			await Project.query().findById(id).patch(project).throwIfNotFound();
+            await Project.query()
+                .for(id)
+                .patch(project)
+                .throwIfNotFound();
 		}
 
 		// * idempotency: if you go to delete and the item is not found,
 		// * just return a 200 -- do not throw.
 		public async deleteProject(id: string) {
             await Project.query()
-                .deleteById(id);
-		}
+                .for(id)
+                .delete();
+        }
 
         public async isContributor(userId: string, projectId: string): Promise<boolean> {
             return Boolean(await Contributor.query()
-                .findById([projectId, userId])
+                .for([projectId, userId])
                 .resultSize());
         }
 
         public async isAdministrator(userId: string, projectId: string): Promise<boolean> {
             return Boolean(await Administrator.query()
-                .findById([projectId, userId])
+                .for([projectId, userId])
                 .resultSize());
         }        
 	}
