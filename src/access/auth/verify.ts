@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
-import secrets from './secrets';
+import { AuthenticationError } from '../../error/error';
 import * as jwk from './keys.json';
+import secrets from './secrets';
 
 export interface Claims {
     username: string,
@@ -29,63 +30,43 @@ interface ExpectedClaims {
 
 type ClaimVerificationValues = GuaranteedClaims & ExpectedClaims;
 
-interface ClaimVerificationResult {
-    claims: Claims,
-    error?: string
-}
-
 const iss = `https://cognito-idp.us-east-1.amazonaws.com/${secrets.userPoolId}`
 
-export const verify = (token: string): ClaimVerificationResult => {
-    try {
-        const sections = token.split('.');
-        if (sections.length < 2) {
-            throw new Error('token is invalid');
-        }
+export const extractClaims = (token: string): Claims => {
+    const sections = token.split('.');
+    if (sections.length < 2) {
+        throw new AuthenticationError('Token is invalid');
+    }
 
-        const header = JSON.parse(Buffer.from(sections[0], 'base64').toString('utf8'));
-        const matchedKeys = jwk.keys.filter((key) => {
-            return key.kid === header.kid;
-        });
+    const header = JSON.parse(Buffer.from(sections[0], 'base64').toString('utf8'));
+    const matchedKeys = jwk.keys.filter((key) => {
+        return key.kid === header.kid;
+    });
 
-        if (matchedKeys.length < 1) {
-            throw new Error('unknown key');
-        }
+    if (matchedKeys.length < 1) {
+        throw new AuthenticationError('Unknown key');
+    }
 
-        const claim = jwt.verify(token, jwkToPem(matchedKeys[0] as jwkToPem.RSA)) as ClaimVerificationValues;
-        const currentSeconds = Math.floor(new Date().valueOf() / 1000);
+    const claim = jwt.verify(token, jwkToPem(matchedKeys[0] as jwkToPem.RSA)) as ClaimVerificationValues;
+    const currentSeconds = Math.floor(new Date().valueOf() / 1000);
 
-        if (currentSeconds > claim.exp || currentSeconds < claim.auth_time) {
-            throw new Error('claim is expired or invalid');
-        }
+    if (currentSeconds > claim.exp || currentSeconds < claim.auth_time) {
+        throw new AuthenticationError('Claim is expired or invalid');
+    }
 
-        if (claim.iss !== iss) {
-            throw new Error('issuer mismatch')
-        }
+    if (claim.iss !== iss) {
+        throw new AuthenticationError('Issuer mismatch')
+    }
 
-        if (claim.token_use !== 'id') {
-            throw new Error('claim use is not id');
-        }
+    if (claim.token_use !== 'id') {
+        throw new AuthenticationError('Claim use is not id');
+    }
 
-        return {
-            claims: {
-                username: claim['cognito:username'],
-                givenName: claim.given_name,
-                familyName: claim.family_name,
-                email: claim.email,
-                roles: claim['custom:roles']
-            }
-        }
-    } catch (error) {
-        return {
-            claims: {
-                username: '',
-                givenName: '',
-                familyName: '',
-                email: '',
-                roles: [],
-            },
-            error
-        }
+    return {
+        username: claim['cognito:username'],
+        givenName: claim.given_name,
+        familyName: claim.family_name,
+        email: claim.email,
+        roles: claim['custom:roles']
     }
 }

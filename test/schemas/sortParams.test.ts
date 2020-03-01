@@ -1,10 +1,10 @@
-import validate from "../../src/schemas/build/sortParams/validator";
+import validate from "../../src/schemas/build/QueryParams/SortParams/validator";
 
 describe("Sort params for a project are", () => {
 
 	test("not valid with two sorting options", () => {
 		const instance = {
-			sort_by: ["new", "popular"]
+			sortBy: ["new", "popular"]
 		};
 
 		expect(validate(instance)).toBe(false);
@@ -12,7 +12,7 @@ describe("Sort params for a project are", () => {
 
 	test("not valid with an invalid sorting option", () => {
 		const instance = {
-			sort_by: "foo"
+			sortBy: "foo"
 		};
 
 		expect(validate(instance)).toBe(false);

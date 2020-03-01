@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/sponsor/validator";
+import validate from "../../src/schemas/build/Sponsor/Sponsor/validator";
 
 describe("A sponsor is", () => {
 

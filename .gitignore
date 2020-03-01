@@ -4,9 +4,6 @@ node_modules
 # production code
 build
 
-# for now, until we find a better way of testing with claudia
-api-gateway-event.json
-
 # claudia-generated lambda
 lambda.js
 

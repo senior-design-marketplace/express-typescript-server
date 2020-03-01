@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/comment/validator";
+import validate from "../../src/schemas/build/Comment/Comment/validator";
 
 describe("A comment is", () => {
 

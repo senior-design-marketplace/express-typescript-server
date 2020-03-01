@@ -1,33 +1,36 @@
 import AWS from 'aws-sdk';
 import crypto from 'crypto-js';
-import creds from './creds';
 import secrets from '../../src/access/auth/secrets';
 
 const cognito = new AWS.CognitoIdentityServiceProvider({
     region: 'us-east-1'
 });
 
-const SECRET_HASH = crypto.HmacSHA256(
-    creds.username + secrets.clientId,
-    secrets.clientSecret
-).toString(crypto.enc.Base64);
-
 export default class TokenFactory {
 
-    token!: string;
+    tokens: Record<string, string>;
 
-    public getToken() {
-        return this.token;
+    constructor() {
+        this.tokens = {};
     }
 
-    public async login() {
+    public getToken(username: string) {
+        return this.tokens[username];
+    }
+
+    public async login(username: string, password: string) {
+        const SECRET_HASH = crypto.HmacSHA256(
+            username + secrets.clientId,
+            secrets.clientSecret
+        ).toString(crypto.enc.Base64);
+
         const response = await cognito.adminInitiateAuth({
             AuthFlow: "ADMIN_USER_PASSWORD_AUTH",
             ClientId: secrets.clientId,
             UserPoolId: secrets.userPoolId,
             AuthParameters: {
-                USERNAME: creds.username,
-                PASSWORD: creds.password,
+                USERNAME: username,
+                PASSWORD: password,
                 SECRET_HASH
             }
         }).promise();
@@ -35,6 +38,6 @@ export default class TokenFactory {
         if(!response.AuthenticationResult?.IdToken)
             throw 'Login of test user failed';
 
-        this.token = response.AuthenticationResult.IdToken;
+        this.tokens[username] = response.AuthenticationResult.IdToken;
     }
 }

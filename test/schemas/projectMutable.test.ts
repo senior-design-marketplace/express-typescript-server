@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/project/projectMutable/validator";
+import validate from "../../src/schemas/build/Project/ProjectMutable/validator";
 
 describe("A project's mutable aspects are", () => {
 

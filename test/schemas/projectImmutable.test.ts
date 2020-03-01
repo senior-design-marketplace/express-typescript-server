@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/project/projectImmutable/validator";
+import validate from "../../src/schemas/build/Project/ProjectImmutable/validator";
 
 describe("A project's immutable aspects are", () => {
 
@@ -13,6 +13,6 @@ describe("A project's immutable aspects are", () => {
 			title: "test",
 			tagline: "test"
 		};
-		expect(validate(instance)).toBe(true);
+        expect(validate(instance)).toBe(true);
     })
 });

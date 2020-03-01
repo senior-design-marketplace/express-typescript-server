@@ -15,22 +15,22 @@ export async function up(knex: Knex): Promise<any> {
             table.string("tagline", constants.MEDIUM).notNullable();
             
 			table
-				.boolean("accepting_applications")
+				.boolean("acceptingApplications")
 				.notNullable()
-				.defaultTo(false);
+				.defaultTo(true);
 
 			table
-				.dateTime("created_at")
+				.dateTime("createdAt")
 				.notNullable()
 				.defaultTo(knex.fn.now());
 
 			//not-required
-            table.string("thumbnail_link", constants.MEDIUM);
+            table.string("thumbnailLink", constants.MEDIUM);
             
             table.string("body", constants.LARGE);
 		})
 		.createTable("boardItems", table => {
-			table.uuid("id").primary();
+            table.uuid("entryId");
 
 			//required
 			table.json("document").notNullable();
@@ -51,7 +51,9 @@ export async function up(knex: Knex): Promise<any> {
 				.notNullable()
 				.references("id")
 				.inTable("projects")
-				.onDelete("CASCADE");
+                .onDelete("CASCADE");
+                
+            table.primary(["projectId", "entryId"]);
 		})
 		.createTable("majorsValues", table => {
 			table.string("value", constants.SMALL).primary();
@@ -94,14 +96,7 @@ export async function up(knex: Knex): Promise<any> {
 			table.primary(["projectId", "tag"]);
 		})
 		.createTable("users", table => {
-			table.uuid("id").primary();
-
-			//required
-			table.string("firstName", constants.SMALL).notNullable();
-
-			table.string("lastName", constants.SMALL).notNullable();
-
-			table.string("email", constants.SMALL).notNullable();
+            table.string("id", constants.SMALL).primary();
 
 			//not-required
 			table.string("bio", constants.MEDIUM);
@@ -115,7 +110,7 @@ export async function up(knex: Knex): Promise<any> {
 				.onDelete("CASCADE");
 
 			table
-				.uuid("userId")
+				.string("userId", constants.SMALL)
 				.references("id")
 				.inTable("users")
 				.onDelete("CASCADE");
@@ -131,7 +126,7 @@ export async function up(knex: Knex): Promise<any> {
 				.onDelete("CASCADE");
 
 			table
-				.uuid("userId")
+				.string("userId", constants.SMALL)
 				.references("id")
 				.inTable("users")
 				.onDelete("CASCADE");
@@ -146,69 +141,35 @@ export async function up(knex: Knex): Promise<any> {
 				.onDelete("CASCADE");
 
 			table
-				.uuid("userId")
+				.string("userId", constants.SMALL)
 				.references("id")
 				.inTable("users")
-				.onDelete("CASCADE");
+                .onDelete("CASCADE");
+                
+            table.boolean("isAdvisor")
+                .notNullable()
+                .defaultTo(false);
 
 			table.primary(["projectId", "userId"]);
 		})
-		.createTable("advisors", table => {
-			table
-				.uuid("projectId")
-				.references("id")
-				.inTable("projects")
-				.onDelete("CASCADE");
 
-			table
-				.uuid("userId")
-				.references("id")
-				.inTable("users")
-				.onDelete("CASCADE");
-
-			table.primary(["projectId", "userId"]);
-		})
 		.createTable("statuses", table => {
 			table.string("value", constants.SMALL).primary();
 		})
-		.createTable("requests", table => {
-			table.uuid("id").primary();
-
-			table
-				.dateTime("updatedAt")
-				.notNullable()
-				.defaultTo(knex.fn.now());
-
-			//references
-			table
-				.uuid("advisorId")
-				.notNullable()
-				.references("id")
-				.inTable("users")
-				.onDelete("CASCADE");
-
-			table
-				.uuid("requestedById")
-				.notNullable()
-				.references("id")
-				.inTable("users")
-				.onDelete("CASCADE");
-
-			table
-				.string("status", constants.SMALL)
-				.notNullable()
-				.references("value")
-				.inTable("statuses")
-				.onDelete("CASCADE")
-				.onUpdate("CASCADE");
-		})
 		.createTable("applications", table => {
-			table.uuid("id").primary();
+            table.uuid("id").primary();
+            
+            table
+                .dateTime("createdAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
 
 			table
 				.dateTime("updatedAt")
 				.notNullable()
-				.defaultTo(knex.fn.now());
+                .defaultTo(knex.fn.now());
+                
+            table.string("note", constants.MEDIUM);
 
 			//references
 			table
@@ -219,7 +180,7 @@ export async function up(knex: Knex): Promise<any> {
 				.onDelete("CASCADE");
 
 			table
-				.uuid("userId")
+				.string("userId", constants.SMALL)
 				.notNullable()
 				.references("id")
 				.inTable("users")
@@ -232,15 +193,95 @@ export async function up(knex: Knex): Promise<any> {
 				.inTable("statuses")
 				.onDelete("CASCADE")
 				.onUpdate("CASCADE");
-		});
+        })
+        .createTable("notifications", table => {
+            table.uuid("id").primary();
+
+            table.json("document").notNullable();
+
+            table
+                .boolean("read")
+                .notNullable()
+                .defaultTo(false)
+
+            table
+                .dateTime("createdAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
+
+            //references
+            table
+				.string("userId", constants.SMALL)
+				.notNullable()
+				.references("id")
+				.inTable("users")
+                .onDelete("CASCADE");
+        })
+        .createTable("rolesValues", table => {
+            table.string("value", constants.SMALL).primary();
+        })
+        .createTable("invites", table => {
+            table.uuid("id").primary();
+
+            table.string("note", constants.MEDIUM);
+
+            table
+                .dateTime("createdAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
+
+            table
+				.dateTime("updatedAt")
+				.notNullable()
+				.defaultTo(knex.fn.now());
+
+            //references
+            table
+                .string("initiateId", constants.SMALL)
+                .notNullable()
+                .references("id")
+                .inTable("users")
+                .onDelete("CASCADE");
+
+            table
+                .string("targetId", constants.SMALL)
+                .notNullable()
+                .references("id")
+                .inTable("users")
+                .onDelete("CASCADE");
+
+            table
+                .uuid("projectId")
+                .notNullable()
+                .references("id")
+                .inTable("projects")
+                .onDelete("CASCADE");
+
+            table
+                .string("role", constants.SMALL)
+                .notNullable()
+                .references("value")
+                .inTable("rolesValues")
+                .onDelete("CASCADE")
+                .onUpdate("CASCADE")
+
+            table
+				.string("status", constants.SMALL)
+				.notNullable()
+				.references("value")
+				.inTable("statuses")
+				.onDelete("CASCADE")
+				.onUpdate("CASCADE");
+        })
 }
 
 export async function down(knex: Knex): Promise<any> {
-	return knex.schema
+    return knex.schema
+        .dropTableIfExists("invites")
+        .dropTableIfExists("rolesValues")
+        .dropTableIfExists("notifications")
 		.dropTableIfExists("applications")
-		.dropTableIfExists("requests")
 		.dropTableIfExists("statuses")
-		.dropTableIfExists("advisors")
 		.dropTableIfExists("administrators")
 		.dropTableIfExists("contributors")
 		.dropTableIfExists("stars")
@@ -250,5 +291,5 @@ export async function down(knex: Knex): Promise<any> {
 		.dropTableIfExists("majors")
 		.dropTableIfExists("majorsValues")
 		.dropTableIfExists("boardItems")
-		.dropTableIfExists("projects");
+        .dropTableIfExists("projects");
 }
