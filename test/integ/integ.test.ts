@@ -1,6 +1,12 @@
 import GatewayRunner from "./local";
 import TokenFactory from './tokenFactory';
 import creds from './creds';
+import uuid from 'uuid/v4';
+
+import config from '../../knexfile';
+import Knex from "knex";
+
+const knex = Knex(config.staging);
 
 // * the gateway runner is just a local copy of the gateway.
 // * you can configure it to point to the staging db or a local
@@ -10,8 +16,16 @@ import creds from './creds';
 const runner: GatewayRunner = new GatewayRunner();
 const tokenFactory: TokenFactory = new TokenFactory();
 
+const USER_ZERO = creds[0].username;
+const USER_ONE = creds[1].username;
+const USER_TWO = creds[2].username;
+
 beforeAll(async () => {
-    await tokenFactory.login();
+    await knex.seed.run();
+
+    for (const login of creds) {
+        await tokenFactory.login(login.username, login.password);
+    }
 });
 
 afterAll(async () => {
@@ -19,12 +33,12 @@ afterAll(async () => {
 });
 
 test("Run a sample test", async () => {
-	const response: any = await runner.runEvent({
+	const response = await runner.runEvent({
 		httpMethod: "GET",
 		body: "",
 		path: "/projects",
 		queryStringParameters: {
-			accepting_applications: null
+			acceptingApplications: 'true'
 		}
     });
     
@@ -32,12 +46,12 @@ test("Run a sample test", async () => {
 });
 
 test("Provide a request with bad query params", async () => {
-	const response: any = await runner.runEvent({
+	const response = await runner.runEvent({
 		httpMethod: "GET",
 		body: "",
 		path: "/projects",
 		queryStringParameters: {
-			sort_by: "foo" // invalid sort parameter
+			sortBy: "foo" // invalid sort parameter
 		}
 	});
 
@@ -50,27 +64,27 @@ test("Provide a boolean query parameter", async () => {
 		body: "",
 		path: "/projects",
 		queryStringParameters: {
-			has_advisor: null
+            sort_by: 'new'
 		}
-	});
+    });
 
 	expect(response.statusCode).toBe(200);
 });
 
 test("Create a new project", async () => {
-	const response: any = await runner.runEvent({
+	const response = await runner.runEvent({
         httpMethod: "POST",
         headers: {
             "content-type": "application/json"
         },
         body: JSON.stringify({
-            id: "00000000-0000-0000-0000-000000000000",
-            title: "Unga bunga me make marqetplace bunga bunga",
-            tagline: "Ong brother find shiny rock many year ago. He make it into cup. He drink from cup. Now Ong brother no think good. Ong think he no get enough magic potato juice, but other tribe man think it because of shiny cup. Why Ong brother dumb now?"
+            id: uuid(),
+            title: "Create project",
+            tagline: "Foo"
         }),
 		path: "/projects",
 		queryStringParameters: {
-            id_token: tokenFactory.getToken()
+            id_token: tokenFactory.getToken(USER_ZERO)
         }
     });
 
@@ -78,34 +92,35 @@ test("Create a new project", async () => {
 });
 
 test("Update the title of a project", async () => {
-    //dual POST should work via idempotency
-    const create: any = await runner.runEvent({
+    const id = uuid();
+
+    const create = await runner.runEvent({
         httpMethod: "POST",
         headers: {
             "content-type": "application/json"
         },
         body: JSON.stringify({
-            id: "00000000-0000-0000-0000-000000000000",
-            title: "Unga bunga me make marqetplace bunga bunga",
-            tagline: "Ong brother find shiny rock many year ago. He make it into cup. He drink from cup. Now Ong brother no think good. Ong think he no get enough magic potato juice, but other tribe man think it because of shiny cup. Why Ong brother dumb now?"
+            id: id,
+            title: "Update project",
+            tagline: "Foo"
         }),
         path: "/projects",
         queryStringParameters: {
-            id_token: tokenFactory.getToken()
+            id_token: tokenFactory.getToken(USER_ZERO)
         }
     })
 
-    const update: any = await runner.runEvent({
+    const update = await runner.runEvent({
         httpMethod: "PATCH",
         headers: {
             "content-type": "application/json"
         },
         body: JSON.stringify({
-            title: "Ooga booga, Grung make update"
+            tagline: "Bar"
         }),
-        path: "/projects/00000000-0000-0000-0000-000000000000",
+        path: `/projects/${id}`,
         queryStringParameters: {
-            id_token: tokenFactory.getToken()
+            id_token: tokenFactory.getToken(USER_ZERO)
         }
     })
 
@@ -113,13 +128,262 @@ test("Update the title of a project", async () => {
     expect(update.statusCode).toBe(200);
 })
 
+test("Get details for a project", async () => {
+    const id = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: id,
+            title: "Get details",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const get = await runner.runEvent({
+        httpMethod: "GET",
+        headers: {
+            "content-type": "application/json"
+        },
+        path: `/projects/${id}`,
+        queryStringParameters: {}
+    })
+
+    expect(create.statusCode).toBe(200);
+    expect(get.statusCode).toBe(200);
+});
+
 test("Get a specific project which does not exist", async () => {
-	const response: any = await runner.runEvent({
-		httpMethod: "GET",
-		body: "",
-		path: "/projects/ffffffff-ffff-ffff-ffff-ffffffffffff",
+    const id = uuid();
+
+	const response = await runner.runEvent({
+        httpMethod: "GET",
+        headers: {
+            "content-type": "application/json"
+        },
+		path: `/projects/${id}`,
 		queryStringParameters: {}
-	});
+    });
 
 	expect(response.statusCode).toBe(404);
 });
+
+test('Can access media endpoints for self', async () => {
+    const response = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        path: `/users/${USER_ZERO}/avatar`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(response.statusCode).toBe(200);
+});
+
+
+test('Cannot access media for another user', async () => {
+    const response = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        path: '/users/foo/avatar',
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(response.statusCode).toBe(403);
+});
+
+test('Apply to a project', async () => {
+    const project = uuid();
+    const application = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Apply to project",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const apply = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: application
+        }),
+        path: `/projects/${project}/applications`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ONE)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(apply.statusCode).toBe(200);
+})
+
+test('Respond to an application', async() => {
+    const project = uuid();
+    const application = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Reply to application",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const apply = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: application,
+        }),
+        path: `/projects/${project}/applications`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ONE)
+        }
+    });
+
+    const respond = await runner.runEvent({
+        httpMethod: "PATCH",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            response: "REJECTED"
+        }),
+        path: `/projects/${project}/applications/${application}`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(apply.statusCode).toBe(200);
+    expect(respond.statusCode).toBe(200);
+})
+
+test('Load the root of the application', async () => {
+    const project = uuid();
+    const application = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Load application root",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const apply = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: application,
+        }),
+        path: `/projects/${project}/applications`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ONE)
+        }
+    });
+
+    const response = await runner.runEvent({
+        httpMethod: "GET",
+        headers: {
+            "content-type": "application/json"
+        },
+        path: `/`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(apply.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
+});
+
+test('Invite a user to a project', async () => {
+    const project = uuid();
+    const invite = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Invite a user",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const invitation = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: invite,
+            targetId: USER_ONE,
+            projectId: project,
+            role: "CONTRIBUTOR"
+        }),
+        path: `/projects/${project}/invites`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(invitation.statusCode).toBe(200);
+})

@@ -18,7 +18,11 @@ export async function seed(knex: Knex): Promise<any> {
 				{
 					projectId: "25510168-bd7a-446e-b559-38ff9998bdb4",
 					userId: "b086c492-434e-419b-80f8-1a8b1539a976"
-				}
+                },
+                {
+                    projectId: "25510168-bd7a-446e-b559-38ff9998bdb4",
+                    userId: "test"
+                }
 			]);
 		});
 }

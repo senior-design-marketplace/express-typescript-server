@@ -1,13 +1,13 @@
 language: node_js
 node_js:
-  - node
+  - 12
 before_script:
   - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d
   - openssl aes-256-cbc -K $encrypted_8a3bf5846ad5_key -iv $encrypted_8a3bf5846ad5_iv -in ./src/access/auth/secrets.ts.enc -out ./src/access/auth/secrets.ts -d
   - openssl aes-256-cbc -K $encrypted_a4866d6c9882_key -iv $encrypted_a4866d6c9882_iv -in ./test/integ/creds.ts.enc -out ./test/integ/creds.ts -d
   - npm run db:export:stage
   - npm run db:deploy:stage
-  - npm run schema:bundle
+  - npm run schema:generate
 script: npm run test:integ:stage
 deploy:
   - provider: script

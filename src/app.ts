@@ -1,24 +1,113 @@
-//access layer
-import { Access } from "./access/dao";
-import Knex from "knex";
+// access layer
+import { Model } from "objection";
 import * as config from "./access/env.json";
+import Knex from "knex";
+Model.knex(Knex(config));
 
-//service layer
+// postgres 64 bit ints returned as 32 bit ints instead of strings
+import pg from 'pg';
+pg.types.setTypeParser(20, parseInt);
+
+import { DescribeProjectQuery } from "./access/queries/DescribeProjectQuery";
+import { CreateProjectQuery } from "./access/queries/CreateProjectQuery";
+import { DescribeProjectsQuery } from "./access/queries/DescribeProjectsQuery";
+import { CreateProjectApplicationQuery } from "./access/queries/CreateProjectApplicationQuery";
+import { DescribeProjectMembershipQuery } from "./access/queries/DescribeProjectMembershipQuery";
+import { UpdateProjectQuery } from "./access/queries/UpdateProjectQuery";
+import { DescribeSupportedMajorsQuery } from "./access/queries/DescribeSupportedMajorsQuery";
+import { DescribeSupportedTagsQuery } from "./access/queries/DescribeSupportedTagsQuery";
+import { GetUserProjectsQuery } from "./access/queries/GetUserProjectsQuery";
+import { ReplyProjectApplicationQuery } from "./access/queries/ReplyProjectApplicationQuery";
+import { DeleteProjectQuery } from "./access/queries/DeleteProjectQuery";
+import { DescribeUserQuery } from "./access/queries/DescribeUserQuery";
+import { UpdateUserQuery } from "./access/queries/UpdateUserQuery";
+import { GetProjectAdministratorsQuery } from "./access/queries/GetProjectAdministratorsQuery";
+import { GetProjectMembersQuery } from "./access/queries/GetProjectMembersQuery";
+import { InviteProjectMemberQuery } from "./access/queries/InviteProjectMemberQuery";
+import { InviteReplyQuery } from "./access/queries/InviteReplyQuery";
+import { GetUserNotificationsQuery } from "./access/queries/GetUserNotificationsQuery";
+
+// controller layer
+import ProjectController from "./controllers/impl/ProjectController";
+import ApplicationController from "./controllers/impl/ApplicationController";
+import MediaController from "./controllers/impl/MediaController";
+import RootController from "./controllers/impl/RootController";
+import UserController from "./controllers/impl/UserController";
+import InviteController from "./controllers/impl/InviteController";
+import { MediaRequestFactory } from "./controllers/mediaRequestFactory";
+
+// service layer
+import ProjectService from "./service/ProjectService";
+import ApplicationService from "./service/ApplicationService";
+import InviteService from "./service/InviteService";
+import RootService from "./service/RootService";
+import UserService from "./service/UserService";
+
+// core
 import { Server } from "@overnightjs/core";
 import { Application } from "express";
-import { HandleErrors } from "./routes/middlewares";
+import { HandleErrors } from "./controllers/middlewares";
 import { AuthenticationError, AuthorizationError, BadRequestError, InternalError, NotFoundError } from "./error/error";
 
 import cors from "cors";
 import bodyParser from "body-parser";
+import boolParser from 'express-query-boolean';
 import cookieParser from "cookie-parser";
-import * as routes from "./routes/routes";
 
 import AWS from "aws-sdk";
+
+import { EventEmitter } from "events";
+import { EventHandler } from "./eventHandlers";
+
 AWS.config.update({ region: "us-east-1" });
 
 class App extends Server {
-	static repository = new Access.Repository(Knex(config));
+    static emitter = new EventEmitter();
+
+    static projectService = new ProjectService(
+        App.emitter,
+        new DescribeProjectQuery(),
+        new DescribeProjectsQuery(),
+        new CreateProjectQuery(),
+        new UpdateProjectQuery(),
+        new DeleteProjectQuery()
+    );
+
+    static applicationService = new ApplicationService(
+        App.emitter,
+        new DescribeProjectMembershipQuery(),
+        new DescribeProjectQuery(),
+        new CreateProjectApplicationQuery(),
+        new ReplyProjectApplicationQuery()
+    )
+
+    static rootService = new RootService(
+        App.emitter,
+        new DescribeSupportedMajorsQuery(),
+        new DescribeSupportedTagsQuery(),
+        new GetUserProjectsQuery(),
+        new GetUserNotificationsQuery()
+    )
+
+    static userService = new UserService(
+        App.emitter,
+        new DescribeUserQuery(),
+        new UpdateUserQuery()
+    )
+
+    static inviteService = new InviteService(
+        App.emitter,
+        new InviteProjectMemberQuery(),
+        new InviteReplyQuery()
+    )
+
+    static requestFactory = new MediaRequestFactory(new AWS.S3());
+
+    static eventHandler = new EventHandler(
+        App.emitter,
+        new GetProjectAdministratorsQuery(),
+        new GetProjectMembersQuery(),
+    );
 
 	constructor() {
         super();
@@ -35,14 +124,21 @@ class App extends Server {
          * that gets loaded after them which throws will not be able
          * to pass the error onto the handlers.
 		 */
-		this.enableErrorHandlingMiddleware();
+        this.enableErrorHandlingMiddleware();
+        
+        /**
+         * Allow middlewares to query for membership information on 
+         * projects to validate requests.
+         */
+        this.app.set('membershipQuery', new DescribeProjectMembershipQuery());
     }
     
     private enablePreRouteMiddleware(): void {
         this.app.use(
             cors(),
             cookieParser(),
-            bodyParser.json()
+            bodyParser.json(),
+            boolParser()
         );
     }
 
@@ -56,13 +152,17 @@ class App extends Server {
 				InternalError
 			])
 		);
-	}
-
+    }
+    
 	//basically a doctor with all these injections
 	private enableRoutes(): void {
 		const controllers: any[] = [];
-		controllers.push(new routes.ProjectsController(App.repository));
-		controllers.push(new routes.CommentsController(App.repository));
+		controllers.push(new ProjectController(App.projectService));
+        controllers.push(new MediaController(App.requestFactory));
+        controllers.push(new RootController(App.rootService));
+        controllers.push(new UserController(App.userService));
+        controllers.push(new InviteController(App.inviteService));
+        controllers.push(new ApplicationController(App.applicationService));
 
 		super.addControllers(controllers);
 	}

@@ -14,7 +14,7 @@ export async function seed(knex: Knex): Promise<any> {
                     value: "ACCEPTED"
                 },
                 {
-                    value: "DENIED"
+                    value: "REJECTED"
                 }
 			]);
 		});

@@ -1,4 +1,4 @@
-import validate from "../../src/schemas/build/filterParams/validator";
+import validate from "../../src/schemas/build/QueryParams/FilterParams/validator";
 
 describe("Filter params for a project are", () => {
 
