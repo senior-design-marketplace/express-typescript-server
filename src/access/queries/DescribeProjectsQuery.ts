@@ -1,4 +1,4 @@
-import { OrderByDirection, QueryBuilder } from "objection";
+import { OrderByDirection, QueryBuilder, ref } from "objection";
 import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
 import { FilterParams } from "../../schemas/types/QueryParams/FilterParams";
 import { Sort, SortParams } from "../../schemas/types/QueryParams/SortParams";
@@ -26,18 +26,23 @@ const filterFunctions: Record<keyof FilterParams, FilterFunction> = {
     advisorId: (query: ProjectQuery, param: string | boolean) => {
         return query.joinRelated('administrators')
             .where('isAdvisor', true)
-            .andWhere('administrator.userId', param)
+            .andWhere('userId', param)
     },
     hasAdvisor: (query: ProjectQuery, param: string | boolean) => {
         if (param) {
-            return query.joinRelated('administrators')
-                .where('isAdvisor', true)
-                .distinct('administrator.userId')
+            return query.whereIn(
+                'projects.id',
+                ProjectModel.query().select('projects.id')
+                    .joinRelated('administrators')
+                    .where('isAdvisor', true)
+            )
         } else {
-            return query.joinRelated('administrators')
-                .groupBy('project.id')
-                .having('administrator.isAdvisor', false)
-                .distinct('project.id');
+            return query.whereNotIn(
+                'projects.id',
+                ProjectModel.query().select('projects.id')
+                    .joinRelated('administrators')
+                    .where('isAdvisor', true)
+            )
         }
     },
     requestedMajor: (query: ProjectQuery, param: string | boolean) => {
@@ -52,14 +57,16 @@ const filterFunctions: Record<keyof FilterParams, FilterFunction> = {
 type SortFunction = (query: ProjectQuery, order: OrderByDirection) =>  ProjectQuery;
 const sortFunctions: Partial<Record<Sort, SortFunction>> = {
     new: (query: ProjectQuery, order: OrderByDirection | undefined) => {
-        return query.orderBy([{ column: 'created_at', order }])
+        return query.orderBy([{ column: 'createdAt', order }])
     },
     popular: (query: ProjectQuery, order: OrderByDirection | undefined) => {
-        return query.joinRelated('starredBy')
-            .groupBy('project.id')
-            .count('project.id')
-            .as('popularity')
-            .orderBy('popularity', order);
+        return query.select([
+            'projects.*',
+            ProjectModel.relatedQuery('starredBy')
+                .count()
+                .as('popularity')
+        ])
+        .orderBy('popularity', order);
     }
 }
 
@@ -74,7 +81,7 @@ export class DescribeProjectsQuery {
         }
 
         if (sortParams.sortBy) {
-            const direction = sortParams.order === 'reverse' ? 'desc' : 'asc';
+            const direction = sortParams.order === 'reverse' ? 'asc' : 'desc';
             sortFunctions[sortParams.sortBy]!(query, direction)
         }
 
