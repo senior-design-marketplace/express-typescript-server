@@ -1,9 +1,8 @@
-import { Model, Modifiers } from "objection";
+import { Model } from "objection";
 import { join } from "path";
-import ContributorModel from "./ContributorModel";
 import { UserMaster } from "../../schemas/types/User/UserMaster";
-import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
-import { ApplicationMaster } from "../../schemas/types/Application/ApplicationMaster";
+import ApplicationModel from "./ApplicationModel";
+import ProjectModel from "./ProjectModel";
 
 export default class UserModel extends Model implements UserMaster {
 	static tableName = "users";
@@ -12,10 +11,10 @@ export default class UserModel extends Model implements UserMaster {
     readonly bio!: string;
     readonly thumbnailLink!: string;
 
-    readonly applications!: ApplicationMaster[];
-    readonly stars!: ProjectMaster[];
-    readonly contributorOn!: ProjectMaster[];
-    readonly administratorOn!: ProjectMaster[];
+    readonly applications!: ApplicationModel[];
+    readonly stars!: ProjectModel[];
+    readonly contributorOn!: ProjectModel[];
+    readonly administratorOn!: ProjectModel[];
 
 	static relationMappings = {
 		//one-to-many

@@ -58,13 +58,13 @@ test("Provide a request with bad query params", async () => {
 	expect(response.statusCode).toBe(400);
 });
 
-test("Provide a boolean query parameter", async () => {
+test("Provide a valid query param", async () => {
 	const response = await runner.runEvent({
 		httpMethod: "GET",
 		body: "",
 		path: "/projects",
 		queryStringParameters: {
-            sort_by: 'new'
+            sortBy: 'popular'
 		}
     });
 
@@ -116,7 +116,7 @@ test("Update the title of a project", async () => {
             "content-type": "application/json"
         },
         body: JSON.stringify({
-            tagline: "Bar"
+            body: "test"
         }),
         path: `/projects/${id}`,
         queryStringParameters: {
@@ -386,4 +386,42 @@ test('Invite a user to a project', async () => {
 
     expect(create.statusCode).toBe(200);
     expect(invitation.statusCode).toBe(200);
+})
+
+test('Create a project with a user not yet in the users table', async () => {
+    const project = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Database write through",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_TWO) // not in the user seed
+        }
+    });
+
+    // user should have been created
+    const update = await runner.runEvent({
+        httpMethod: "PATCH",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            bio: "Foo"
+        }),
+        path: `/users/${USER_TWO}`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_TWO)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(update.statusCode).toBe(200);
 })

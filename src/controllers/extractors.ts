@@ -7,6 +7,7 @@ import BoardEntryImmutableValidator from '../schemas/build/ProjectBoard/BoardEnt
 import BoardEntryMutableValidator from '../schemas/build/ProjectBoard/BoardEntryMutable/validator';
 import QueryParamsValidator from '../schemas/build/QueryParams/QueryParams/validator';
 import ResponseValidator from '../schemas/build/Response/Response/validator';
+import UserMutableValidator from '../schemas/build/User/UserMutable/validator';
 import { ApplicationImmutable } from "../schemas/types/Application/ApplicationImmutable";
 import { InviteImmutable } from "../schemas/types/Invite/InviteImmutable";
 import { ProjectImmutable } from "../schemas/types/Project/ProjectImmutable";
@@ -15,6 +16,7 @@ import { BoardEntryImmutable } from "../schemas/types/ProjectBoard/BoardEntryImm
 import { BoardEntryMutable } from "../schemas/types/ProjectBoard/BoardEntryMutable";
 import { QueryParams } from "../schemas/types/QueryParams/QueryParams";
 import { Response } from "../schemas/types/Response/Response";
+import { UserMutable } from "../schemas/types/User/UserMutable";
 
 
 type Key = string | number;
@@ -56,5 +58,9 @@ export const extractors: Record<string, Extractor> = {
     'InviteImmutable': {
         validator: InviteImmutableValidator,
         extract: keys<InviteImmutable>()
+    },
+    'UserMutable': {
+        validator: UserMutableValidator,
+        extract: keys<UserMutable>()
     }
 }
