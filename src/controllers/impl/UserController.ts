@@ -12,19 +12,23 @@ export default class UserController {
 
     @Get(":user")
     public async describeUser(req: Request, res: Response) {
-        return this.service.describeUser({
+        const result = await this.service.describeUser({
             payload: null,
             resourceId: req.params.user
         })
+
+        res.status(200).json(result);
     }
 
     @Patch(":user")
     @Middleware([ RequiresSelf('user'), Verified('UserMutable') ])
     public async updateUser(req: Request, res: Response) {
-        return this.service.updateUser({
+        const result = await this.service.updateUser({
             payload: req.verified,
             resourceId: req.params.user,
             claims: req.claims
         })
+
+        res.status(200).json(result);
     }
 }
