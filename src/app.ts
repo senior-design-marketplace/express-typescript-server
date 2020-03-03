@@ -58,6 +58,7 @@ import AWS from "aws-sdk";
 
 import { EventEmitter } from "events";
 import { EventHandler } from "./eventHandlers";
+import { WriteThroughUserQuery } from "./access/queries/WriteThroughUserQuery.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -131,6 +132,12 @@ class App extends Server {
          * projects to validate requests.
          */
         this.app.set('membershipQuery', new DescribeProjectMembershipQuery());
+
+        /**
+         * Also allow authentication middlware to write through
+         * user changes to the database.
+         */
+        this.app.set('writeThroughUserQuery', new WriteThroughUserQuery());
     }
     
     private enablePreRouteMiddleware(): void {

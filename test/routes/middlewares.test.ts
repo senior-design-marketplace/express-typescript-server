@@ -1,9 +1,8 @@
-import { RequiresAuth, Verified, HandleErrors } from "../../src/routes/middlewares";
-import { mockReq, mockRes } from "sinon-express-mock";
-import { Request, Response } from "express";
-import sinon, { SinonStub } from "sinon";
 import assert from "assert";
-import { BadRequestError, InternalError, AuthenticationError } from "../../src/error/error";
+import sinon, { SinonStub } from "sinon";
+import { mockReq, mockRes } from "sinon-express-mock";
+import { HandleErrors, Verified } from "../../src/controllers/middlewares";
+import { AuthenticationError, BadRequestError, InternalError } from "../../src/error/error";
 
 describe("The request validation middleware", () => {
 	test("throws an error for unknown schemas", () => {

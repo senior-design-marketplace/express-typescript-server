@@ -5,6 +5,7 @@ import { AuthenticationError, BadRequestError, AuthorizationError } from "../err
 import { extractors } from "./extractors";
 import { extractClaims, Claims } from '../access/auth/verify';
 import { DescribeProjectMembershipQuery } from "../access/queries/DescribeProjectMembershipQuery";
+import { WriteThroughUserQuery } from '../access/queries/WriteThroughUserQuery';
 
 declare global {
     namespace Express {
@@ -15,28 +16,44 @@ declare global {
     }
 }
 
-function examineToken(req: Request) {
+/**
+ * Force the user information through to the database.  In this way,
+ * we incur some overhead, however, we get to persist all information
+ * from Cognito into our database.
+ */
+async function writeThroughUser(req: Request) {
+    const query: WriteThroughUserQuery = req.app.get('writeThroughUserQuery');
+
+    try {
+        await query.execute(req.claims);
+    } catch (e) {
+        // nothing, do not let this failure prevent client from continuing
+    }
+}
+
+async function examineToken(req: Request) {
     if (!req.query.id_token) throw new AuthenticationError("No token provided");
     
     try {
         req.claims = extractClaims(req.query.id_token);
+        await writeThroughUser(req);
     } catch (e) {
         throw new AuthenticationError("Verification failed");
     }
 }
 
-export function RespondsToAuth(req: Request, res: Response, next) {
+export async function RespondsToAuth(req: Request, res: Response, next) {
     try {
-        examineToken(req);
+        await examineToken(req);
         next();
     } catch (e) {
         next(); // disregard exception
     }
 }
 
-export function RequiresAuth (req: Request, res: Response, next) {
+export async function RequiresAuth (req: Request, res: Response, next) {
     try {
-        examineToken(req);
+        await examineToken(req);
         next();
     } catch (e) {
         next(e);
@@ -44,9 +61,9 @@ export function RequiresAuth (req: Request, res: Response, next) {
 }
 
 export function RequiresSelf (param: string) {
-    return (req: Request, res: Response, next: any) => {
+    return async (req: Request, res: Response, next: any) => {
         try {
-            examineToken(req);
+            await examineToken(req);
         } catch (e) {
             next(e);
         }
@@ -59,7 +76,7 @@ export function RequiresSelf (param: string) {
 export function RequiresContributor (param: string) {
     return async (req: Request, res: Response, next: any) => {
         try {
-            examineToken(req);
+            await examineToken(req);
         } catch (e) {
             next(e);
         }
@@ -78,7 +95,7 @@ export function RequiresContributor (param: string) {
 export function RequiresAdministrator(param: string) {
     return async (req: Request, res: Response, next: any) => {
         try {
-            examineToken(req);
+            await examineToken(req);
         } catch (e) {
             next(e);
         }
