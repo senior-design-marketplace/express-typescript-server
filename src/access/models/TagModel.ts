@@ -1,10 +1,13 @@
 import { Model } from "objection";
 import { join } from "path";
+import { TagMaster } from "../../schemas/types/Tag/TagMaster";
+import { Tag } from "../../schemas/types/Tag/Tag";
 
-export default class TagModel extends Model {
+export default class TagModel extends Model implements TagMaster {
 	static tableName = "tagsValues";
 
-	readonly id!: string;
+    readonly id!: string;
+    readonly value!: Tag;
 
 	static relationMappings = {
 		taggedOn: {

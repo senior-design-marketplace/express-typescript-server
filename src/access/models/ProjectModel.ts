@@ -2,11 +2,12 @@ import { Model } from "objection";
 import { join } from "path";
 import { NotFoundError } from "../../error/error";
 import { ProjectMaster } from '../../schemas/types/Project/ProjectMaster';
-import { TagMaster } from "../../schemas/types/Tag/TagMaster";
 import { MajorMaster } from "../../schemas/types/Major/MajorMaster";
-import { BoardEntryMaster } from "../../schemas/types/ProjectBoard/BoardEntryMaster";
-import { ApplicationMaster } from "../../schemas/types/Application/ApplicationMaster";
-import { UserMaster } from "../../schemas/types/User/UserMaster";
+import UserModel from "./UserModel";
+import BoardItemModel from "./BoardItemModel";
+import ApplicationModel from "./ApplicationModel";
+import TagModel from "./TagModel";
+import MajorModel from "./MajorModel";
 
 export default class ProjectModel extends Model implements ProjectMaster {
     static tableName = "projects";
@@ -33,13 +34,13 @@ export default class ProjectModel extends Model implements ProjectMaster {
 
     // relations should be listed here as well:
     // https://github.com/Vincit/objection.js/issues/559
-    readonly boardItems!: BoardEntryMaster[];
-    readonly applications!: ApplicationMaster[];
-    readonly contributors!: UserMaster[];
-    readonly administrators!: UserMaster[]; 
-    readonly tags!: TagMaster[];
-    readonly requestedMajors!: MajorMaster[];
-    readonly starredBy!: UserMaster[];
+    readonly boardItems!: BoardItemModel[];
+    readonly applications!: ApplicationModel[];
+    readonly contributors!: UserModel[];
+    readonly administrators!: UserModel[]; 
+    readonly tags!: TagModel[];
+    readonly requestedMajors!: MajorModel[];
+    readonly starredBy!: UserModel[];
 
 	/**
 	 * Define how this maps to every other
