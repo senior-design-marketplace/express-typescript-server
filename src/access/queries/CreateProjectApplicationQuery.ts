@@ -22,6 +22,7 @@ export class CreateProjectApplicationQuery {
                     userId: params.userId,
                     projectId: params.projectId,
                     id: params.payload.id,
+                    note: params.payload.note,
                     status: "PENDING"
                 })
         } catch (e) {

@@ -210,6 +210,11 @@ test('Apply to a project', async () => {
     const project = uuid();
     const application = uuid();
 
+    const params = {
+        id: application,
+        note: "test"
+    }
+
     const create = await runner.runEvent({
         httpMethod: "POST",
         headers: {
@@ -231,17 +236,20 @@ test('Apply to a project', async () => {
         headers: {
             "content-type": "application/json"
         },
-        body: JSON.stringify({
-            id: application
-        }),
+        body: JSON.stringify(params),
         path: `/projects/${project}/applications`,
         queryStringParameters: {
             id_token: tokenFactory.getToken(USER_ONE)
         }
     });
 
+    const result = JSON.parse(apply.body);
+
     expect(create.statusCode).toBe(200);
     expect(apply.statusCode).toBe(200);
+    
+    expect(result.id).toBe(params.id);
+    expect(result.note).toBe(params.note);
 })
 
 test('Respond to an application', async() => {
