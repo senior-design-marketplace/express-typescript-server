@@ -19,14 +19,13 @@ export class CreateProjectQuery {
     public async execute(params: CreateProjectQuery.Params): Promise<ProjectMaster> {
         try {
             await ProjectModel.query()
-                .insert(params.payload)
-                .then((instance) => {
-                    return AdministratorModel.query().insert({
-                        userId: params.claims.username,
-                        isAdvisor: params.claims.roles.includes("faculty"),
-                        projectId: params.payload.id
-                    })
-                })
+                .insert(params.payload);
+            
+            await AdministratorModel.query().insert({
+                userId: params.claims.username,
+                isAdvisor: params.claims.roles.includes("faculty"),
+                projectId: params.payload.id
+            });
         } catch (e) {
             // Nothing.  Assume that it was a duplicate primary key issue.
             // Since users generate UUIDs, for the sake of idempotency,
