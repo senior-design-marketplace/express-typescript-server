@@ -3,11 +3,6 @@ import TokenFactory from './tokenFactory';
 import creds from './creds';
 import uuid from 'uuid/v4';
 
-import config from '../../knexfile';
-import Knex from "knex";
-
-const knex = Knex(config.staging);
-
 // * the gateway runner is just a local copy of the gateway.
 // * you can configure it to point to the staging db or a local
 // * sqlite instance.  Keep in mind that running the postgres
@@ -21,8 +16,6 @@ const USER_ONE = creds[1].username;
 const USER_TWO = creds[2].username;
 
 beforeAll(async () => {
-    await knex.seed.run();
-
     for (const login of creds) {
         await tokenFactory.login(login.username, login.password);
     }
@@ -247,7 +240,7 @@ test('Apply to a project', async () => {
 
     expect(create.statusCode).toBe(200);
     expect(apply.statusCode).toBe(200);
-    
+
     expect(result.id).toBe(params.id);
     expect(result.note).toBe(params.note);
 })
