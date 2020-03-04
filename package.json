@@ -10,7 +10,7 @@
 		"tsc": "ttsc",
 		"test:integ:local": "cross-env NODE_ENV=test npm run test:integ:child",
 		"test:integ:stage": "cross-env NODE_ENV=staging npm run test:integ:child",
-		"test:integ:child": "npm run db:export:child && ttsc && npm run claudia:build && jest -c jest.config.integ.js --forceExit",
+		"test:integ:child": "npm run db:export:child && knex seed:run && ttsc && npm run claudia:build && jest -c jest.config.integ.js --forceExit",
 		"test:unit": "jest -c jest.config.unit.js",
 		"schema:bundle": "ts-node src/schemas/bundle",
 		"schema:generate": "ts-node src/schemas/generate",
