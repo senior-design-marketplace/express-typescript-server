@@ -1,6 +1,6 @@
 import { outputJson } from "fs-extra";
 import { resolve } from "path";
-import Config from "../../knexfile";
+import Config from "../../../knexfile";
 
 //pull the environment information and inject it here as a build step
 async function writeSecrets() {
