@@ -4,22 +4,32 @@ import { BoardEntryMaster } from "../../schemas/types/ProjectBoard/BoardEntryMas
 
 namespace CreateBoardEntryQuery {
 
-    export type Params = BoardEntryImmutable;
+    export type Params = {
+        userId: string;
+        projectId: string;
+        payload: BoardEntryImmutable
+    };
 
     export type Result = BoardEntryMaster;
 }
 
 export class CreateBoardEntryQuery {
 
-    public async execute(payload: BoardEntryImmutable): Promise<BoardEntryMaster> {
+    public async execute(params: CreateBoardEntryQuery.Params): Promise<BoardEntryMaster> {
         try {
             await BoardItemModel.query()
-                .insert(payload)
+                .insert({
+                    id: params.payload.id,
+                    userId: params.userId,
+                    projectId: params.projectId,
+                    document: params.payload.document
+                });
         } catch (e) {
             // idempotency
         } finally {
             return BoardItemModel.query()
-                .findById(payload.entryId)
+                .findById(params.payload.id)
+                .throwIfNotFound()
                 .then((instance) => instance.$toJson() as BoardEntryMaster);
         }
     }

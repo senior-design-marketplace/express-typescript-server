@@ -4,9 +4,18 @@ import { MediaBoardEntry } from './MediaBoardEntry';
 
 export interface BoardEntryMaster extends BoardEntryImmutable {
     /**
-     * A wrapper to the entry object
+     * A specific identifier for this entry
+     * @minLength 1
+     * @maxLength 256
      */
-    entry: TextBoardEntry | MediaBoardEntry;
+    id: string;
+
+    /**
+     * The id of the user that created the entry
+     * @minLength 1
+     * @maxLength 256
+     */
+    userId: string;
 
     /**
      * The project that this entry belongs to
@@ -16,11 +25,9 @@ export interface BoardEntryMaster extends BoardEntryImmutable {
     projectId: string;
 
     /**
-     * A specific identifier for this entry
-     * @minLength 1
-     * @maxLength 256
+     * A wrapper to the entry object
      */
-    entryId: string;
+    document: TextBoardEntry | MediaBoardEntry;
 
     /**
      * The last time the entry was updated

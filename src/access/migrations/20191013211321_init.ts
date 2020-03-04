@@ -5,8 +5,16 @@ import * as constants from "../constants.json";
 // * a soft or logical delete.  onUpdate('CASCADE') should be used on
 // * keys which might change -- such as a username.
 export async function up(knex: Knex): Promise<any> {
-	return knex.schema
+    return knex.schema
+        .createTable("users", table => {
+            table.string("id", constants.SMALL).primary();
+
+            //not-required
+            table.string("bio", constants.MEDIUM);
+            table.string("thumbnailLink", constants.MEDIUM);
+        })
 		.createTable("projects", table => {
+            
 			table.uuid("id").primary();
 
 			//required
@@ -30,7 +38,7 @@ export async function up(knex: Knex): Promise<any> {
             table.string("body", constants.LARGE);
 		})
 		.createTable("boardItems", table => {
-            table.uuid("entryId");
+            table.uuid("id").primary();
 
 			//required
 			table.json("document").notNullable();
@@ -52,8 +60,12 @@ export async function up(knex: Knex): Promise<any> {
 				.references("id")
 				.inTable("projects")
                 .onDelete("CASCADE");
-                
-            table.primary(["projectId", "entryId"]);
+
+			table
+				.string("userId", constants.SMALL)
+				.references("id")
+				.inTable("users")
+				.onDelete("CASCADE");
 		})
 		.createTable("majorsValues", table => {
 			table.string("value", constants.SMALL).primary();
@@ -94,13 +106,6 @@ export async function up(knex: Knex): Promise<any> {
 
 			//composite primary key
 			table.primary(["projectId", "tag"]);
-		})
-		.createTable("users", table => {
-            table.string("id", constants.SMALL).primary();
-
-			//not-required
-			table.string("bio", constants.MEDIUM);
-			table.string("thumbnailLink", constants.MEDIUM);
 		})
 		.createTable("stars", table => {
 			table
@@ -285,11 +290,11 @@ export async function down(knex: Knex): Promise<any> {
 		.dropTableIfExists("administrators")
 		.dropTableIfExists("contributors")
 		.dropTableIfExists("stars")
-		.dropTableIfExists("users")
 		.dropTableIfExists("tags")
 		.dropTableIfExists("tagsValues")
 		.dropTableIfExists("majors")
 		.dropTableIfExists("majorsValues")
 		.dropTableIfExists("boardItems")
-        .dropTableIfExists("projects");
+        .dropTableIfExists("projects")
+		.dropTableIfExists("users");
 }

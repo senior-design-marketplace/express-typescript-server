@@ -22,7 +22,11 @@ export default class ProjectBoardService {
         private readonly deleteBoardEntryQuery: DeleteBoardEntryQuery) {}
 
     public async createBoardEntry(params: CreateBoardEntryParams): Promise<BoardEntryMaster> {
-        return this.createBoardEntryQuery.execute({ ...params.payload });
+        return this.createBoardEntryQuery.execute({
+            userId: params.claims.username,
+            projectId: params.resourceId,
+            payload: params.payload
+        });
     }
 
     public async updateBoardEntry(params: UpdateBoardEntryParams): Promise<BoardEntryMaster> {
@@ -31,7 +35,7 @@ export default class ProjectBoardService {
         })
 
         // leaving as swtich to facilitate extension
-        switch (response.entry.type) {
+        switch (response.document.type) {
             case "MEDIA":
                 throw "Cannot update a media document";
             case "TEXT":

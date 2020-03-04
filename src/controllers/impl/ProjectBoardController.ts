@@ -15,7 +15,7 @@ export default class ProjectBoardController {
     public async createBoardEntry(req: Request, res: Response) {
         const result = await this.service.createBoardEntry({
             payload: req.verified,
-            resourceId: req.params.id,
+            resourceId: req.params.project,
             claims: req.claims
         })
 
