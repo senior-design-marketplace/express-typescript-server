@@ -5,5 +5,5 @@ export interface BoardEntryMutable {
     /**
      * A wrapper to the entry object
      */
-    entry?: TextBoardEntry | MediaBoardEntry;
+    document?: TextBoardEntry | MediaBoardEntry;
 };

@@ -7,9 +7,10 @@ import { MediaBoardEntry } from "../../schemas/types/ProjectBoard/MediaBoardEntr
 export default class BoardItemModel extends Model implements BoardEntryMaster {
 	static tableName = "boardItems";
 
+    readonly id!: string;
+    readonly userId!: string;
     readonly projectId!: string;
-    readonly entryId!: string;
-    readonly entry!: TextBoardEntry | MediaBoardEntry;
+    readonly document!: TextBoardEntry | MediaBoardEntry;
     readonly createdAt!: Date;
     readonly updatedAt!: Date;
 

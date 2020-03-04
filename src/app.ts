@@ -34,6 +34,7 @@ import MediaController from "./controllers/impl/MediaController";
 import RootController from "./controllers/impl/RootController";
 import UserController from "./controllers/impl/UserController";
 import InviteController from "./controllers/impl/InviteController";
+import ProjectBoardController from "./controllers/impl/ProjectBoardController.js";
 import { MediaRequestFactory } from "./controllers/mediaRequestFactory";
 
 // service layer
@@ -42,6 +43,7 @@ import ApplicationService from "./service/ApplicationService";
 import InviteService from "./service/InviteService";
 import RootService from "./service/RootService";
 import UserService from "./service/UserService";
+import ProjectBoardService from "./service/ProjectBoardService.js";
 
 // core
 import { Server } from "@overnightjs/core";
@@ -59,6 +61,10 @@ import AWS from "aws-sdk";
 import { EventEmitter } from "events";
 import { EventHandler } from "./eventHandlers";
 import { WriteThroughUserQuery } from "./access/queries/WriteThroughUserQuery.js";
+import { CreateBoardEntryQuery } from "./access/queries/CreateBoardEntryQuery.js";
+import { DescribeBoardEntryQuery } from "./access/queries/DescribeBoardEntryQuery.js";
+import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery.js";
+import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -100,6 +106,14 @@ class App extends Server {
         App.emitter,
         new InviteProjectMemberQuery(),
         new InviteReplyQuery()
+    )
+
+    static boardService = new ProjectBoardService(
+        App.emitter,
+        new CreateBoardEntryQuery(),
+        new DescribeBoardEntryQuery(),
+        new UpdateBoardEntryQuery(),
+        new DeleteBoardEntryQuery()
     )
 
     static requestFactory = new MediaRequestFactory(new AWS.S3());
@@ -170,6 +184,7 @@ class App extends Server {
         controllers.push(new UserController(App.userService));
         controllers.push(new InviteController(App.inviteService));
         controllers.push(new ApplicationController(App.applicationService));
+        controllers.push(new ProjectBoardController(App.boardService));
 
 		super.addControllers(controllers);
 	}
