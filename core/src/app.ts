@@ -34,7 +34,7 @@ import MediaController from "./controllers/impl/MediaController";
 import RootController from "./controllers/impl/RootController";
 import UserController from "./controllers/impl/UserController";
 import InviteController from "./controllers/impl/InviteController";
-import ProjectBoardController from "./controllers/impl/ProjectBoardController.js";
+import ProjectBoardController from "./controllers/impl/ProjectBoardController";
 import { MediaRequestFactory } from "./controllers/mediaRequestFactory";
 
 // service layer
@@ -43,7 +43,7 @@ import ApplicationService from "./service/ApplicationService";
 import InviteService from "./service/InviteService";
 import RootService from "./service/RootService";
 import UserService from "./service/UserService";
-import ProjectBoardService from "./service/ProjectBoardService.js";
+import ProjectBoardService from "./service/ProjectBoardService";
 
 // core
 import { Server } from "@overnightjs/core";
@@ -60,11 +60,11 @@ import AWS from "aws-sdk";
 
 import { EventEmitter } from "events";
 import { EventHandler } from "./eventHandlers";
-import { WriteThroughUserQuery } from "./access/queries/WriteThroughUserQuery.js";
-import { CreateBoardEntryQuery } from "./access/queries/CreateBoardEntryQuery.js";
-import { DescribeBoardEntryQuery } from "./access/queries/DescribeBoardEntryQuery.js";
-import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery.js";
-import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery.js";
+import { WriteThroughUserQuery } from "./access/queries/WriteThroughUserQuery";
+import { CreateBoardEntryQuery } from "./access/queries/CreateBoardEntryQuery";
+import { DescribeBoardEntryQuery } from "./access/queries/DescribeBoardEntryQuery";
+import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery";
+import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery";
 
 AWS.config.update({ region: "us-east-1" });
 

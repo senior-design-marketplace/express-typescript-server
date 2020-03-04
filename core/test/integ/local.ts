@@ -1,5 +1,5 @@
 //BORROWED FROM DOCS: https://github.com/awslabs/aws-serverless-express/tree/master/examples/basic-starter
-import { handler } from "../../lambda.js";
+import { handler } from "../../../lambda.js";
 import { Server } from "http";
 
 /**
