@@ -15,7 +15,7 @@ export default class MediaController {
     public async newAvatar(req: Request, res: Response) {
         const result = this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
-            key: `users/${req.params.id}/avatar`
+            key: `users/${req.params.user}/avatar`
         })
         
         res.status(200).json(result);
@@ -26,7 +26,7 @@ export default class MediaController {
     public async newProjectCover(req: Request, res: Response) {
         const result = this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
-            key: `projects/${req.params.id}/cover`
+            key: `projects/${req.params.project}/cover`
         })
 
         res.status(200).json(result);
@@ -37,18 +37,18 @@ export default class MediaController {
     public async newProjectThumbnail(req: Request, res: Response) {
         const result = this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
-            key: `projects/${req.params.id}/thumbnail`
+            key: `projects/${req.params.project}/thumbnail`
         })
 
         res.status(200).json(result);
     }
 
-    @Post("projects/:project/media")
+    @Post("projects/:project/board/:entry")
     @Middleware([ RequiresContributor('project') ])
     public async newProjectBoardMedia(req: Request, res: Response) {
-        const result = this.requestFactory.knownDirectoryRequest({
+        const result = this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
-            directory: `projects/${req.params.id}/board`
+            key: `projects/${req.params.project}/board/${req.params.entry}`
         })
 
         res.status(200).json(result);

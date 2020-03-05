@@ -18,12 +18,16 @@
         ]
 	},
     "include": [
-        "core/src/**/*"
+        "core/src/**/*",
+        "external/**/src/**/*"
     ],
     
-	//keep build steps out of deployment
+	// keep build steps out of deployment
 	"exclude": [
         "core/src/schemas/generate.ts", 
-        "core/src/access/export.ts"
+        "core/src/access/export.ts",
+
+        "core/test/**/*",
+        "external/**/test/**/*"
     ]
 }

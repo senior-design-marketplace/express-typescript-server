@@ -1,6 +1,6 @@
 // access layer
 import { Model } from "objection";
-import * as config from "./access/env.json";
+import * as config from "../env.json";
 import Knex from "knex";
 Model.knex(Knex(config));
 
