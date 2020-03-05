@@ -33,6 +33,13 @@ export interface ProjectMaster extends ProjectImmutable {
     acceptingApplications: boolean;
 
     /**
+     * A link to a large banner picture of the project
+     * @minLength 1
+     * @maxLength 256
+     */
+    coverLink: string;
+
+    /**
      * A link to a small picture to represent the project
      * @minLength 1
      * @maxLength 256

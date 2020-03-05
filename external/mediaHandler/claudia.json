@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "marqetplace-media-handler-executor",
+    "name": "marqetplace-media-handler",
+    "region": "us-east-1"
+  }
+}

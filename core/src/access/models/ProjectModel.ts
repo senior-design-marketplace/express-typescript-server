@@ -29,6 +29,7 @@ export default class ProjectModel extends Model implements ProjectMaster {
     readonly tagline!: string;
     readonly acceptingApplications!: boolean;
     readonly createdAt!: Date;
+    readonly coverLink!: string;
     readonly thumbnailLink!: string;
     readonly body!: string;
 

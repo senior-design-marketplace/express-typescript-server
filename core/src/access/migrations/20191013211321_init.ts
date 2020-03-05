@@ -32,7 +32,9 @@ export async function up(knex: Knex): Promise<any> {
 				.notNullable()
 				.defaultTo(knex.fn.now());
 
-			//not-required
+            //not-required
+            table.string("coverLink", constants.MEDIUM);
+
             table.string("thumbnailLink", constants.MEDIUM);
             
             table.string("body", constants.LARGE);
