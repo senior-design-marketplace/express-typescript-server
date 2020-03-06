@@ -26,6 +26,7 @@ import { GetProjectMembersQuery } from "./access/queries/GetProjectMembersQuery"
 import { InviteProjectMemberQuery } from "./access/queries/InviteProjectMemberQuery";
 import { InviteReplyQuery } from "./access/queries/InviteReplyQuery";
 import { GetUserNotificationsQuery } from "./access/queries/GetUserNotificationsQuery";
+import { CreateCommentQuery } from "./access/queries/CreateCommentQuery.js";
 
 // controller layer
 import ProjectController from "./controllers/impl/ProjectController";
@@ -35,6 +36,7 @@ import RootController from "./controllers/impl/RootController";
 import UserController from "./controllers/impl/UserController";
 import InviteController from "./controllers/impl/InviteController";
 import ProjectBoardController from "./controllers/impl/ProjectBoardController";
+import CommentController from "./controllers/impl/CommentController.js";
 import { MediaRequestFactory } from "./controllers/mediaRequestFactory";
 
 // service layer
@@ -44,6 +46,7 @@ import InviteService from "./service/InviteService";
 import RootService from "./service/RootService";
 import UserService from "./service/UserService";
 import ProjectBoardService from "./service/ProjectBoardService";
+import CommentService from "./service/CommentService.js";
 
 // core
 import { Server } from "@overnightjs/core";
@@ -116,6 +119,11 @@ class App extends Server {
         new DeleteBoardEntryQuery()
     )
 
+    static commentService = new CommentService(
+        App.emitter,
+        new CreateCommentQuery()
+    )
+
     static requestFactory = new MediaRequestFactory(new AWS.S3());
 
     static eventHandler = new EventHandler(
@@ -185,6 +193,7 @@ class App extends Server {
         controllers.push(new InviteController(App.inviteService));
         controllers.push(new ApplicationController(App.applicationService));
         controllers.push(new ProjectBoardController(App.boardService));
+        controllers.push(new CommentController(App.commentService));
 
 		super.addControllers(controllers);
 	}
