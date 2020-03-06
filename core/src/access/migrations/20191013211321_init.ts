@@ -280,10 +280,41 @@ export async function up(knex: Knex): Promise<any> {
 				.onDelete("CASCADE")
 				.onUpdate("CASCADE");
         })
+        .createTable("comments", table => {
+            table.uuid("id").primary();
+
+            table.string("body", constants.MEDIUM);
+
+            table
+                .dateTime("createdAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
+
+            // references
+            table
+				.uuid("projectId")
+				.notNullable()
+				.references("id")
+				.inTable("projects")
+                .onDelete("CASCADE");
+
+			table
+				.string("userId", constants.SMALL)
+				.references("id")
+				.inTable("users")
+                .onDelete("CASCADE");
+                
+            table
+                .uuid("parentId")
+                .references("id")
+                .inTable("comments")
+                .onDelete("CASCADE");
+        })
 }
 
 export async function down(knex: Knex): Promise<any> {
     return knex.schema
+        .dropTableIfExists("comments")
         .dropTableIfExists("invites")
         .dropTableIfExists("rolesValues")
         .dropTableIfExists("notifications")
