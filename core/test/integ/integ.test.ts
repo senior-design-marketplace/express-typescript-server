@@ -563,3 +563,80 @@ test('Can reply to a comment', async () => {
     expect(other.statusCode).toBe(200);
     expect(another.statusCode).toBe(200);
 })
+
+test('Apply to a project not accepting applications', async () => {
+    const project = uuid()
+    const application = uuid()
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Not accepting applications",
+            tagline: "Foo",
+            acceptingApplications: false
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const apply = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: application,
+        }),
+        path: `/projects/${project}/applications`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ONE)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(apply.statusCode).toBe(400);
+})
+
+test('Apply to a project the user is already a member of', async () => {
+    const project = uuid()
+    const application = uuid()
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Already a member",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const apply = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: application,
+        }),
+        path: `/projects/${project}/applications`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    expect(create.statusCode).toBe(200);
+    expect(apply.statusCode).toBe(400);
+})
