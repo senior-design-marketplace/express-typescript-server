@@ -174,6 +174,9 @@ test('Can access media endpoints for self', async () => {
         headers: {
             "content-type": "application/json"
         },
+        body: JSON.stringify({
+            type: "JPEG"
+        }),
         path: `/users/${USER_ZERO}/avatar`,
         queryStringParameters: {
             id_token: tokenFactory.getToken(USER_ZERO)
@@ -639,4 +642,26 @@ test('Apply to a project the user is already a member of', async () => {
 
     expect(create.statusCode).toBe(200);
     expect(apply.statusCode).toBe(400);
+})
+
+
+test('Content types for media uploads are respected', async () => {
+    const upload = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            type: 'JPEG'
+        }),
+        path: `/users/${USER_ZERO}/avatar`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const body = JSON.parse(upload.body);
+
+    expect(upload.statusCode).toBe(200);
+    expect(body.fields['Content-Type']).toBe('image/jpeg');
 })
