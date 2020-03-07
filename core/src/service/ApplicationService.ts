@@ -7,6 +7,9 @@ import { Response } from '../schemas/types/Response/Response';
 import * as Utils from './util';
 import { DescribeProjectMembershipQuery } from '../access/queries/DescribeProjectMembershipQuery';
 import { DescribeProjectQuery } from '../access/queries/DescribeProjectQuery';
+import { BadRequestError } from '../error/error';
+import { AlreadyMemberError } from '../error/impl/AlreadyMemberError';
+import { NotAcceptingApplicationsError } from '../error/impl/NotAcceptingApplicationsError';
 
 type CreateApplicationParams = Utils.AuthenticatedSingleResourceServiceCall<ApplicationImmutable>;
 type ReplyProjectApplicationParams = Utils.AuthenticatedSingleResourceServiceCall<Response>;
@@ -20,6 +23,7 @@ export default class ApplicationService {
         private readonly createProjectApplicationQuery: CreateProjectApplicationQuery,
         private readonly replyProjectApplicationQuery: ReplyProjectApplicationQuery) {}
 
+    @Utils.translateErrors([ AlreadyMemberError, NotAcceptingApplicationsError ], BadRequestError)
     public async createProjectApplication(params: CreateApplicationParams): Promise<ApplicationMaster> {
         const { isAdministrator, isContributor } = await this.describeProjectMembershipQuery.execute({
             projectId: params.resourceId,
@@ -27,7 +31,7 @@ export default class ApplicationService {
         });
 
         if (isAdministrator || isContributor) {
-            throw "Already participant of project";
+            throw new AlreadyMemberError(`User ${params.claims.username} is already a member of project ${params.resourceId}`);
         }
 
         const { acceptingApplications } = await this.describeProjectQuery.execute({
@@ -35,7 +39,7 @@ export default class ApplicationService {
         })
             
         if (!acceptingApplications) {
-            throw "Project is not accepting applications"
+            throw new NotAcceptingApplicationsError(`Project ${params.resourceId} is not accepting applications`);
         }
 
         const result = await this.createProjectApplicationQuery.execute({
