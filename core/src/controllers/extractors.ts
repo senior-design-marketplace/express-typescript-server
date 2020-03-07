@@ -9,6 +9,8 @@ import QueryParamsValidator from '../schemas/build/QueryParams/QueryParams/valid
 import ResponseValidator from '../schemas/build/Response/Response/validator';
 import UserMutableValidator from '../schemas/build/User/UserMutable/validator';
 import CommentImmutableValidator from '../schemas/build/Comment/CommentImmutable/validator';
+import ImageMediaImmutableValidator from '../schemas/build/Media/ImageMediaImmutable/validator';
+import BoardMediaImmutableValidator from '../schemas/build/Media/BoardMediaImmutable/validator';
 import { ApplicationImmutable } from "../schemas/types/Application/ApplicationImmutable";
 import { InviteImmutable } from "../schemas/types/Invite/InviteImmutable";
 import { ProjectImmutable } from "../schemas/types/Project/ProjectImmutable";
@@ -19,6 +21,8 @@ import { QueryParams } from "../schemas/types/QueryParams/QueryParams";
 import { Response } from "../schemas/types/Response/Response";
 import { UserMutable } from "../schemas/types/User/UserMutable";
 import { CommentImmutable } from "../schemas/types/Comment/CommentImmutable";
+import { ImageMediaImmutable } from "../schemas/types/Media/ImageMediaImmutable";
+import { BoardMediaImmutable } from "../schemas/types/Media/BoardMediaImmutable";
 
 
 type Key = string | number;
@@ -68,5 +72,13 @@ export const extractors: Record<string, Extractor> = {
     'CommentImmutable': {
         validator: CommentImmutableValidator,
         extract: keys<CommentImmutable>()
+    },
+    'ImageMediaImmutable': {
+        validator: ImageMediaImmutableValidator,
+        extract: keys<ImageMediaImmutable>()
+    },
+    'BoardMediaImmutable': {
+        validator: BoardMediaImmutableValidator,
+        extract: keys<BoardMediaImmutable>()
     }
 }
