@@ -2,7 +2,8 @@ import { ClassOptions, ClassWrapper, Controller, Delete, Middleware, Patch, Post
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import ProjectBoardService from "../../service/ProjectBoardService";
-import { RequiresContributor, Verified } from '../middlewares';
+import { RequiresContributor, VerifyBody, VerifyPath } from '../middlewares';
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -11,7 +12,10 @@ export default class ProjectBoardController {
 	constructor(private readonly service: ProjectBoardService) {}
 
     @Post()
-    @Middleware([ RequiresContributor('project'), Verified('BoardEntryImmutable') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody('BoardEntryImmutable'), 
+        VerifyPath('project', isUUID) ])
     public async createBoardEntry(req: Request, res: Response) {
         const result = await this.service.createBoardEntry({
             payload: req.verified,
@@ -23,7 +27,11 @@ export default class ProjectBoardController {
     }
 
     @Patch(":entry")
-    @Middleware([ RequiresContributor('project'), Verified('BoardEntryMutable') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody('BoardEntryMutable'), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('entry', isUUID) ])
     public async updateBoardEntry(req: Request, res: Response) {
         const result = await this.service.updateBoardEntry({
             payload: req.verified,
@@ -36,7 +44,10 @@ export default class ProjectBoardController {
     }
 
     @Delete(":entry")
-    @Middleware([ RequiresContributor('project') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('entry', isUUID) ])
     public async deleteBoardEntry(req: Request, res: Response) {
         const result = await this.service.deleteBoardEntry({
             payload: null,

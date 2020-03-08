@@ -2,7 +2,8 @@ import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post } from 
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import ApplicationService from "../../service/ApplicationService";
-import { RequiresAdministrator, RequiresAuth, Verified } from "../middlewares";
+import { RequiresAdministrator, RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -11,7 +12,10 @@ export default class ApplicationController {
     constructor(private readonly service: ApplicationService) {}
 
     @Post()
-    @Middleware([ RequiresAuth, Verified("ApplicationImmutable") ])
+    @Middleware([ 
+        RequiresAuth, 
+        VerifyBody("ApplicationImmutable"), 
+        VerifyPath('project', isUUID) ])
     public async createProjectApplication(req: Request, res: Response) {
         const result = await this.service.createProjectApplication({
             payload: req.verified,
@@ -23,7 +27,11 @@ export default class ApplicationController {
     }
 
     @Patch(":application")
-    @Middleware([ RequiresAdministrator("project"), Verified("Response") ])
+    @Middleware([ 
+        RequiresAdministrator("project"), 
+        VerifyBody("Response"), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('application', isUUID)])
     public async replyProjectApplication(req: Request, res: Response) {
         const result = await this.service.replyProjectApplication({
             payload: req.verified,

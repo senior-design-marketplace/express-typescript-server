@@ -676,3 +676,12 @@ test('Content types for media uploads are respected', async () => {
     expect(upload.statusCode).toBe(200);
     expect(body.fields['Content-Type']).toBe('image/jpeg');
 })
+
+test('Provide an invalid path parameter', async () => {
+    const get = await runner.runEvent({
+        httpMethod: "GET",
+        path: '/projects/foo'
+    })
+
+    expect(get.statusCode).toBe(400);
+})

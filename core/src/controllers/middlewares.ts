@@ -111,26 +111,69 @@ export function RequiresAdministrator(param: string) {
     }
 }
 
-export function Verified(schema: string, query?: boolean) {
-	return (req: Request, res: Response, next: any) => {
-		const validator = extractors[schema]?.validator;
-		if (!validator)
-			throw new Error(`Unknown schema for name ${schema}, did you add this in ${__filename}?`);
+type VerificationTarget = 'body' | 'query' | 'path';
 
-		const validatee = query ? req.query : req.body;
+// export function Verified(schema: string, query?: boolean) {
+// 	return (req: Request, res: Response, next: any) => {
+// 		const validator = extractors[schema]?.validator;
+// 		if (!validator)
+// 			throw new Error(`Unknown schema for name ${schema}, did you add this in ${__filename}?`);
 
-		if (!validator(validatee)) {
-			next(new BadRequestError('Malformed request'));
-		} else {
-            req.verified = pick(validatee, ...extractors[schema].extract);
-			next();
-		}
-	};
+// 		const validatee = query ? req.query : req.body;
+
+// 		if (!validator(validatee)) {
+// 			next(new BadRequestError('Malformed request'));
+// 		} else {
+//             req.verified = pick(validatee, ...extractors[schema].extract);
+// 			next();
+// 		}
+// 	};
+// }
+
+type ValidatorFunction = (param: string) => boolean;
+export function VerifyPath(param: string, validator: ValidatorFunction) {
+    return (req: Request, res: Response, next) => {
+        if (validator(req.params[param])) next();
+        else next(new BadRequestError(`Value ${req.params[param]} for name ${param} is invalid`))
+    }
+}
+
+function getVerificationParameters(param: string) {
+    const validator = extractors[param].validator;
+    const keys = extractors[param].extract;
+
+    if (!validator || !keys) throw new Error(`Unknown schema for name ${name}, did you add this in ${__filename}?`);
+    return { validator, keys };
+}
+
+// for now, assume that these calls are mutually exclusive
+export function VerifyBody(param: string) {
+	return (req: Request, res: Response, next) => {
+        const { validator, keys } = getVerificationParameters(param);
+
+        if (!validator(req.body)) next(new BadRequestError('Malformed request'));
+        else {
+            req.verified = pick(req.body, ...keys);
+            next();
+        }
+    }
+}
+
+export function VerifyQuery(param: string) {
+    return (req: Request, res: Response, next) => {
+        const { validator, keys } = getVerificationParameters(param);
+
+        if (!validator(req.query)) next(new BadRequestError('Malformed request'));
+        else {
+            req.verified = pick(req.query, ...keys);
+            next();
+        }
+    }
 }
 
 export function HandleErrors(errors: typeof CodedError[]) {
 	return (error: Error, req: Request, res: Response, next: any) => {
-		for (let clazz of errors) {
+		for (const clazz of errors) {
 			if (error instanceof clazz) {
 				return res.status(error.code).json({
 					type: error.name,

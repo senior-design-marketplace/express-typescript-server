@@ -7,8 +7,9 @@ import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
 import { FilterParams } from "../../schemas/types/QueryParams/FilterParams";
 import { SortParams } from "../../schemas/types/QueryParams/SortParams";
 import ProjectService from '../../service/ProjectService';
-import { RequiresAdministrator, RequiresAuth, RequiresContributor, RespondsToAuth, Verified } from "../middlewares";
+import { RequiresAdministrator, RequiresAuth, RequiresContributor, RespondsToAuth, VerifyBody, VerifyQuery, VerifyPath } from "../middlewares";
 import { extractValue, PassThrough } from "./util";
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -17,7 +18,8 @@ export default class ProjectController {
     constructor(private readonly projectService: ProjectService) {}
 
 	@Get()
-	@Middleware([ Verified("QueryParams", true) ])
+	@Middleware([ 
+        VerifyQuery("QueryParams") ])
 	public async getProjects(req: Request, res: Response) {
 		const filterParams: FilterParams = pick(
             req.verified, 
@@ -38,7 +40,9 @@ export default class ProjectController {
 	}
 
 	@Post()
-	@Middleware([ RequiresAuth, Verified("ProjectImmutable") ])
+	@Middleware([ 
+        RequiresAuth, 
+        VerifyBody("ProjectImmutable") ])
 	public async newProject(req: Request, res: Response) {
         const result = await this.projectService.createProject({
             payload: req.verified,
@@ -49,7 +53,9 @@ export default class ProjectController {
 	}
 
     @Get(":project")
-    @Middleware([ RespondsToAuth ])
+    @Middleware([ 
+        RespondsToAuth, 
+        VerifyPath('project', isUUID) ])
 	public async getProjectById(req: Request, res: Response) {
         const result = await this.projectService.describeProject({
             payload: null,
@@ -79,7 +85,10 @@ export default class ProjectController {
 	}
 
     @Patch(":project")
-    @Middleware([ RequiresContributor('project'), Verified("ProjectMutable") ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody("ProjectMutable"), 
+        VerifyPath('project', isUUID) ])
 	public async updateProject(req: Request, res: Response) {
         const result = await this.projectService.updateProject({
             payload: req.verified,
@@ -91,7 +100,9 @@ export default class ProjectController {
 	}
 
 	@Delete(":project")
-	@Middleware([ RequiresAdministrator('project') ])
+	@Middleware([ 
+        RequiresAdministrator('project'), 
+        VerifyPath('project', isUUID) ])
 	public async deleteProject(req: Request, res: Response) {
 		const result = await this.projectService.deleteProject({
             payload: null,

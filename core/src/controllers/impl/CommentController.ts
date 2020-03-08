@@ -1,8 +1,9 @@
 import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post, Delete } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import { RequiresAuth, Verified } from "../middlewares";
+import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
 import CommentService from "../../service/CommentService";
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -11,7 +12,10 @@ export default class CommentController {
     constructor(private readonly service: CommentService) {}
 
     @Post()
-    @Middleware([ RequiresAuth, Verified("CommentImmutable") ])
+    @Middleware([ 
+        RequiresAuth, 
+        VerifyBody("CommentImmutable"), 
+        VerifyPath('project', isUUID) ])
     public async createComment(req: Request, res: Response) {
         const result = await this.service.createComment({
             payload: req.verified,
@@ -23,7 +27,11 @@ export default class CommentController {
     }
 
     @Post(":comment")
-    @Middleware([ RequiresAuth, Verified("CommentImmutable") ])
+    @Middleware([ 
+        RequiresAuth, 
+        VerifyBody("CommentImmutable"), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('comment', isUUID) ])
     public async replyComment(req: Request, res: Response) {
         const result = await this.service.replyComment({
             payload: req.verified,

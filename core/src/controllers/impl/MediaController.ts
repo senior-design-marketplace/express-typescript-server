@@ -2,7 +2,8 @@ import { ClassOptions, ClassWrapper, Controller, Middleware, Post } from "@overn
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { MediaRequestFactory } from "../mediaRequestFactory";
-import { RequiresContributor, RequiresSelf, Verified } from '../middlewares';
+import { RequiresContributor, RequiresSelf, VerifyBody, VerifyPath } from '../middlewares';
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -12,7 +13,9 @@ export default class MediaController {
     constructor(private readonly requestFactory: MediaRequestFactory) {}
 
     @Post("users/:user/avatar")
-    @Middleware([ RequiresSelf('user'), Verified('ImageMediaImmutable') ])
+    @Middleware([ 
+        RequiresSelf('user'), 
+        VerifyBody('ImageMediaImmutable') ])
     public async newAvatar(req: Request, res: Response) {
         const result = await this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
@@ -24,7 +27,10 @@ export default class MediaController {
     }
 
     @Post("projects/:project/cover")
-    @Middleware([ RequiresContributor('project'), Verified('ImageMediaImmutable') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody('ImageMediaImmutable'), 
+        VerifyPath('project', isUUID) ])
     public async newProjectCover(req: Request, res: Response) {
         const result = await this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
@@ -36,7 +42,10 @@ export default class MediaController {
     }
 
     @Post("projects/:project/thumbnail")
-    @Middleware([ RequiresContributor('project'), Verified('ImageMediaImmutable') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody('ImageMediaImmutable'), 
+        VerifyPath('project', isUUID) ])
     public async newProjectThumbnail(req: Request, res: Response) {
         const result = await this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
@@ -48,7 +57,11 @@ export default class MediaController {
     }
 
     @Post("projects/:project/board/:entry")
-    @Middleware([ RequiresContributor('project'), Verified('BoardMediaImmutable') ])
+    @Middleware([ 
+        RequiresContributor('project'), 
+        VerifyBody('BoardMediaImmutable'), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('entry', isUUID) ])
     public async newProjectBoardMedia(req: Request, res: Response) {
         const result = await this.requestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',

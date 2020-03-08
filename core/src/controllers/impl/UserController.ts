@@ -1,8 +1,9 @@
 import { ClassOptions, ClassWrapper, Controller, Get, Middleware, Patch } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import { RequiresSelf, Verified } from '../middlewares';
+import { RequiresSelf, VerifyBody } from '../middlewares';
 import UserService from '../../service/UserService';
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -21,7 +22,9 @@ export default class UserController {
     }
 
     @Patch(":user")
-    @Middleware([ RequiresSelf('user'), Verified('UserMutable') ])
+    @Middleware([ 
+        RequiresSelf('user'), 
+        VerifyBody('UserMutable') ])
     public async updateUser(req: Request, res: Response) {
         const result = await this.service.updateUser({
             payload: req.verified,

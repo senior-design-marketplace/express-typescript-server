@@ -2,7 +2,8 @@ import { ClassOptions, ClassWrapper, Controller, Middleware, Post } from "@overn
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import InviteService from "../../service/InviteService";
-import { RequiresAdministrator, RequiresSelf, Verified } from "../middlewares";
+import { RequiresAdministrator, RequiresSelf, VerifyBody, VerifyPath } from "../middlewares";
+import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -11,7 +12,10 @@ export default class InviteController {
     constructor(private readonly inviteService: InviteService) {}
 
     @Post()
-    @Middleware([ RequiresAdministrator('project'), Verified('InviteImmutable') ])
+    @Middleware([ 
+        RequiresAdministrator('project'), 
+        VerifyBody('InviteImmutable'), 
+        VerifyPath('project', isUUID) ])
     public async inviteProjectMember(req: Request, res: Response) {
         const result = await this.inviteService.inviteProjectMember({
             payload: req.verified,
@@ -23,7 +27,11 @@ export default class InviteController {
     }
 
     @Post(":invite")
-    @Middleware([ RequiresSelf('invite'), Verified('Response') ])
+    @Middleware([ 
+        RequiresSelf('invite'), 
+        VerifyBody('Response'), 
+        VerifyPath('project', isUUID), 
+        VerifyPath('invite', isUUID) ])
     public async inviteReply(req: Request, res: Response) {
         const result = await this.inviteService.inviteReply({
             payload: req.verified,
