@@ -8,12 +8,12 @@ import { NotificationMaster } from "../schemas/types/Notification/NotificationMa
 import { TagMaster } from "../schemas/types/Tag/TagMaster";
 import { UserMaster } from "../schemas/types/User/UserMaster";
 
-type LoadRootResult = {
+export type LoadRootResult = {
     majors: MajorMaster[],
     tags: TagMaster[]
 }
 
-type LoadRootAuthenticatedResult = LoadRootResult & {
+export type LoadRootAuthenticatedResult = LoadRootResult & {
     userDetails: UserMaster,
     notifications: NotificationMaster[]
 }
