@@ -10,9 +10,12 @@ import { DescribeProjectQuery } from '../access/queries/DescribeProjectQuery';
 import { BadRequestError } from '../error/error';
 import { AlreadyMemberError } from '../error/impl/AlreadyMemberError';
 import { NotAcceptingApplicationsError } from '../error/impl/NotAcceptingApplicationsError';
+import { AddContributorQuery } from '../access/queries/AddContributorQuery';
+import { TranslateErrors } from './decorators';
+import { GetProjectApplicationQuery } from '../access/queries/GetProjectApplicationQuery';
 
 type CreateApplicationParams = Utils.AuthenticatedSingleResourceServiceCall<ApplicationImmutable>;
-type ReplyProjectApplicationParams = Utils.AuthenticatedSingleResourceServiceCall<Response>;
+type ReplyProjectApplicationParams = Utils.AuthenticatedNestedResourceServiceCall<Response>;
 
 export default class ApplicationService {
 
@@ -21,9 +24,11 @@ export default class ApplicationService {
         private readonly describeProjectMembershipQuery: DescribeProjectMembershipQuery,
         private readonly describeProjectQuery: DescribeProjectQuery,
         private readonly createProjectApplicationQuery: CreateProjectApplicationQuery,
-        private readonly replyProjectApplicationQuery: ReplyProjectApplicationQuery) {}
+        private readonly replyProjectApplicationQuery: ReplyProjectApplicationQuery,
+        private readonly addContributorQuery: AddContributorQuery,
+        private readonly getProjectApplicationQuery: GetProjectApplicationQuery) {}
 
-    @Utils.translateErrors([ AlreadyMemberError, NotAcceptingApplicationsError ], BadRequestError)
+    @TranslateErrors([ AlreadyMemberError, NotAcceptingApplicationsError ], BadRequestError)
     public async createProjectApplication(params: CreateApplicationParams): Promise<ApplicationMaster> {
         const { isAdministrator, isContributor } = await this.describeProjectMembershipQuery.execute({
             projectId: params.resourceId,
@@ -54,13 +59,32 @@ export default class ApplicationService {
     }
 
     public async replyProjectApplication(params: ReplyProjectApplicationParams): Promise<ApplicationMaster> {
+        const application = await this.getProjectApplicationQuery.execute({
+            projectId: params.outerResourceId,
+            applicationId: params.innerResourceId
+        });
+
         const result = await this.replyProjectApplicationQuery.execute({
-            resourceId: params.resourceId,
+            resourceId: params.innerResourceId,
             response: params.payload.response
         })
 
         switch (result.status) {
             case "ACCEPTED":
+                const { isAdministrator, isContributor } = await this.describeProjectMembershipQuery.execute({
+                    projectId: params.outerResourceId,
+                    userId: application.userId
+                })
+
+                // user could have entered the project via some other
+                // means while the application is open
+                if (!isAdministrator && !isContributor) {
+                    await this.addContributorQuery.execute({
+                        projectId: application.projectId,
+                        userId: application.userId
+                    })
+                }
+
                 this.emitter.emit('application:accepted', result);
                 break;
             case "REJECTED":

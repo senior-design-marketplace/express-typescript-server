@@ -288,7 +288,7 @@ test('Respond to an application', async() => {
             "content-type": "application/json"
         },
         body: JSON.stringify({
-            response: "REJECTED"
+            response: "ACCEPTED"
         }),
         path: `/projects/${project}/applications/${application}`,
         queryStringParameters: {
@@ -296,9 +296,20 @@ test('Respond to an application', async() => {
         }
     });
 
+    const get = await runner.runEvent({
+        httpMethod: "GET",
+        path: `/projects/${project}`
+    })
+
+    const body = JSON.parse(get.body);
+
     expect(create.statusCode).toBe(200);
     expect(apply.statusCode).toBe(200);
     expect(respond.statusCode).toBe(200);
+    expect(get.statusCode).toBe(200);
+
+    expect(body.contributors.length).toBe(1);
+    expect(body.contributors[0].id).toBe(USER_ONE);
 })
 
 test('Load the root of the application', async () => {

@@ -68,6 +68,8 @@ import { CreateBoardEntryQuery } from "./access/queries/CreateBoardEntryQuery";
 import { DescribeBoardEntryQuery } from "./access/queries/DescribeBoardEntryQuery";
 import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery";
 import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery";
+import { AddContributorQuery } from "./access/queries/AddContributorQuery.js";
+import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -88,7 +90,9 @@ class App extends Server {
         new DescribeProjectMembershipQuery(),
         new DescribeProjectQuery(),
         new CreateProjectApplicationQuery(),
-        new ReplyProjectApplicationQuery()
+        new ReplyProjectApplicationQuery(),
+        new AddContributorQuery(),
+        new GetProjectApplicationQuery()
     )
 
     static rootService = new RootService(
