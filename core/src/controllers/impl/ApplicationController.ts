@@ -27,7 +27,8 @@ export default class ApplicationController {
     public async replyProjectApplication(req: Request, res: Response) {
         const result = await this.service.replyProjectApplication({
             payload: req.verified,
-            resourceId: req.params.application,
+            outerResourceId: req.params.project,
+            innerResourceId: req.params.application,
             claims: req.claims
         });
 
