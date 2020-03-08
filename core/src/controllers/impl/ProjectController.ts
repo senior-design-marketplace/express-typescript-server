@@ -8,6 +8,7 @@ import { FilterParams } from "../../schemas/types/QueryParams/FilterParams";
 import { SortParams } from "../../schemas/types/QueryParams/SortParams";
 import ProjectService from '../../service/ProjectService';
 import { RequiresAdministrator, RequiresAuth, RequiresContributor, RespondsToAuth, Verified } from "../middlewares";
+import { extractValue, PassThrough } from "./util";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -55,23 +56,25 @@ export default class ProjectController {
             resourceId: req.params.project
         });
 
-        const additional: any = {}
+        // additional fields mapped by this controller
+        const additional: { starredByUser?: boolean, popularity?: number } & Partial<ProjectMaster> = {}
         if (req.claims) {
             additional.starredByUser = result.starredBy.some((user) => {
                 user.id === req.claims.username;
             })
+
+            if (result.administrators.map(instance => instance.id).includes(req.claims.username)) {
+                additional.applications = result.applications
+            }
         }
 
+        additional.popularity = result.starredBy.length;
+
         res.status(200).json({
-            ...pick(result, [
-                ...keys<ProjectMaster>(),
-                'administrators', 
-                'contributors',
-                'boardItems'
-            ]),
+            ...pick(result, keys<PassThrough<ProjectMaster, 'administrators' | 'contributors' | 'boardItems'>>()),
             ...additional,
-            tags: result.tags.map((tag) => tag.value),
-            requestedMajors: result.requestedMajors.map((major) => major.value)
+            tags: extractValue(result.tags),
+            requestedMajors: extractValue(result.tags)
         });
 	}
 
