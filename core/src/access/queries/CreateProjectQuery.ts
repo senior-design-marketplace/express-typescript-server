@@ -1,6 +1,7 @@
 import { ProjectImmutable } from "../../schemas/types/Project/ProjectImmutable";
 import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
 import { Claims } from "../auth/verify";
+import { getDefaultMediaLink } from "./util";
 import AdministratorModel from "../models/AdministratorModel";
 import ProjectModel from "../models/ProjectModel";
 
@@ -19,12 +20,16 @@ export class CreateProjectQuery {
     public async execute(params: CreateProjectQuery.Params): Promise<ProjectMaster> {
         try {
             await ProjectModel.query()
-                .insert(params.payload);
+                .insert({
+                    thumbnailLink: getDefaultMediaLink(),
+                    coverLink: getDefaultMediaLink(),
+                    ...params.payload
+                });
             
             await AdministratorModel.query().insert({
                 userId: params.claims.username,
                 isAdvisor: params.claims.roles.includes("faculty"),
-                projectId: params.payload.id
+                projectId: params.payload.id,
             });
         } catch (e) {
             // Nothing.  Assume that it was a duplicate primary key issue.
