@@ -1,4 +1,5 @@
 import { Claims } from "../auth/verify";
+import { getDefaultMediaLink } from "./util";
 import UserModel from "../models/UserModel";
 
 namespace WriteThroughUserQuery {
@@ -20,7 +21,8 @@ export class WriteThroughUserQuery {
                 });
         } catch (e) {
             await UserModel.query().insert({
-                id: params.username
+                id: params.username,
+                thumbnailLink: getDefaultMediaLink()
             })
         }
     }
