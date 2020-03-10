@@ -70,6 +70,7 @@ import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery";
 import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery";
 import { AddContributorQuery } from "./access/queries/AddContributorQuery.js";
 import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery.js";
+import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -100,7 +101,8 @@ class App extends Server {
         new DescribeSupportedMajorsQuery(),
         new DescribeSupportedTagsQuery(),
         new GetUserProjectsQuery(),
-        new GetUserNotificationsQuery()
+        new GetUserNotificationsQuery(),
+        new GetUserApplicationsQuery()
     )
 
     static userService = new UserService(

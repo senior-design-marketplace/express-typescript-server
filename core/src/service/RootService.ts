@@ -7,6 +7,8 @@ import { MajorMaster } from "../schemas/types/Major/MajorMaster";
 import { NotificationMaster } from "../schemas/types/Notification/NotificationMaster";
 import { TagMaster } from "../schemas/types/Tag/TagMaster";
 import { UserMaster } from "../schemas/types/User/UserMaster";
+import { GetUserApplicationsQuery } from "../access/queries/GetUserApplicationsQuery";
+import { ApplicationMaster } from "../schemas/types/Application/ApplicationMaster";
 
 export type LoadRootResult = {
     majors: MajorMaster[],
@@ -15,7 +17,8 @@ export type LoadRootResult = {
 
 export type LoadRootAuthenticatedResult = LoadRootResult & {
     userDetails: UserMaster,
-    notifications: NotificationMaster[]
+    notifications: NotificationMaster[],
+    applications: ApplicationMaster[]
 }
 
 export default class RootService {
@@ -25,7 +28,8 @@ export default class RootService {
         private readonly describeSupportedMajorsQuery: DescribeSupportedMajorsQuery,
         private readonly describeSupportedTagsQuery: DescribeSupportedTagsQuery,
         private readonly getUserProjectsQuery: GetUserProjectsQuery,
-        private readonly getUserNotificationsQuery: GetUserNotificationsQuery) {}
+        private readonly getUserNotificationsQuery: GetUserNotificationsQuery,
+        private readonly getUserApplicationsQuery: GetUserApplicationsQuery) {}
 
     /**
      * Eventually find a better way of handling conditional
@@ -41,13 +45,14 @@ export default class RootService {
     }
 
     public async loadRootAuthenticated(userId: string): Promise<LoadRootAuthenticatedResult> {
-        const [ majors, tags, userDetails, notifications ] = await Promise.all([
+        const [ majors, tags, userDetails, notifications, applications ] = await Promise.all([
             this.describeSupportedMajorsQuery.execute(),
             this.describeSupportedTagsQuery.execute(),
             this.getUserProjectsQuery.execute({ userId }),
-            this.getUserNotificationsQuery.execute({ userId })
+            this.getUserNotificationsQuery.execute({ userId }),
+            this.getUserApplicationsQuery.execute({ userId })
         ]);
 
-        return { majors, tags, userDetails, notifications } as LoadRootAuthenticatedResult;
+        return { majors, tags, userDetails, notifications, applications } as LoadRootAuthenticatedResult;
     }
 }
