@@ -9,7 +9,8 @@ export interface FilterParams {
 
     /**
      * The id of an advisor
-     * @format uuid
+     * @minLength 1
+     * @maxLength 64
      */
     advisorId?: string;
 
