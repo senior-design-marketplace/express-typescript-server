@@ -685,3 +685,91 @@ test('Provide an invalid path parameter', async () => {
 
     expect(get.statusCode).toBe(400);
 })
+
+test('Board entries for a project are sorted', async () => {
+    const project = uuid()
+    const first = uuid()
+    const second = uuid()
+
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Sorted entries",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const firstResponse = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: first,
+            document: {
+                type: "TEXT",
+                body: "Foo"
+            }
+        }),
+        path: `/projects/${project}/board`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const secondResponse = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: second,
+            document: {
+                type: "TEXT",
+                body: "Foo"
+            }
+        }),
+        path: `/projects/${project}/board`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const get = await runner.runEvent({
+        httpMethod: "GET",
+        headers: {
+            "content-type": "application/json"
+        },
+        path: `/projects/${project}`,
+        queryStringParameters: {}
+    })
+
+    const body = JSON.parse(get.body);
+
+    assertOrder(body.boardItems
+        .map(instance => new Date(instance.createdAt).valueOf()), true);
+
+    expect(create.statusCode).toBe(200);
+    expect(firstResponse.statusCode).toBe(200);
+    expect(secondResponse.statusCode).toBe(200);
+    expect(get.statusCode).toBe(200);
+})
+
+function assertOrder(items: number[], descending?: boolean) {
+    for (let i = 0; i < items.length - 1; i++) {
+        const current = items[i];
+        const next = items[i + 1];
+
+        if (descending) expect(current).toBeGreaterThanOrEqual(next);
+        else expect(current).toBeLessThanOrEqual(next);
+    }
+}
