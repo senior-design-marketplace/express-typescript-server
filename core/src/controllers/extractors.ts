@@ -11,6 +11,7 @@ import UserMutableValidator from '../schemas/build/User/UserMutable/validator';
 import CommentImmutableValidator from '../schemas/build/Comment/CommentImmutable/validator';
 import ImageMediaImmutableValidator from '../schemas/build/Media/ImageMediaImmutable/validator';
 import BoardMediaImmutableValidator from '../schemas/build/Media/BoardMediaImmutable/validator';
+import NotificationMutableValidator from '../schemas/build/Notification/NotificationMutable/validator';
 import { ApplicationImmutable } from "../schemas/types/Application/ApplicationImmutable";
 import { InviteImmutable } from "../schemas/types/Invite/InviteImmutable";
 import { ProjectImmutable } from "../schemas/types/Project/ProjectImmutable";
@@ -23,6 +24,7 @@ import { UserMutable } from "../schemas/types/User/UserMutable";
 import { CommentImmutable } from "../schemas/types/Comment/CommentImmutable";
 import { ImageMediaImmutable } from "../schemas/types/Media/ImageMediaImmutable";
 import { BoardMediaImmutable } from "../schemas/types/Media/BoardMediaImmutable";
+import { NotificationMutable } from "../schemas/types/Notification/NotificationMutable";
 
 
 type Key = string | number;
@@ -80,5 +82,9 @@ export const extractors: Record<string, Extractor> = {
     'BoardMediaImmutable': {
         validator: BoardMediaImmutableValidator,
         extract: keys<BoardMediaImmutable>()
+    },
+    'NotificationMutable': {
+        validator: NotificationMutableValidator,
+        extract: keys<NotificationMutable>()
     }
 }
