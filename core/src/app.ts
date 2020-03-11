@@ -71,6 +71,7 @@ import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery";
 import { AddContributorQuery } from "./access/queries/AddContributorQuery.js";
 import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery.js";
 import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery.js";
+import { UpdateNotificationAsReadQuery } from "./access/queries/UpdateNotificationAsReadQuery.js";
 
 AWS.config.update({ region: "us-east-1" });
 
@@ -108,7 +109,8 @@ class App extends Server {
     static userService = new UserService(
         App.emitter,
         new DescribeUserQuery(),
-        new UpdateUserQuery()
+        new UpdateUserQuery(),
+        new UpdateNotificationAsReadQuery()
     )
 
     static inviteService = new InviteService(

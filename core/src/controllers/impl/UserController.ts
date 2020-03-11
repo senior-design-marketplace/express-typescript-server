@@ -1,7 +1,7 @@
 import { ClassOptions, ClassWrapper, Controller, Get, Middleware, Patch } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import { RequiresSelf, VerifyBody } from '../middlewares';
+import { RequiresSelf, VerifyBody, VerifyPath } from '../middlewares';
 import UserService from '../../service/UserService';
 import { isUUID } from 'validator';
 
@@ -29,6 +29,23 @@ export default class UserController {
         const result = await this.service.updateUser({
             payload: req.verified,
             resourceId: req.params.user,
+            claims: req.claims
+        })
+
+        res.status(200).json(result);
+    }
+
+    //TODO: must compound the key on the data layer, otherwise is unsafe
+    @Patch(":user/notifications/:notification")
+    @Middleware([
+        RequiresSelf('user'),
+        VerifyPath('notification', isUUID),
+        VerifyBody('NotificationMutable') ])
+    public async updateNotificationAsRead(req: Request, res: Response) {
+        const result = await this.service.updateNotificationAsRead({
+            payload: req.verified,
+            outerResourceId: req.params.user,
+            innerResourceId: req.params.notification,
             claims: req.claims
         })
 
