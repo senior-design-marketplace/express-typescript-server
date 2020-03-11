@@ -17,7 +17,12 @@ export class DescribeProjectQuery {
             .findById(params.projectId)
             .throwIfNotFound()
             .then((instance) => {
-                return instance.$fetchGraph('[starredBy, tags, requestedMajors, administrators, contributors, applications, boardItems]')
+                return instance.$fetchGraph('[starredBy, tags, requestedMajors, administrators, contributors, applications, boardItems(mostRecent)]')
+                    .modifiers({
+                        mostRecent(builder) {
+                            builder.orderBy('createdAt', 'desc')
+                        }
+                    })
             })
             .then((instance) => instance.$toJson() as ProjectMaster);
     }
