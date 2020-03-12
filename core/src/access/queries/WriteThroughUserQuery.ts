@@ -12,16 +12,21 @@ namespace WriteThroughUserQuery {
 export class WriteThroughUserQuery {
 
     public async execute(params: WriteThroughUserQuery.Params): Promise<WriteThroughUserQuery.Result> {
+        const instance = {
+            id: params.username,
+            firstName: params.givenName,
+            lastName: params.familyName,
+            email: params.email
+        };
+
         try {
             await UserModel.query()
                 .findById(params.username)
                 .throwIfNotFound()
-                .patch({
-                    id: params.username
-                });
+                .patch(instance);
         } catch (e) {
             await UserModel.query().insert({
-                id: params.username,
+                ...instance,
                 thumbnailLink: getDefaultMediaLink()
             })
         }
