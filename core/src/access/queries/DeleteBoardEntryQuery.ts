@@ -14,7 +14,7 @@ export class DeleteBoardEntryQuery {
 
     public async execute(params: DeleteBoardEntryQuery.Params): Promise<DeleteBoardEntryQuery.Result> {
         await BoardItemModel.query()
-            .findById([ params.projectId, params.entryId ])
+            .findById(params.entryId)
             .throwIfNotFound()
             .delete();
     }

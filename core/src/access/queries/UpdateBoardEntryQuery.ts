@@ -17,7 +17,7 @@ export class UpdateBoardEntryQuery {
 
     public async execute(params: UpdateBoardEntryQuery.Params): Promise<UpdateBoardEntryQuery.Result> {
         return BoardItemModel.query()
-            .patchAndFetchById([ params.outerResourceId, params.innerResourceId ], params.payload)
+            .patchAndFetchById(params.innerResourceId, params.payload)
             .throwIfNotFound()
             .then((instance) => instance.$toJson() as BoardEntryMaster);
     }

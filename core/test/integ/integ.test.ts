@@ -764,6 +764,84 @@ test('Board entries for a project are sorted', async () => {
     expect(get.statusCode).toBe(200);
 })
 
+test('Create a board entry on a project', async () => {
+    const project = uuid()
+    const entry = uuid();
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Board entry",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const board = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: entry,
+            document: {
+                type: "TEXT",
+                body: "Foo"
+            }
+        }),
+        path: `/projects/${project}/board`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    const update = await runner.runEvent({
+        httpMethod: "PATCH",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            document: {
+                type: "TEXT",
+                body: "Bar"
+            }
+        }),
+        path: `/projects/${project}/board/${entry}`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }        
+    })
+
+    const remove = await runner.runEvent({
+        httpMethod: "PATCH",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            document: {
+                type: "TEXT",
+                body: "Bar"
+            }
+        }),
+        path: `/projects/${project}/board/${entry}`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }        
+    })
+
+    expect(create.statusCode).toBe(200);
+    expect(board.statusCode).toBe(200);
+    expect(update.statusCode).toBe(200);
+    expect(remove.statusCode).toBe(200);
+})
+
 function assertOrder(items: number[], descending?: boolean) {
     for (let i = 0; i < items.length - 1; i++) {
         const current = items[i];
