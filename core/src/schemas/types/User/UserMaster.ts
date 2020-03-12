@@ -15,8 +15,23 @@ export interface UserMaster extends UserImmutable {
      */
     id: string;
 
-    // /**
-    //  * When the user joined the system
-    //  */
-    // joinedAt: Date;
+    /**
+     * The first name of the user
+     */
+    firstName: string;
+
+    /**
+     * The last name of the user
+     */
+    lastName: string;
+
+    /**
+     * The email address of the user
+     */
+    email: string;
+
+    /**
+     * When the user joined the system
+     */
+    joinedAt: Date;
 }

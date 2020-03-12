@@ -8,8 +8,12 @@ export default class UserModel extends Model implements UserMaster {
 	static tableName = "users";
 
     readonly id!: string;
+    readonly firstName!: string;
+    readonly lastName!: string;
+    readonly email!: string;
     readonly bio!: string;
     readonly thumbnailLink!: string;
+    readonly joinedAt!: Date;
 
     readonly applications!: ApplicationModel[];
     readonly stars!: ProjectModel[];

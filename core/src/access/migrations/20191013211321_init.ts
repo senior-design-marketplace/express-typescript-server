@@ -9,6 +9,14 @@ export async function up(knex: Knex): Promise<any> {
         .createTable("users", table => {
             table.string("id", constants.SMALL).primary();
 
+            table.string("firstName", constants.SMALL).notNullable();
+            table.string("lastName", constants.SMALL).notNullable();
+            table.string("email", constants.SMALL).notNullable();
+
+            table.dateTime("joinedAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
+
             //not-required
             table.string("bio", constants.MEDIUM);
             table.string("thumbnailLink", constants.MEDIUM);
