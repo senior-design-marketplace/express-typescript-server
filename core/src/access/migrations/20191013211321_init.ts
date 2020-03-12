@@ -307,7 +307,8 @@ export async function up(knex: Knex): Promise<any> {
                 .onDelete("CASCADE");
 
 			table
-				.string("userId", constants.SMALL)
+                .string("userId", constants.SMALL)
+                .notNullable()
 				.references("id")
 				.inTable("users")
                 .onDelete("CASCADE");
