@@ -72,11 +72,17 @@ import { AddContributorQuery } from "./access/queries/AddContributorQuery.js";
 import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery.js";
 import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery.js";
 import { UpdateNotificationAsReadQuery } from "./access/queries/UpdateNotificationAsReadQuery.js";
+import { DeleteCommentQuery } from "./access/queries/DeleteCommentQuery.js";
+import { EnforcerService, Resources, CRUDActions } from "./service/enforcer/EnforcerService.js";
+
+// enforcement policies
+import { CommentPolicy } from "./service/enforcer/policies/CommentPolicy";
 
 AWS.config.update({ region: "us-east-1" });
 
 class App extends Server {
     static emitter = new EventEmitter();
+    static enforcer = new EnforcerService<CRUDActions, Resources>();
 
     static projectService = new ProjectService(
         App.emitter,
@@ -129,7 +135,9 @@ class App extends Server {
 
     static commentService = new CommentService(
         App.emitter,
-        new CreateCommentQuery()
+        App.enforcer,
+        new CreateCommentQuery(),
+        new DeleteCommentQuery()
     )
 
     static requestFactory = new MediaRequestFactory(new AWS.S3());
@@ -156,6 +164,11 @@ class App extends Server {
          * to pass the error onto the handlers.
 		 */
         this.enableErrorHandlingMiddleware();
+
+        /**
+         * Load the enforcer with policies for each known resource.
+         */
+        this.enableEnforcementPolicies();
         
         /**
          * Allow middlewares to query for membership information on 
@@ -189,6 +202,11 @@ class App extends Server {
 				InternalError
 			])
 		);
+    }
+
+    private enableEnforcementPolicies(): void {
+        App.enforcer
+            .addPolicy('comment', CommentPolicy);
     }
     
 	//basically a doctor with all these injections
