@@ -842,6 +842,54 @@ test('Create a board entry on a project', async () => {
     expect(remove.statusCode).toBe(200);
 })
 
+test('Can delete a comment on a project', async () => {
+    const project = uuid()
+    const comment = uuid()
+
+    const create = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: project,
+            title: "Create comment",
+            tagline: "Foo"
+        }),
+        path: "/projects",
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    });
+
+    const other = await runner.runEvent({
+        httpMethod: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            id: comment,
+            body: "Bar"
+        }),
+        path: `/projects/${project}/comments`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ONE)
+        }
+    })
+
+    const remove = await runner.runEvent({
+        httpMethod: "DELETE",
+        path: `/projects/${project}/comments/${comment}`,
+        queryStringParameters: {
+            id_token: tokenFactory.getToken(USER_ZERO)
+        }
+    })
+
+    expect(create.statusCode).toBe(200);
+    expect(other.statusCode).toBe(200);
+    expect(remove.statusCode).toBe(200);
+})
+
 function assertOrder(items: number[], descending?: boolean) {
     for (let i = 0; i < items.length - 1; i++) {
         const current = items[i];
