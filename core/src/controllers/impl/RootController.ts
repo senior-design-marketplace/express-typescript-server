@@ -1,7 +1,7 @@
 import { ClassOptions, ClassWrapper, Controller, Get, Middleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import AsyncHandler from "express-async-handler";
-import RootService, { LoadRootResult, LoadRootAuthenticatedResult } from '../../service/RootService';
+import RootService, { LoadRootAuthenticatedResult, LoadRootResult } from '../../service/RootService';
 import { RespondsToAuth } from '../middlewares';
 import { extractValue } from './util';
 
@@ -13,7 +13,8 @@ export default class RootController {
     constructor(private readonly rootService: RootService) {}
 
     @Get()
-    @Middleware([ RespondsToAuth ])
+    @Middleware([ 
+        RespondsToAuth ])
     public async loadRoot(req: Request, res: Response) {
         let result: LoadRootResult | LoadRootAuthenticatedResult;
 

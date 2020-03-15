@@ -20,45 +20,48 @@ export class PolicyApplicationFailedError extends CustomError {
     }
 }
 
-export type CRUDActions = 'create' | 'read' | 'update' | 'delete';
-export type Resources = 'user' | 'project' | 'application' | 'invite' | 'entry' | 'comment';
+export type Actions = 'create' | 'read' | 'update' | 'delete';
 
 type Enforcer = (claims: Claims, ...resourceIds: string[]) => Promise<boolean>;
-export type Policy<A extends string> = Partial<Record<A, Enforcer>>;
+export type Policy<R extends string, A extends string> = Partial<Record<R, Partial<Record<A, Enforcer>>>>;
 
-export class EnforcerService<A extends string, R extends string> {
+export class EnforcerService<R extends string, A extends string> {
 
-    private registered: Partial<Record<R, Policy<A>>>;
+    private policies: Policy<R, A>;
 
     constructor() {
-        this.registered = {};
+        this.policies = {};
     }
 
-    public addPolicy(resource: R, ...policies: Policy<A>[]): EnforcerService<A, R> {
-        this.registered[resource] = this.registered[resource] || {};
-
+    public addPolicies(policies: Policy<R, A>[]): void {
         for (const policy of policies) {
-            for (const action of Object.keys(policy)) {
-                if (this.registered[resource][action]) {
-                    console.error(`Duplicate policy found for action ${action} on resource ${resource}.  Overwriting.`);
+            for (const resource of Object.keys(policy)) {
+                this.policies[resource] = this.policies[resource] || {};
+
+                for (const action of Object.keys(policy[resource])) {
+                    if (this.policies[resource][action]) {
+                        throw new Error(`Duplicate policy found for action ${action} on resource ${resource}`);
+                    }
+
+                    this.policies[resource][action] = policy[resource][action];
                 }
-    
-                this.registered[resource][action] = policy[action];
             }
         }
-
-        return this;
     }
 
     // if no policies are defined for this resource or this specific action
     // if not defined, permit the action
     public async enforce(claims: Claims, action: A, resource: R, ...resourceIds: string[]): Promise<void> {
-        const policy = this.registered[resource];
-
-        if (policy) {
-            const enforcer = policy[action];
-
-            if (enforcer && !await enforcer(claims, ...resourceIds)) throw new PolicyApplicationFailedError();
+        const actions = this.policies[resource];
+        if (actions) {
+            const enforcer = actions[action];
+            if (!enforcer) {
+                console.warn(`No action ${action} found for resource ${resource}`);
+            } else {
+                if (!await enforcer(claims, ...resourceIds)) throw new PolicyApplicationFailedError();
+            }
+        } else {
+            console.error(`No resource found for ${resource}`);
         }
     }
 }

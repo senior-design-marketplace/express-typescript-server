@@ -2,7 +2,7 @@ import { ClassOptions, ClassWrapper, Controller, Delete, Middleware, Patch, Post
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import ProjectBoardService from "../../service/ProjectBoardService";
-import { RequiresContributor, VerifyBody, VerifyPath } from '../middlewares';
+import { RequiresAuth, VerifyBody, VerifyPath } from '../middlewares';
 import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
@@ -13,7 +13,7 @@ export default class ProjectBoardController {
 
     @Post()
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyBody('BoardEntryImmutable'), 
         VerifyPath('project', isUUID) ])
     public async createBoardEntry(req: Request, res: Response) {
@@ -28,7 +28,7 @@ export default class ProjectBoardController {
 
     @Patch(":entry")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyBody('BoardEntryMutable'), 
         VerifyPath('project', isUUID), 
         VerifyPath('entry', isUUID) ])
@@ -45,7 +45,7 @@ export default class ProjectBoardController {
 
     @Delete(":entry")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyPath('project', isUUID), 
         VerifyPath('entry', isUUID) ])
     public async deleteBoardEntry(req: Request, res: Response) {

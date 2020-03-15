@@ -7,7 +7,7 @@ import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
 import { FilterParams } from "../../schemas/types/QueryParams/FilterParams";
 import { SortParams } from "../../schemas/types/QueryParams/SortParams";
 import ProjectService from '../../service/ProjectService';
-import { RequiresAdministrator, RequiresAuth, RequiresContributor, RespondsToAuth, VerifyBody, VerifyQuery, VerifyPath } from "../middlewares";
+import { RequiresAuth, RespondsToAuth, VerifyBody, VerifyQuery, VerifyPath } from "../middlewares";
 import { extractValue, PassThrough } from "./util";
 import { isUUID } from 'validator';
 
@@ -86,7 +86,7 @@ export default class ProjectController {
 
     @Patch(":project")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyBody("ProjectMutable"), 
         VerifyPath('project', isUUID) ])
 	public async updateProject(req: Request, res: Response) {
@@ -101,7 +101,7 @@ export default class ProjectController {
 
 	@Delete(":project")
 	@Middleware([ 
-        RequiresAdministrator('project'), 
+        RequiresAuth, 
         VerifyPath('project', isUUID) ])
 	public async deleteProject(req: Request, res: Response) {
 		const result = await this.projectService.deleteProject({

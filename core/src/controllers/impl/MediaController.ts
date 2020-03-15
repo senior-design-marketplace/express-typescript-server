@@ -1,26 +1,26 @@
 import { ClassOptions, ClassWrapper, Controller, Middleware, Post } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import { MediaRequestFactory } from "../mediaRequestFactory";
-import { RequiresContributor, RequiresSelf, VerifyBody, VerifyPath } from '../middlewares';
 import { isUUID } from 'validator';
+import { MediaService } from "../../service/MediaService";
+import { RequiresAuth, VerifyBody, VerifyPath } from '../middlewares';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("")
 export default class MediaController {
 
-    constructor(private readonly requestFactory: MediaRequestFactory) {}
+    constructor(private readonly service: MediaService) {}
 
     @Post("users/:user/avatar")
     @Middleware([ 
-        RequiresSelf('user'), 
+        RequiresAuth,
         VerifyBody('ImageMediaImmutable') ])
     public async newAvatar(req: Request, res: Response) {
-        const result = await this.requestFactory.knownFileRequest({
-            bucket: 'marqetplace-staging-photos',
-            key: `users/${req.params.user}/avatar`,
-            type: req.verified.type
+        const result = await this.service.updateAvatar({
+            payload: req.verified,
+            resourceId: req.params.user,
+            claims: req.claims
         })
         
         res.status(200).json(result);
@@ -28,14 +28,14 @@ export default class MediaController {
 
     @Post("projects/:project/cover")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyBody('ImageMediaImmutable'), 
         VerifyPath('project', isUUID) ])
     public async newProjectCover(req: Request, res: Response) {
-        const result = await this.requestFactory.knownFileRequest({
-            bucket: 'marqetplace-staging-photos',
-            key: `projects/${req.params.project}/cover`,
-            type: req.verified.type
+        const result = await this.service.updateCover({
+            payload: req.verified,
+            resourceId: req.params.project,
+            claims: req.claims
         })
 
         res.status(200).json(result);
@@ -43,14 +43,14 @@ export default class MediaController {
 
     @Post("projects/:project/thumbnail")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth, 
         VerifyBody('ImageMediaImmutable'), 
         VerifyPath('project', isUUID) ])
     public async newProjectThumbnail(req: Request, res: Response) {
-        const result = await this.requestFactory.knownFileRequest({
-            bucket: 'marqetplace-staging-photos',
-            key: `projects/${req.params.project}/thumbnail`,
-            type: req.verified.type
+        const result = await this.service.updateThumbnail({
+            payload: req.verified,
+            resourceId: req.params.project,
+            claims: req.claims
         })
 
         res.status(200).json(result);
@@ -58,15 +58,16 @@ export default class MediaController {
 
     @Post("projects/:project/board/:entry")
     @Middleware([ 
-        RequiresContributor('project'), 
+        RequiresAuth,
         VerifyBody('BoardMediaImmutable'), 
         VerifyPath('project', isUUID), 
         VerifyPath('entry', isUUID) ])
     public async newProjectBoardMedia(req: Request, res: Response) {
-        const result = await this.requestFactory.knownFileRequest({
-            bucket: 'marqetplace-staging-photos',
-            key: `projects/${req.params.project}/board/${req.params.entry}`,
-            type: req.verified.type
+        const result = await this.service.updateBoardMedia({
+            payload: req.verified,
+            outerResourceId: req.params.project,
+            innerResourceId: req.params.entry,
+            claims: req.claims
         })
 
         res.status(200).json(result);

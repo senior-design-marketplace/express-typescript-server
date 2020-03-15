@@ -1,14 +1,16 @@
 import { EventEmitter } from "events";
 import { DescribeSupportedMajorsQuery } from "../access/queries/DescribeSupportedMajorsQuery";
 import { DescribeSupportedTagsQuery } from "../access/queries/DescribeSupportedTagsQuery";
+import { GetUserApplicationsQuery } from "../access/queries/GetUserApplicationsQuery";
 import { GetUserNotificationsQuery } from "../access/queries/GetUserNotificationsQuery";
 import { GetUserProjectsQuery } from "../access/queries/GetUserProjectsQuery";
+import { ApplicationMaster } from "../schemas/types/Application/ApplicationMaster";
 import { MajorMaster } from "../schemas/types/Major/MajorMaster";
 import { NotificationMaster } from "../schemas/types/Notification/NotificationMaster";
 import { TagMaster } from "../schemas/types/Tag/TagMaster";
 import { UserMaster } from "../schemas/types/User/UserMaster";
-import { GetUserApplicationsQuery } from "../access/queries/GetUserApplicationsQuery";
-import { ApplicationMaster } from "../schemas/types/Application/ApplicationMaster";
+import { Actions, EnforcerService } from "./enforcer/EnforcerService";
+import { Resources } from "./enforcer/resources/resources";
 
 export type LoadRootResult = {
     majors: MajorMaster[],
@@ -25,6 +27,7 @@ export default class RootService {
 
     constructor(
         private readonly emitter: EventEmitter,
+        private readonly enforcer: EnforcerService<Resources, Actions>,
         private readonly describeSupportedMajorsQuery: DescribeSupportedMajorsQuery,
         private readonly describeSupportedTagsQuery: DescribeSupportedTagsQuery,
         private readonly getUserProjectsQuery: GetUserProjectsQuery,

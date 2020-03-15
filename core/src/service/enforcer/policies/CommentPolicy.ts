@@ -1,36 +1,75 @@
-import { Policy, CRUDActions } from "../EnforcerService";
 import { Claims } from "../../../access/auth/verify";
 import CommentModel from "../../../access/models/CommentModel";
 import { describeMembership } from "../../../access/queries/util";
+import { Actions, Policy } from "../EnforcerService";
+import { Resources } from "../resources/resources";
 
-export const CommentPolicy: Policy<CRUDActions> = {
-    'update': async (claims: Claims, ...resourceIds: string[]) => {
-        const projectId = resourceIds[0];
-        const commentId = resourceIds[1];
+export const CommentPolicy: Policy<Resources, Actions> = {
 
-        const comment = await CommentModel.query()
-            .findById(commentId)
-            .throwIfNotFound();
+    'comment': {
+        /**
+         * Anyone can post or reply to a comment.
+         */
+        create: async (claims: Claims, ...resourceIds: string[]) => {
+            switch (resourceIds.length) {
+                case 1: // an original comment
+                    return true;
 
-        return comment.userId === commentId;
-    },
-    'delete': async (claims: Claims, ...resourceIds: string[]) => {
-        const projectId = resourceIds[0];
-        const commentId = resourceIds[1];
+                case 2: // a reply to a comment
+                    const projectId = resourceIds[0];
+                    const commentId = resourceIds[1];
 
-        const comment = await CommentModel.query()
-            .findById(commentId)
-            .throwIfNotFound();
+                    const comment = await CommentModel.query()
+                        .findById(commentId)
+                        .throwIfNotFound();
+                    
+                    return comment.projectId === projectId;
 
-        if (comment.projectId !== projectId) {
-            return false;
+                default:
+                    throw new Error("Invalid argument length");
+            }
+        },
+
+        /**
+         * Only the author of the comment can edit it.
+         */
+        update: async (claims: Claims, ...resourceIds: string[]) => {
+            const projectId = resourceIds[0];
+            const commentId = resourceIds[1];
+
+            const comment = await CommentModel.query()
+                .findById(commentId)
+                .throwIfNotFound();
+
+            if (comment.projectId !== projectId) {
+                return false;
+            }
+
+            return comment.userId === commentId;
+        },
+
+        /**
+         * Either the author of the comment or an administrator
+         * of the project that the comment is posted on can
+         * delete a comment.
+         */
+        delete: async (claims: Claims, ...resourceIds: string[]) => {
+            const projectId = resourceIds[0];
+            const commentId = resourceIds[1];
+
+            const comment = await CommentModel.query()
+                .findById(commentId)
+                .throwIfNotFound();
+
+            if (comment.projectId !== projectId) {
+                return false;
+            }
+            if (comment.userId === claims.username) {
+                return true;
+            }
+            
+            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            return isAdministrator;
         }
-        if (comment.userId === claims.username) {
-            return true;
-        }
-        
-        const { isAdministrator } = await describeMembership(projectId, claims.username);
-
-        return isAdministrator;
     }
 }

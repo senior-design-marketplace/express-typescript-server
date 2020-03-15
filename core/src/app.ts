@@ -73,19 +73,29 @@ import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicati
 import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery.js";
 import { UpdateNotificationAsReadQuery } from "./access/queries/UpdateNotificationAsReadQuery.js";
 import { DeleteCommentQuery } from "./access/queries/DeleteCommentQuery.js";
-import { EnforcerService, Resources, CRUDActions } from "./service/enforcer/EnforcerService.js";
 
 // enforcement policies
+import { EnforcerService, Actions } from "./service/enforcer/EnforcerService.js";
+import { UserPolicy } from "./service/enforcer/policies/UserPolicy";
+import { ProjectPolicy } from "./service/enforcer/policies/ProjectPolicy";
+import { ApplicationPolicy } from "./service/enforcer/policies/ApplicationPolicy";
+import { InvitePolicy } from "./service/enforcer/policies/InvitePolicy";
+import { BoardEntryPolicy } from "./service/enforcer/policies/BoardEntryPolicy";
 import { CommentPolicy } from "./service/enforcer/policies/CommentPolicy";
+import { NotificationPolicy } from "./service/enforcer/policies/NotificationPolicy.js";
+import { Resources } from "./service/enforcer/resources/resources.js";
+import { MediaService } from "./service/MediaService.js";
+
 
 AWS.config.update({ region: "us-east-1" });
 
 class App extends Server {
     static emitter = new EventEmitter();
-    static enforcer = new EnforcerService<CRUDActions, Resources>();
+    static enforcer = new EnforcerService<Resources, Actions>();
 
     static projectService = new ProjectService(
         App.emitter,
+        App.enforcer,
         new DescribeProjectQuery(),
         new DescribeProjectsQuery(),
         new CreateProjectQuery(),
@@ -95,6 +105,7 @@ class App extends Server {
 
     static applicationService = new ApplicationService(
         App.emitter,
+        App.enforcer,
         new DescribeProjectMembershipQuery(),
         new DescribeProjectQuery(),
         new CreateProjectApplicationQuery(),
@@ -105,6 +116,7 @@ class App extends Server {
 
     static rootService = new RootService(
         App.emitter,
+        App.enforcer,
         new DescribeSupportedMajorsQuery(),
         new DescribeSupportedTagsQuery(),
         new GetUserProjectsQuery(),
@@ -114,6 +126,7 @@ class App extends Server {
 
     static userService = new UserService(
         App.emitter,
+        App.enforcer,
         new DescribeUserQuery(),
         new UpdateUserQuery(),
         new UpdateNotificationAsReadQuery()
@@ -121,12 +134,14 @@ class App extends Server {
 
     static inviteService = new InviteService(
         App.emitter,
+        App.enforcer,
         new InviteProjectMemberQuery(),
         new InviteReplyQuery()
     )
 
     static boardService = new ProjectBoardService(
         App.emitter,
+        App.enforcer,
         new CreateBoardEntryQuery(),
         new DescribeBoardEntryQuery(),
         new UpdateBoardEntryQuery(),
@@ -141,6 +156,12 @@ class App extends Server {
     )
 
     static requestFactory = new MediaRequestFactory(new AWS.S3());
+
+    static mediaService = new MediaService(
+        App.emitter,
+        App.enforcer,
+        App.requestFactory 
+    )
 
     static eventHandler = new EventHandler(
         App.emitter,
@@ -169,12 +190,6 @@ class App extends Server {
          * Load the enforcer with policies for each known resource.
          */
         this.enableEnforcementPolicies();
-        
-        /**
-         * Allow middlewares to query for membership information on 
-         * projects to validate requests.
-         */
-        this.app.set('membershipQuery', new DescribeProjectMembershipQuery());
 
         /**
          * Also allow authentication middlware to write through
@@ -205,15 +220,22 @@ class App extends Server {
     }
 
     private enableEnforcementPolicies(): void {
-        App.enforcer
-            .addPolicy('comment', CommentPolicy);
+        App.enforcer.addPolicies([
+            UserPolicy,
+            ProjectPolicy,
+            ApplicationPolicy,
+            InvitePolicy,
+            BoardEntryPolicy,
+            CommentPolicy,
+            NotificationPolicy
+        ]);
     }
     
 	//basically a doctor with all these injections
 	private enableRoutes(): void {
 		const controllers: any[] = [];
 		controllers.push(new ProjectController(App.projectService));
-        controllers.push(new MediaController(App.requestFactory));
+        controllers.push(new MediaController(App.mediaService));
         controllers.push(new RootController(App.rootService));
         controllers.push(new UserController(App.userService));
         controllers.push(new InviteController(App.inviteService));
