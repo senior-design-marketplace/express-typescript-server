@@ -1,7 +1,7 @@
-import { Claims } from "../../../access/auth/verify";
-import ApplicationModel from "../../../access/models/ApplicationModel";
-import ProjectModel from "../../../access/models/ProjectModel";
-import { describeMembership } from "../../../access/queries/util";
+import { Claims } from "../../../../core/src/access/auth/verify";
+import ApplicationModel from "../../../../core/src/access/models/ApplicationModel";
+import ProjectModel from "../../../../core/src/access/models/ProjectModel";
+import { describeMembership } from "../../../../core/src/access/queries/util";
 import { Actions, Policy } from "../EnforcerService";
 import { Resources } from "../resources/resources";
 

@@ -1,5 +1,5 @@
-import { Claims } from "../../access/auth/verify";
 import { CustomError } from "ts-custom-error";
+import { Claims } from "../../../core/src/access/auth/verify";
 
 /**
  * A poor man's implementation of ABAC.  Here, you have all of the
@@ -23,6 +23,16 @@ export class PolicyApplicationFailedError extends CustomError {
 export type Actions = 'create' | 'read' | 'update' | 'delete';
 
 type Enforcer = (claims: Claims, ...resourceIds: string[]) => Promise<boolean>;
+
+export type UnauthenticatedServiceCall<T> = {
+    payload: T;
+    resourceIds: string[]
+};
+
+export type AuthenticatedServiceCall<T> = {
+    claims: Claims
+} & UnauthenticatedServiceCall<T>;
+
 export type Policy<R extends string, A extends string> = Partial<Record<R, Partial<Record<A, Enforcer>>>>;
 
 export class EnforcerService<R extends string, A extends string> {

@@ -1,6 +1,6 @@
 import { Actions, Policy } from "../EnforcerService";
 import { Resources } from "../resources/resources";
-import { Claims } from "../../../access/auth/verify";
+import { Claims } from "../../../../core/src/access/auth/verify";
 
 export const UserPolicy: Policy<Resources, Actions> = {
 

@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import { Actions, EnforcerService, PolicyApplicationFailedError } from '../../../external/enforcer/src/EnforcerService';
+import { Resources } from '../../../external/enforcer/src/resources/resources';
 import { AddContributorQuery } from '../access/queries/AddContributorQuery';
 import { CreateProjectApplicationQuery } from '../access/queries/CreateProjectApplicationQuery';
 import { DescribeProjectMembershipQuery } from '../access/queries/DescribeProjectMembershipQuery';
@@ -10,8 +12,6 @@ import { ApplicationImmutable } from '../schemas/types/Application/ApplicationIm
 import { ApplicationMaster } from '../schemas/types/Application/ApplicationMaster';
 import { Response } from '../schemas/types/Response/Response';
 import { TranslateErrors } from './decorators';
-import { Actions, EnforcerService, PolicyApplicationFailedError } from './enforcer/EnforcerService';
-import { Resources } from './enforcer/resources/resources';
 import * as Utils from './util';
 
 type CreateApplicationParams = Utils.AuthenticatedSingleResourceServiceCall<ApplicationImmutable>;

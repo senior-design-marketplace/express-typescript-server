@@ -1,12 +1,12 @@
 import { EventEmitter } from 'events';
+import { Actions, EnforcerService, PolicyApplicationFailedError } from '../../../external/enforcer/src/EnforcerService';
+import { Resources } from '../../../external/enforcer/src/resources/resources';
 import { CreateCommentQuery } from '../access/queries/CreateCommentQuery';
 import { DeleteCommentQuery } from '../access/queries/DeleteCommentQuery';
 import { AuthorizationError } from '../error/error';
 import { CommentImmutable } from '../schemas/types/Comment/CommentImmutable';
 import { CommentMaster } from '../schemas/types/Comment/CommentMaster';
 import { TranslateErrors } from './decorators';
-import { Actions, EnforcerService, PolicyApplicationFailedError } from './enforcer/EnforcerService';
-import { Resources } from './enforcer/resources/resources';
 import * as Utils from './util';
 
 type CreateCommentParams = Utils.AuthenticatedSingleResourceServiceCall<CommentImmutable>;

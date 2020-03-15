@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import { Actions, EnforcerService, PolicyApplicationFailedError } from '../../../external/enforcer/src/EnforcerService';
+import { Resources } from '../../../external/enforcer/src/resources/resources';
 import { CreateProjectQuery } from '../access/queries/CreateProjectQuery';
 import { DeleteProjectQuery } from '../access/queries/DeleteProjectQuery';
 import { DescribeProjectQuery } from '../access/queries/DescribeProjectQuery';
@@ -11,8 +13,6 @@ import { ProjectMutable } from '../schemas/types/Project/ProjectMutable';
 import { FilterParams } from '../schemas/types/QueryParams/FilterParams';
 import { SortParams } from '../schemas/types/QueryParams/SortParams';
 import { TranslateErrors } from './decorators';
-import { Actions, EnforcerService, PolicyApplicationFailedError } from './enforcer/EnforcerService';
-import { Resources } from './enforcer/resources/resources';
 import * as Utils from './util';
 
 interface DescribeProjectsParams {
