@@ -1,10 +1,13 @@
-import * as Utils from './util';
-import { CommentImmutable } from '../schemas/types/Comment/CommentImmutable';
-import { CommentMaster } from '../schemas/types/Comment/CommentMaster';
 import { EventEmitter } from 'events';
 import { CreateCommentQuery } from '../access/queries/CreateCommentQuery';
 import { DeleteCommentQuery } from '../access/queries/DeleteCommentQuery';
-import { EnforcerService, Resources, CRUDActions } from './enforcer/EnforcerService';
+import { AuthorizationError } from '../error/error';
+import { CommentImmutable } from '../schemas/types/Comment/CommentImmutable';
+import { CommentMaster } from '../schemas/types/Comment/CommentMaster';
+import { TranslateErrors } from './decorators';
+import { Actions, EnforcerService, PolicyApplicationFailedError } from './enforcer/EnforcerService';
+import { Resources } from './enforcer/resources/resources';
+import * as Utils from './util';
 
 type CreateCommentParams = Utils.AuthenticatedSingleResourceServiceCall<CommentImmutable>;
 type ReplyCommentParams = Utils.AuthenticatedNestedResourceServiceCall<CommentImmutable>;
@@ -14,11 +17,19 @@ export default class CommentService {
 
     constructor(
         private readonly emitter: EventEmitter,
-        private readonly enforcer: EnforcerService<CRUDActions, Resources>,
+        private readonly enforcer: EnforcerService<Resources, Actions>,
         private readonly createCommentQuery: CreateCommentQuery,
         private deleteCommentQuery: DeleteCommentQuery) {}
 
+    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async createComment(params: CreateCommentParams): Promise<CommentMaster> {
+        await this.enforcer.enforce(
+            params.claims,
+            'create',
+            'comment',
+            params.resourceId
+        )
+
         return this.createCommentQuery.execute({
             id: params.payload.id,
             projectId: params.resourceId,
@@ -27,7 +38,16 @@ export default class CommentService {
         })
     }
 
+    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async replyComment(params: ReplyCommentParams): Promise<CommentMaster> {
+        await this.enforcer.enforce(
+            params.claims,
+            'create',
+            'comment',
+            params.outerResourceId,
+            params.innerResourceId
+        )
+
         return this.createCommentQuery.execute({
             id: params.payload.id,
             projectId: params.outerResourceId,
@@ -37,6 +57,7 @@ export default class CommentService {
         })
     }
 
+    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async deleteComment(params: DeleteCommentParams): Promise<void> {
         await this.enforcer.enforce(
             params.claims, 
@@ -45,7 +66,7 @@ export default class CommentService {
             params.outerResourceId, 
             params.innerResourceId);
 
-        await this.deleteCommentQuery.execute({
+        return this.deleteCommentQuery.execute({
             projectId: params.outerResourceId,
             id: params.innerResourceId,
             userId: params.claims.username

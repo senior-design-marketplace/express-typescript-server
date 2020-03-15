@@ -4,9 +4,6 @@ import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
 import CommentService from "../../service/CommentService";
 import { isUUID } from 'validator';
-import { TranslateErrors } from "../../service/decorators";
-import { PolicyApplicationFailedError } from "../../service/enforcer/EnforcerService";
-import { AuthorizationError } from "../../error/error";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
@@ -52,7 +49,6 @@ export default class CommentController {
         VerifyPath('project', isUUID),
         VerifyPath('comment', isUUID)
     ])
-    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async deleteComment(req: Request, res: Response) {
         const result = await this.service.deleteComment({
             payload: null,

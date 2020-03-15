@@ -2,7 +2,7 @@ import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post } from 
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import ApplicationService from "../../service/ApplicationService";
-import { RequiresAdministrator, RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
+import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
 import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
@@ -28,7 +28,7 @@ export default class ApplicationController {
 
     @Patch(":application")
     @Middleware([ 
-        RequiresAdministrator("project"), 
+        RequiresAuth,
         VerifyBody("Response"), 
         VerifyPath('project', isUUID), 
         VerifyPath('application', isUUID)])

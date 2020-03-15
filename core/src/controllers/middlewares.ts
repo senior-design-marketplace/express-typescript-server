@@ -1,11 +1,10 @@
-import pick from 'lodash/pick';
-import CodedError from "../error/CodedError";
 import { Request, Response } from "express";
-import { AuthenticationError, BadRequestError, AuthorizationError } from "../error/error";
-import { extractors } from "./extractors";
-import { extractClaims, Claims } from '../access/auth/verify';
-import { DescribeProjectMembershipQuery } from "../access/queries/DescribeProjectMembershipQuery";
+import pick from 'lodash/pick';
+import { Claims, extractClaims } from '../access/auth/verify';
 import { WriteThroughUserQuery } from '../access/queries/WriteThroughUserQuery';
+import CodedError from "../error/CodedError";
+import { AuthenticationError, BadRequestError } from "../error/error";
+import { extractors } from "./extractors";
 
 declare global {
     namespace Express {
@@ -57,57 +56,6 @@ export async function RequiresAuth (req: Request, res: Response, next) {
         next();
     } catch (e) {
         next(e);
-    }
-}
-
-export function RequiresSelf (param: string) {
-    return async (req: Request, res: Response, next: any) => {
-        try {
-            await examineToken(req);
-        } catch (e) {
-            next(e);
-        }
-
-        if (req.claims.username !== req.params[param]) next(new AuthorizationError("Forbidden"));
-        else next();
-    }
-}
-
-export function RequiresContributor (param: string) {
-    return async (req: Request, res: Response, next: any) => {
-        try {
-            await examineToken(req);
-        } catch (e) {
-            next(e);
-        }
-
-        const query: DescribeProjectMembershipQuery = req.app.get('membershipQuery');
-        const { isAdministrator, isContributor } = await query.execute({
-            projectId: req.params[param],
-            userId: req.claims.username
-        })
-
-        if (!isContributor && !isAdministrator) next(new AuthorizationError("Forbidden"));
-        else next();
-    }
-}
-
-export function RequiresAdministrator(param: string) {
-    return async (req: Request, res: Response, next: any) => {
-        try {
-            await examineToken(req);
-        } catch (e) {
-            next(e);
-        }
-
-        const query: DescribeProjectMembershipQuery = req.app.get('membershipQuery');
-        const { isAdministrator, isContributor } = await query.execute({
-            projectId: req.params[param],
-            userId: req.claims.username
-        })
-
-        if (!isAdministrator) next(new AuthorizationError("Forbidden"));
-        else next();
     }
 }
 

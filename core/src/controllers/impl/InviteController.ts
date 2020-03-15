@@ -2,7 +2,7 @@ import { ClassOptions, ClassWrapper, Controller, Middleware, Post } from "@overn
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import InviteService from "../../service/InviteService";
-import { RequiresAdministrator, RequiresSelf, VerifyBody, VerifyPath } from "../middlewares";
+import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
 import { isUUID } from 'validator';
 
 @ClassWrapper(AsyncHandler)
@@ -13,7 +13,7 @@ export default class InviteController {
 
     @Post()
     @Middleware([ 
-        RequiresAdministrator('project'), 
+        RequiresAuth,
         VerifyBody('InviteImmutable'), 
         VerifyPath('project', isUUID) ])
     public async inviteProjectMember(req: Request, res: Response) {
@@ -28,7 +28,7 @@ export default class InviteController {
 
     @Post(":invite")
     @Middleware([ 
-        RequiresSelf('invite'), 
+        RequiresAuth,
         VerifyBody('Response'), 
         VerifyPath('project', isUUID), 
         VerifyPath('invite', isUUID) ])

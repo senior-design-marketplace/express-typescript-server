@@ -193,6 +193,9 @@ test('Cannot access media for another user', async () => {
         headers: {
             "content-type": "application/json"
         },
+        body: JSON.stringify({
+            type: "JPEG"
+        }),
         path: '/users/foo/avatar',
         queryStringParameters: {
             id_token: tokenFactory.getToken(USER_ZERO)
@@ -614,7 +617,7 @@ test('Apply to a project not accepting applications', async () => {
     });
 
     expect(create.statusCode).toBe(200);
-    expect(apply.statusCode).toBe(400);
+    expect(apply.statusCode).toBe(403);
 })
 
 test('Apply to a project the user is already a member of', async () => {
@@ -652,7 +655,7 @@ test('Apply to a project the user is already a member of', async () => {
     });
 
     expect(create.statusCode).toBe(200);
-    expect(apply.statusCode).toBe(400);
+    expect(apply.statusCode).toBe(403);
 })
 
 

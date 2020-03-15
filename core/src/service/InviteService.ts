@@ -1,8 +1,12 @@
 import { EventEmitter } from "events";
 import { InviteProjectMemberQuery } from "../access/queries/InviteProjectMemberQuery";
 import { InviteReplyQuery } from "../access/queries/InviteReplyQuery";
+import { AuthorizationError } from "../error/error";
 import { InviteImmutable } from "../schemas/types/Invite/InviteImmutable";
 import { ResponseType } from "../schemas/types/Response/ResponseType";
+import { TranslateErrors } from "./decorators";
+import { Actions, EnforcerService, PolicyApplicationFailedError } from "./enforcer/EnforcerService";
+import { Resources } from "./enforcer/resources/resources";
 import * as Utils from './util';
 
 type InviteProjectMemberParams = Utils.AuthenticatedSingleResourceServiceCall<InviteImmutable>;
@@ -12,10 +16,19 @@ export default class InviteService {
 
     constructor(
         private readonly emitter: EventEmitter,
+        private readonly enforcer: EnforcerService<Resources, Actions>,
         private readonly inviteProjectMemberQuery: InviteProjectMemberQuery,
         private readonly inviteReplyQuery: InviteReplyQuery) {}
 
+    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async inviteProjectMember(params: InviteProjectMemberParams) {
+        await this.enforcer.enforce(
+            params.claims,
+            'create',
+            'invite',
+            params.resourceId
+        )
+
         const result = await this.inviteProjectMemberQuery.execute({
             payload: params.payload,
             initiateId: params.claims.username
@@ -26,7 +39,16 @@ export default class InviteService {
         return result;
     }
 
+    @TranslateErrors([ PolicyApplicationFailedError ], AuthorizationError)
     public async inviteReply(params: InviteReplyParams) {
+        await this.enforcer.enforce(
+            params.claims,
+            'update',
+            'invite',
+            params.outerResourceId,
+            params.innerResourceId
+        )
+
         const result = await this.inviteReplyQuery.execute({
             resourceId: params.innerResourceId,
             response: params.payload
