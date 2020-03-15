@@ -1,4 +1,6 @@
 import { EventEmitter } from "events";
+import { Actions, EnforcerService } from "../../../external/enforcer/src/EnforcerService";
+import { Resources } from "../../../external/enforcer/src/resources/resources";
 import { DescribeSupportedMajorsQuery } from "../access/queries/DescribeSupportedMajorsQuery";
 import { DescribeSupportedTagsQuery } from "../access/queries/DescribeSupportedTagsQuery";
 import { GetUserApplicationsQuery } from "../access/queries/GetUserApplicationsQuery";
@@ -9,8 +11,6 @@ import { MajorMaster } from "../schemas/types/Major/MajorMaster";
 import { NotificationMaster } from "../schemas/types/Notification/NotificationMaster";
 import { TagMaster } from "../schemas/types/Tag/TagMaster";
 import { UserMaster } from "../schemas/types/User/UserMaster";
-import { Actions, EnforcerService } from "./enforcer/EnforcerService";
-import { Resources } from "./enforcer/resources/resources";
 
 export type LoadRootResult = {
     majors: MajorMaster[],

@@ -1,12 +1,12 @@
 import { EventEmitter } from "events";
+import { Actions, EnforcerService, PolicyApplicationFailedError } from "../../../external/enforcer/src/EnforcerService";
+import { Resources } from "../../../external/enforcer/src/resources/resources";
 import { InviteProjectMemberQuery } from "../access/queries/InviteProjectMemberQuery";
 import { InviteReplyQuery } from "../access/queries/InviteReplyQuery";
 import { AuthorizationError } from "../error/error";
 import { InviteImmutable } from "../schemas/types/Invite/InviteImmutable";
 import { ResponseType } from "../schemas/types/Response/ResponseType";
 import { TranslateErrors } from "./decorators";
-import { Actions, EnforcerService, PolicyApplicationFailedError } from "./enforcer/EnforcerService";
-import { Resources } from "./enforcer/resources/resources";
 import * as Utils from './util';
 
 type InviteProjectMemberParams = Utils.AuthenticatedSingleResourceServiceCall<InviteImmutable>;

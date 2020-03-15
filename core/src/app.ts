@@ -26,7 +26,7 @@ import { GetProjectMembersQuery } from "./access/queries/GetProjectMembersQuery"
 import { InviteProjectMemberQuery } from "./access/queries/InviteProjectMemberQuery";
 import { InviteReplyQuery } from "./access/queries/InviteReplyQuery";
 import { GetUserNotificationsQuery } from "./access/queries/GetUserNotificationsQuery";
-import { CreateCommentQuery } from "./access/queries/CreateCommentQuery.js";
+import { CreateCommentQuery } from "./access/queries/CreateCommentQuery";
 
 // controller layer
 import ProjectController from "./controllers/impl/ProjectController";
@@ -36,7 +36,7 @@ import RootController from "./controllers/impl/RootController";
 import UserController from "./controllers/impl/UserController";
 import InviteController from "./controllers/impl/InviteController";
 import ProjectBoardController from "./controllers/impl/ProjectBoardController";
-import CommentController from "./controllers/impl/CommentController.js";
+import CommentController from "./controllers/impl/CommentController";
 import { MediaRequestFactory } from "./controllers/mediaRequestFactory";
 
 // service layer
@@ -46,7 +46,7 @@ import InviteService from "./service/InviteService";
 import RootService from "./service/RootService";
 import UserService from "./service/UserService";
 import ProjectBoardService from "./service/ProjectBoardService";
-import CommentService from "./service/CommentService.js";
+import CommentService from "./service/CommentService";
 
 // core
 import { Server } from "@overnightjs/core";
@@ -68,23 +68,23 @@ import { CreateBoardEntryQuery } from "./access/queries/CreateBoardEntryQuery";
 import { DescribeBoardEntryQuery } from "./access/queries/DescribeBoardEntryQuery";
 import { UpdateBoardEntryQuery } from "./access/queries/UpdateBoardEntryQuery";
 import { DeleteBoardEntryQuery } from "./access/queries/DeleteBoardEntryQuery";
-import { AddContributorQuery } from "./access/queries/AddContributorQuery.js";
-import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery.js";
-import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery.js";
-import { UpdateNotificationAsReadQuery } from "./access/queries/UpdateNotificationAsReadQuery.js";
-import { DeleteCommentQuery } from "./access/queries/DeleteCommentQuery.js";
+import { AddContributorQuery } from "./access/queries/AddContributorQuery";
+import { GetProjectApplicationQuery } from "./access/queries/GetProjectApplicationQuery";
+import { GetUserApplicationsQuery } from "./access/queries/GetUserApplicationsQuery";
+import { UpdateNotificationAsReadQuery } from "./access/queries/UpdateNotificationAsReadQuery";
+import { DeleteCommentQuery } from "./access/queries/DeleteCommentQuery";
 
 // enforcement policies
-import { EnforcerService, Actions } from "./service/enforcer/EnforcerService.js";
-import { UserPolicy } from "./service/enforcer/policies/UserPolicy";
-import { ProjectPolicy } from "./service/enforcer/policies/ProjectPolicy";
-import { ApplicationPolicy } from "./service/enforcer/policies/ApplicationPolicy";
-import { InvitePolicy } from "./service/enforcer/policies/InvitePolicy";
-import { BoardEntryPolicy } from "./service/enforcer/policies/BoardEntryPolicy";
-import { CommentPolicy } from "./service/enforcer/policies/CommentPolicy";
-import { NotificationPolicy } from "./service/enforcer/policies/NotificationPolicy.js";
-import { Resources } from "./service/enforcer/resources/resources.js";
-import { MediaService } from "./service/MediaService.js";
+import { EnforcerService, Actions } from "../../external/enforcer/src/EnforcerService";
+import { UserPolicy } from "../../external/enforcer/src/policies/UserPolicy";
+import { ProjectPolicy } from "../../external/enforcer/src/policies/ProjectPolicy";
+import { ApplicationPolicy } from "../../external/enforcer/src/policies/ApplicationPolicy";
+import { InvitePolicy } from "../../external/enforcer/src/policies/InvitePolicy";
+import { BoardEntryPolicy } from "../../external/enforcer/src/policies/BoardEntryPolicy";
+import { CommentPolicy } from "../../external/enforcer/src/policies/CommentPolicy";
+import { NotificationPolicy } from "../../external/enforcer/src/policies/NotificationPolicy";
+import { Resources } from "../../external/enforcer/src/resources/resources";
+import { MediaService } from "./service/MediaService";
 
 
 AWS.config.update({ region: "us-east-1" });

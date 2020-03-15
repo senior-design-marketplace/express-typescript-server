@@ -1,12 +1,12 @@
 import { S3 } from "aws-sdk";
 import { EventEmitter } from "events";
+import { Actions, EnforcerService, PolicyApplicationFailedError } from "../../../external/enforcer/src/EnforcerService";
+import { Resources } from "../../../external/enforcer/src/resources/resources";
 import { MediaRequestFactory } from "../controllers/mediaRequestFactory";
 import { AuthorizationError } from "../error/error";
 import { BoardMediaImmutable } from "../schemas/types/Media/BoardMediaImmutable";
 import { ImageMediaImmutable } from "../schemas/types/Media/ImageMediaImmutable";
 import { TranslateErrors } from "./decorators";
-import { Actions, EnforcerService, PolicyApplicationFailedError } from "./enforcer/EnforcerService";
-import { Resources } from "./enforcer/resources/resources";
 import * as Utils from './util';
 
 type UpdateAvatarParams = Utils.AuthenticatedSingleResourceServiceCall<ImageMediaImmutable>;

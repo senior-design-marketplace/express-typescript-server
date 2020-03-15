@@ -1,5 +1,5 @@
-import { Claims } from "../../../access/auth/verify";
-import { NotificationModel } from "../../../access/models/NotificationModel";
+import { Claims } from "../../../../core/src/access/auth/verify";
+import { NotificationModel } from "../../../../core/src/access/models/NotificationModel";
 import { Actions, Policy } from "../EnforcerService";
 import { Resources } from "../resources/resources";
 

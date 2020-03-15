@@ -1,4 +1,6 @@
 import { EventEmitter } from "events";
+import { Actions, EnforcerService, PolicyApplicationFailedError } from "../../../external/enforcer/src/EnforcerService";
+import { Resources } from "../../../external/enforcer/src/resources/resources";
 import { DescribeUserQuery } from "../access/queries/DescribeUserQuery";
 import { UpdateNotificationAsReadQuery } from "../access/queries/UpdateNotificationAsReadQuery";
 import { UpdateUserQuery } from "../access/queries/UpdateUserQuery";
@@ -8,8 +10,6 @@ import { NotificationMutable } from "../schemas/types/Notification/NotificationM
 import { UserMaster } from "../schemas/types/User/UserMaster";
 import { UserMutable } from "../schemas/types/User/UserMutable";
 import { TranslateErrors } from "./decorators";
-import { Actions, EnforcerService, PolicyApplicationFailedError } from "./enforcer/EnforcerService";
-import { Resources } from "./enforcer/resources/resources";
 import * as Utils from './util';
 
 type DescribeUserParams = Utils.UnauthenticatedSingleResourceServiceCall<null>;

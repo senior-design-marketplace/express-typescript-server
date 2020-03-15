@@ -1,6 +1,6 @@
-import { Claims } from "../../../access/auth/verify";
-import BoardItemModel from "../../../access/models/BoardItemModel";
-import { describeMembership } from "../../../access/queries/util";
+import { Claims } from "../../../../core/src/access/auth/verify";
+import BoardItemModel from "../../../../core/src/access/models/BoardItemModel";
+import { describeMembership } from "../../../../core/src/access/queries/util";
 import { Actions, Policy } from "../EnforcerService";
 import { Resources } from "../resources/resources";
 
