@@ -574,11 +574,11 @@ export class EnforcerService {
     private handleErrors(enforcement: EnforcementResult) {
         switch (enforcement.view) {
             case 'error':
-                throw new AuthenticationError('Authentication required');
+                throw new AuthenticationError();
             case 'hidden':
-                throw new NotFoundError('Resource not found');
+                throw new NotFoundError();
             case 'blocked':
-                throw new AuthorizationError('User does not have appropriate credentials');
+                throw new AuthorizationError();
             default:
                 return;
         }

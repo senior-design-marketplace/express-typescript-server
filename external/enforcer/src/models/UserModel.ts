@@ -5,9 +5,10 @@ import { ProjectModel } from "./ProjectModel";
 import { Viewable } from "./Viewable";
 import { UserShared } from "../../../../lib/types/shared/UserShared";
 import { User } from "../types/User";
+import { BaseModel } from "./BaseModel";
 
-export class UserModel extends Model implements UserShared, Viewable<User.PartialView, User.VerboseView, User.FullView> {
-    
+export class UserModel extends BaseModel implements UserShared, Viewable<User.PartialView, User.VerboseView, User.FullView> {
+
 	static tableName = "users";
 
     id!: string;

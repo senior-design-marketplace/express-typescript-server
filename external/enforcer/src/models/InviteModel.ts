@@ -4,8 +4,10 @@ import { Viewable } from "./Viewable";
 import { InviteShared } from "../../../../lib/types/shared/InviteShared";
 import { Role } from "../../../../lib/types/base/Role";
 import { Status } from "../../../../lib/types/base/Status";
+import { InternalError } from "../../../../core/src/error/error";
+import { BaseModel } from "./BaseModel";
 
-export class InviteModel extends Model implements InviteShared, Viewable<Invite.PartialView, Invite.VerboseView, Invite.FullView> {
+export class InviteModel extends BaseModel implements InviteShared, Viewable<Invite.PartialView, Invite.VerboseView, Invite.FullView> {
 
     static tableName = "invites";
     
@@ -20,7 +22,7 @@ export class InviteModel extends Model implements InviteShared, Viewable<Invite.
     note!: string;
 
     public async getPartialView(transaction?: Transaction): Promise<Invite.PartialView> {
-        throw new Error("Not implemented");
+        throw new InternalError("Not implemented");
     }
 
     public async getVerboseView(transaction?: Transaction): Promise<Invite.VerboseView> {

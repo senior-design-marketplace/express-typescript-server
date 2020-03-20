@@ -69,7 +69,8 @@ async function examineToken(req: Request) {
     try {
         req.claims = extractClaims(req.query.id_token);
         await writeThroughUser(req);
-    } catch (e) {
+    } catch (err) {
+        console.error(err);
         throw new AuthenticationError("Verification failed");
     }
 }
@@ -107,7 +108,7 @@ export function VerifyBody(param: string) {
         if (!code) next(new InternalError(`No validator function found for "${param}"`));
         else {
             const validator = requireFromString(code);
-            if (!validator(req.body)) next(new BadRequestError('Malformed request'));
+            if (!validator(req.body)) next(new BadRequestError());
             else next();
         }
     }

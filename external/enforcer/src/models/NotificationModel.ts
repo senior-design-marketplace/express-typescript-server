@@ -4,8 +4,10 @@ import { Notification } from "../types/Notification";
 import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
 import { ApplicationNotification } from "../../../../lib/types/base/ApplicationNotification";
 import { InviteNotification } from "../../../../lib/types/base/InviteNotification";
+import { InternalError } from "../../../../core/src/error/error";
+import { BaseModel } from "./BaseModel";
 
-export class NotificationModel extends Model implements NotificationShared, Viewable<Notification.PartialView, Notification.VerboseView, Notification.FullView> {
+export class NotificationModel extends BaseModel implements NotificationShared, Viewable<Notification.PartialView, Notification.VerboseView, Notification.FullView> {
     
     static tableName = "notifications";
 
@@ -16,7 +18,7 @@ export class NotificationModel extends Model implements NotificationShared, View
     createdAt!: Date;
 
     public async getPartialView(transaction?: Transaction): Promise<Notification.PartialView> {
-        throw new Error("Not implemented");
+        throw new InternalError("Not implemented");
     }
 
     public async getVerboseView(transaction?: Transaction): Promise<Notification.VerboseView> {
