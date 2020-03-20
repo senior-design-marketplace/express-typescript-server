@@ -1,39 +1,34 @@
-import { Claims } from "../../../../core/src/access/auth/verify";
-import CommentModel from "../../../../core/src/access/models/CommentModel";
-import { describeMembership } from "../../../../core/src/access/queries/util";
-import { Actions, Policy } from "../EnforcerService";
+import { Claims } from "../../../../core/src/auth/verify";
+import CommentModel from "../models/CommentModel";
+import { describeMembership } from "../queries/util";
+import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
+import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
 
 export const CommentPolicy: Policy<Resources, Actions> = {
 
-    'comment': {
+    'project.comment': {
         /**
          * Anyone can post or reply to a comment.
          */
-        create: async (claims: Claims, ...resourceIds: string[]) => {
-            switch (resourceIds.length) {
-                case 1: // an original comment
-                    return true;
+        create: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
 
-                case 2: // a reply to a comment
-                    const projectId = resourceIds[0];
-                    const commentId = resourceIds[1];
-
-                    const comment = await CommentModel.query()
-                        .findById(commentId)
-                        .throwIfNotFound();
-                    
-                    return comment.projectId === projectId;
-
-                default:
-                    throw new Error("Invalid argument length");
+            return {
+                view: 'verbose'
             }
         },
 
         /**
          * Only the author of the comment can edit it.
          */
-        update: async (claims: Claims, ...resourceIds: string[]) => {
+        update: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const projectId = resourceIds[0];
             const commentId = resourceIds[1];
 
@@ -42,10 +37,43 @@ export const CommentPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (comment.projectId !== projectId) {
-                return false;
+                return getResourceMismatchView(projectId, commentId);
             }
 
-            return comment.userId === commentId;
+            if (comment.userId === commentId) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User is not the author of this comment'
+            }
+        },
+
+        /**
+         * Anyone can reply to a comment.
+         */
+        reply: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const projectId = resourceIds[0];
+            const commentId = resourceIds[1];
+
+            const comment = await CommentModel.query()
+                .findById(commentId)
+                .throwIfNotFound();
+
+            if (comment.projectId !== projectId) {
+                return getResourceMismatchView(projectId, commentId);
+            }
+
+            return {
+                view: 'verbose'
+            }
         },
 
         /**
@@ -53,7 +81,11 @@ export const CommentPolicy: Policy<Resources, Actions> = {
          * of the project that the comment is posted on can
          * delete a comment.
          */
-        delete: async (claims: Claims, ...resourceIds: string[]) => {
+        delete: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const projectId = resourceIds[0];
             const commentId = resourceIds[1];
 
@@ -62,14 +94,25 @@ export const CommentPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (comment.projectId !== projectId) {
-                return false;
+                return getResourceMismatchView(projectId, commentId);
             }
             if (comment.userId === claims.username) {
-                return true;
+                return {
+                    view: 'verbose'
+                }
             }
             
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User does not have appropriate credentials'
+            }
         }
     }
 }

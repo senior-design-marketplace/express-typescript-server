@@ -1,52 +1,38 @@
 import { ClassOptions, ClassWrapper, Controller, Delete, Get, Middleware, Patch, Post } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import pick from 'lodash/pick';
-import { keys } from "ts-transformer-keys";
-import { ProjectMaster } from "../../schemas/types/Project/ProjectMaster";
-import { FilterParams } from "../../schemas/types/QueryParams/FilterParams";
-import { SortParams } from "../../schemas/types/QueryParams/SortParams";
-import ProjectService from '../../service/ProjectService';
-import { RequiresAuth, RespondsToAuth, VerifyBody, VerifyQuery, VerifyPath } from "../middlewares";
-import { extractValue, PassThrough } from "./util";
+import { RequiresAuth, RespondsToAuth, VerifyBody, VerifyPath } from "../middlewares";
 import { isUUID } from 'validator';
+import { applyTransformation } from "../transformers";
+import { EnforcerService } from "../../../../external/enforcer/src/EnforcerService";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("projects")
 export default class ProjectController {
-    constructor(private readonly projectService: ProjectService) {}
+
+    constructor(private enforcerService: EnforcerService) {}
 
 	@Get()
-	@Middleware([ 
-        VerifyQuery("QueryParams") ])
 	public async getProjects(req: Request, res: Response) {
-		const filterParams: FilterParams = pick(
-            req.verified, 
-            ...keys<FilterParams>()
-        );
+        const result = await this.enforcerService.listProjects({
+            payload: req.query,
+            claims: req.claims,
+            resourceIds: []
+        })
 
-        const sortParams: SortParams = pick(
-            req.verified,
-            ...keys<SortParams>()
-        );
-
-        const result = await this.projectService.describeProjects({
-            filterParams, 
-            sortParams
-        });
-
-		res.status(200).json(result);
+        res.status(200).json(result);
 	}
 
 	@Post()
 	@Middleware([ 
         RequiresAuth, 
-        VerifyBody("ProjectImmutable") ])
+        VerifyBody("CreateProject") ])
 	public async newProject(req: Request, res: Response) {
-        const result = await this.projectService.createProject({
-            payload: req.verified,
-            claims: req.claims
+        const result = await this.enforcerService.createProject({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: []
         })
 
         res.status(200).json(result);
@@ -57,43 +43,25 @@ export default class ProjectController {
         RespondsToAuth, 
         VerifyPath('project', isUUID) ])
 	public async getProjectById(req: Request, res: Response) {
-        const result = await this.projectService.describeProject({
+        const result = await this.enforcerService.describeProject({
             payload: null,
-            resourceId: req.params.project
+            claims: req.claims,
+            resourceIds: [ req.params.project ]
         });
 
-        // additional fields mapped by this controller
-        const additional: { starredByUser?: boolean, popularity?: number } & Partial<ProjectMaster> = {}
-        if (req.claims) {
-            additional.starredByUser = result.starredBy.some((user) => {
-                user.id === req.claims.username;
-            })
-
-            if (result.administrators.map(instance => instance.id).includes(req.claims.username)) {
-                additional.applications = result.applications
-            }
-        }
-
-        additional.popularity = result.starredBy.length;
-
-        res.status(200).json({
-            ...pick(result, keys<PassThrough<ProjectMaster, 'administrators' | 'contributors' | 'boardItems'>>()),
-            ...additional,
-            tags: extractValue(result.tags),
-            requestedMajors: extractValue(result.tags)
-        });
+        res.status(200).json(applyTransformation(result));
 	}
 
     @Patch(":project")
     @Middleware([ 
         RequiresAuth,
-        VerifyBody("ProjectMutable"), 
+        VerifyBody("UpdateProject"), 
         VerifyPath('project', isUUID) ])
 	public async updateProject(req: Request, res: Response) {
-        const result = await this.projectService.updateProject({
-            payload: req.verified,
-            resourceId: req.params.project,
-            claims: req.claims
+        const result = await this.enforcerService.updateProject({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project ],
         })
 
 		res.status(200).json(result);
@@ -104,10 +72,10 @@ export default class ProjectController {
         RequiresAuth, 
         VerifyPath('project', isUUID) ])
 	public async deleteProject(req: Request, res: Response) {
-		const result = await this.projectService.deleteProject({
+		const result = await this.enforcerService.deleteProject({
             payload: null,
-            resourceId: req.params.project,
-            claims: req.claims
+            claims: req.claims,
+            resourceIds: [ req.params.project ]
         });
 
 		res.status(200).json(result);

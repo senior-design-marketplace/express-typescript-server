@@ -1,31 +1,35 @@
 import { ClassOptions, ClassWrapper, Controller, Get, Middleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import AsyncHandler from "express-async-handler";
-import RootService, { LoadRootAuthenticatedResult, LoadRootResult } from '../../service/RootService';
 import { RespondsToAuth } from '../middlewares';
-import { extractValue } from './util';
+import { EnforcerService } from '../../../../external/enforcer/src/EnforcerService';
+import { applyTransformation } from '../transformers';
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("")
 export default class RootController {
 
-    constructor(private readonly rootService: RootService) {}
+    constructor(private readonly enforcerService: EnforcerService) {}
 
     @Get()
-    @Middleware([ 
-        RespondsToAuth ])
+    @Middleware([ RespondsToAuth ])
     public async loadRoot(req: Request, res: Response) {
-        let result: LoadRootResult | LoadRootAuthenticatedResult;
+        const promises = [
+            this.enforcerService.listMajors({ payload: null, claims: req.claims, resourceIds: [] }),
+            this.enforcerService.listTags({ payload: null, claims: req.claims, resourceIds: [] })
+        ] as Promise<any>[];
 
-        if (req.claims) result = await this.rootService.loadRootAuthenticated(req.claims.username);
-        else result = await this.rootService.loadRoot();
+        if (req.claims) {
+            promises.push(this.enforcerService.describeUser({ payload: null, claims: req.claims, resourceIds: [ req.claims.username ]}))
+        }
 
-        const { majors, tags, ...rest } = result;
-        res.status(200).json({
-            ...rest,
-            majors: extractValue(majors),
-            tags: extractValue(tags)
-        })
+        const [ majors, tags, user ] = await Promise.all(promises);
+
+        res.status(200).json(applyTransformation({
+            majors,
+            tags,
+            ...user
+        }));
     }
 }

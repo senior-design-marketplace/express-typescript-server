@@ -1,27 +1,28 @@
 import { ClassOptions, ClassWrapper, Controller, Middleware, Post } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import InviteService from "../../service/InviteService";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
 import { isUUID } from 'validator';
+import { EnforcerService } from "../../../../external/enforcer/src/EnforcerService";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("projects/:project/invites")
 export default class InviteController {
-    constructor(private readonly inviteService: InviteService) {}
+
+    constructor(private readonly enforcerService: EnforcerService) {}
 
     @Post()
     @Middleware([ 
         RequiresAuth,
-        VerifyBody('InviteImmutable'), 
+        VerifyBody('CreateInvite'), 
         VerifyPath('project', isUUID) ])
     public async inviteProjectMember(req: Request, res: Response) {
-        const result = await this.inviteService.inviteProjectMember({
-            payload: req.verified,
+        const result = await this.enforcerService.createInvite({
+            payload: req.body,
             claims: req.claims,
-            resourceId: req.params.project
-        })
+            resourceIds: [ req.params.project ]
+        });
 
         res.status(200).json(result);
     }
@@ -29,16 +30,15 @@ export default class InviteController {
     @Post(":invite")
     @Middleware([ 
         RequiresAuth,
-        VerifyBody('Response'), 
+        VerifyBody('CreateResponse'), 
         VerifyPath('project', isUUID), 
         VerifyPath('invite', isUUID) ])
     public async inviteReply(req: Request, res: Response) {
-        const result = await this.inviteService.inviteReply({
-            payload: req.verified,
+        const result = await this.enforcerService.replyInvite({
+            payload: req.body,
             claims: req.claims,
-            outerResourceId: req.params.project,
-            innerResourceId: req.params.invite
-        })
+            resourceIds: [ req.params.project, req.params.invite ]
+        });
 
         res.status(200).json(result);
     }

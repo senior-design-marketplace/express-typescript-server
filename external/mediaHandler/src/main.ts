@@ -1,9 +1,9 @@
 import { S3Event, Context } from "aws-lambda";
 import { Model } from "objection";
 
-import BoardItemModel from "../../../core/src/access/models/BoardItemModel";
-import UserModel from "../../../core/src/access/models/UserModel";
-import ProjectModel from "../../../core/src/access/models/ProjectModel";
+import BoardItemModel from "../../enforcer/src/models/BoardItemModel";
+import UserModel from "../../enforcer/src/models/UserModel";
+import ProjectModel from "../../enforcer/src/models/ProjectModel";
 
 import * as config from "../env.json";
 import Knex from "knex";
