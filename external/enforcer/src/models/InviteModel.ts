@@ -5,15 +5,9 @@ import { InviteShared } from "../../../../lib/types/shared/InviteShared";
 import { Role } from "../../../../lib/types/base/Role";
 import { Status } from "../../../../lib/types/base/Status";
 
-export default class InviteModel extends Model implements InviteShared, Viewable<Invite.PartialView, Invite.VerboseView, Invite.FullView> {
+export class InviteModel extends Model implements InviteShared, Viewable<Invite.PartialView, Invite.VerboseView, Invite.FullView> {
 
-    static get tableName() {
-        return 'invites';
-    }
-
-    static get idColumn() {
-        return 'id';
-    }
+    static tableName = "invites";
     
     id!: string;
     initiateId!: string;
@@ -24,13 +18,6 @@ export default class InviteModel extends Model implements InviteShared, Viewable
     createdAt!: Date;
     updatedAt!: Date;
     note!: string;
-
-    // relations
-    static get relationMappings() {
-        return {
-
-        }
-    }
 
     public async getPartialView(transaction?: Transaction): Promise<Invite.PartialView> {
         throw new Error("Not implemented");

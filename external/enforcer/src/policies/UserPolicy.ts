@@ -2,14 +2,16 @@ import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
 import { Claims } from "../../../../core/src/auth/verify";
 import { getAuthenticationRequiredView } from "./util";
+import { UserShared } from "../../../../lib/types/shared/UserShared";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
-export const UserPolicy: Policy<Resources, Actions> = {
+export const UserPolicy: Policy<Resources, Actions, Partial<UserShared>> = {
 
     'user': {
         /**
          * Only the administrator can create users.
          */
-        create: async (claims?: Claims, ...resourceIds: string[]) => {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
             return {
                 view: 'blocked',
                 reason: 'User does not have appropriate credentials'
@@ -19,8 +21,8 @@ export const UserPolicy: Policy<Resources, Actions> = {
         /**
          * A user can only view their own details.
          */
-        describe: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        describe: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return {
                     view: 'partial'
                 }
@@ -28,7 +30,7 @@ export const UserPolicy: Policy<Resources, Actions> = {
 
             const userId = resourceIds[0];
 
-            if (userId === claims.username) {
+            if (userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
@@ -42,14 +44,14 @@ export const UserPolicy: Policy<Resources, Actions> = {
         /**
          * A user can only update their own information.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
             const userId = resourceIds[0];
 
-            if (userId === claims.username) {
+            if (userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
@@ -66,14 +68,14 @@ export const UserPolicy: Policy<Resources, Actions> = {
         /**
          * A user can only update their own avatar
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
             const userId = resourceIds[0];
 
-            if (userId === claims.username) {
+            if (userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }

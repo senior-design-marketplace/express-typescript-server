@@ -15,7 +15,7 @@ export default class UserController {
     @Get(":user")
     public async describeUser(req: Request, res: Response) {
         const result = await this.enforcerService.describeUser({
-            payload: null,
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.user ]
         });

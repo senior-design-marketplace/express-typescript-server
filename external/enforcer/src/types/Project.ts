@@ -1,11 +1,11 @@
-import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
 import { Tag } from "../../../../lib/types/base/Tag";
 import { Major } from "../../../../lib/types/base/Major";
+import { ProjectModel } from "../models/ProjectModel";
 
 export namespace Project {
     
     export type PartialView = 
-        Pick<ProjectShared,
+        Pick<ProjectModel,
             | 'id'
             | 'title'
             | 'tagline'
@@ -19,10 +19,10 @@ export namespace Project {
             | 'administrators'>
 
     export type VerboseView = PartialView & 
-        Pick<ProjectShared, 
+        Pick<ProjectModel, 
             | 'applications'>
 
-    export type FullView = ProjectShared;
+    export type FullView = ProjectModel;
 
     export type QueryParams = {
         // filters

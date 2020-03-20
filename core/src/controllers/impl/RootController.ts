@@ -16,12 +16,12 @@ export default class RootController {
     @Middleware([ RespondsToAuth ])
     public async loadRoot(req: Request, res: Response) {
         const promises = [
-            this.enforcerService.listMajors({ payload: null, claims: req.claims, resourceIds: [] }),
-            this.enforcerService.listTags({ payload: null, claims: req.claims, resourceIds: [] })
-        ] as Promise<any>[];
+            this.enforcerService.listMajors({ payload: {}, claims: req.claims, resourceIds: [] }),
+            this.enforcerService.listTags({ payload: {}, claims: req.claims, resourceIds: [] })
+        ] as Promise<object>[];
 
         if (req.claims) {
-            promises.push(this.enforcerService.describeUser({ payload: null, claims: req.claims, resourceIds: [ req.claims.username ]}))
+            promises.push(this.enforcerService.describeUser({ payload: {}, claims: req.claims, resourceIds: [ req.claims.username ]}))
         }
 
         const [ majors, tags, user ] = await Promise.all(promises);

@@ -3,15 +3,17 @@ import { Claims } from "../../../../core/src/auth/verify";
 import { describeMembership } from "../queries/util";
 import { Resources } from "../resources/resources";
 import { getAuthenticationRequiredView } from "./util";
+import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
-export const ProjectPolicy: Policy<Resources, Actions> = {
+export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> = {
 
     'project': {
         /**
          * Anyone can create a project, so long as they are logged in.
          */
-        create: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -23,7 +25,7 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
         /**
          * Anyone can list projects.
          */
-        list: async (claims?: Claims, ...resourceIds: string[]) => {
+        list: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
             return {
                 view: 'verbose'
             }
@@ -32,8 +34,8 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
         /**
          * Only administrators can see additional aspects of a project.
          */
-        describe: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        describe: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return {
                     view: 'partial'
                 }
@@ -41,7 +43,7 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
 
             const projectId = resourceIds[0];
 
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
                 return {
                     view: 'verbose'
@@ -57,14 +59,14 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
          * Either an administrator or a contributor can update
          * a project.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'
@@ -80,14 +82,14 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
         /**
          * Only an administrator can delete a project.
          */
-        delete: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        delete: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
             const projectId = resourceIds[0];
             
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
                 return {
                     view: 'verbose'
@@ -102,14 +104,14 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
     },
 
     'project.thumbnail': {
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'
@@ -124,14 +126,14 @@ export const ProjectPolicy: Policy<Resources, Actions> = {
     },
 
     'project.cover': {
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'

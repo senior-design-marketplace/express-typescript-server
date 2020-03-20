@@ -1,10 +1,10 @@
-import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
+import { ApplicationModel } from "../models/ApplicationModel";
 
 export namespace Application {
 
     export type PartialView = never;
 
-    export type VerboseView = ApplicationShared;
+    export type VerboseView = ApplicationModel;
 
-    export type FullView = ApplicationShared;
+    export type FullView = ApplicationModel;
 }

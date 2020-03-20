@@ -1,33 +1,16 @@
 import { Model, Transaction } from "objection";
-import { join } from "path";
 import { Tag as Bar } from "../../../../lib/types/base/Tag";
 import { Tag } from "../types/Tag";
 import { Viewable } from "./Viewable";
 import { TagShared } from "../../../../lib/types/shared/TagShared";
 
-export default class TagModel extends Model implements TagShared, Viewable<Tag.PartialView, Tag.VerboseView, Tag.FullView> {
+export class TagModel extends Model implements TagShared, Viewable<Tag.PartialView, Tag.VerboseView, Tag.FullView> {
     
 	static tableName = "tagsValues";
 
-    readonly id!: string;
-    readonly value!: Bar;
+    id!: string;
+    value!: Bar;
 
-	static relationMappings = {
-		taggedOn: {
-			relation: Model.ManyToManyRelation,
-			modelClass: join(__dirname, "ProjectModel"),
-			join: {
-				from: "tagsValues.value",
-				through: {
-					//tags is the join table
-					from: "tags.tag",
-					to: "tags.projectId"
-				},
-				to: "projects.id"
-			}
-		}
-    };
-    
     public async getPartialView(transaction?: Transaction): Promise<Tag.PartialView> {
         return this;
     }

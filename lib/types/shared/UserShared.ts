@@ -39,4 +39,11 @@ export interface UserShared {
      * When the user joined the system
      */
     joinedAt: Date;
+
+    /**
+     * The role of the user with the
+     * institution.  A comma separated
+     * string.
+     */
+    roles: string;
 }

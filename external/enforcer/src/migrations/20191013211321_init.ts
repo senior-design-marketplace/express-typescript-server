@@ -13,6 +13,9 @@ export async function up(knex: Knex): Promise<any> {
             table.string("lastName", constants.SMALL).notNullable();
             table.string("email", constants.SMALL).notNullable();
 
+            // just leave it as a string for now
+            table.string("roles", constants.MEDIUM).notNullable().defaultTo("");
+
             table.dateTime("joinedAt")
                 .notNullable()
                 .defaultTo(knex.fn.now());

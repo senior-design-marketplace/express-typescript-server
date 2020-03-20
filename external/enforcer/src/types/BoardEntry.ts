@@ -1,10 +1,10 @@
-import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
+import { BoardItemModel } from "../models/BoardItemModel";
 
 export namespace BoardEntry {
 
-    export type PartialView = BoardEntryShared;
+    export type PartialView = BoardItemModel;
 
-    export type VerboseView = BoardEntryShared;
+    export type VerboseView = BoardItemModel;
 
-    export type FullView = BoardEntryShared;
+    export type FullView = BoardItemModel;
 }

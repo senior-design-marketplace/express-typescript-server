@@ -1,7 +1,7 @@
-import AdministratorModel from "../models/AdministratorModel";
-import ContributorModel from "../models/ContributorModel";
+import { AdministratorModel } from "../models/AdministratorModel";
+import { ContributorModel } from "../models/ContributorModel";
 import { UserShared } from "../../../../lib/types/shared/UserShared";
-import ProjectModel from "../models/ProjectModel";
+import { ProjectModel } from "../models/ProjectModel";
 
 const BASE_URL = 'https://marqetplace-staging-photos.s3.amazonaws.com/defaults/'
 const NUM_DEFAULTS = 100;

@@ -1,10 +1,10 @@
-import { CommentShared } from "../../../../lib/types/shared/CommentShared";
+import { CommentModel } from "../models/CommentModel";
 
 export namespace Comment {
 
-    export type PartialView = CommentShared;
+    export type PartialView = CommentModel;
 
-    export type VerboseView = CommentShared;
+    export type VerboseView = CommentModel;
 
-    export type FullView = CommentShared;
+    export type FullView = CommentModel;
 }

@@ -50,7 +50,7 @@ AWS.config.update({ region: "us-east-1" });
 
 class App extends Server {
     static emitter = new EventEmitter();
-    static enforcer = new Enforcer<Resources, Actions>();    
+    static enforcer = new Enforcer<Resources, Actions, object>();    
     static requestFactory = new MediaRequestFactory(new AWS.S3());
     static enforcerService = new EnforcerService(App.enforcer, App.requestFactory);
 

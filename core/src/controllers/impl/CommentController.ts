@@ -50,7 +50,7 @@ export default class CommentController {
     ])
     public async deleteComment(req: Request, res: Response) {
         const result = await this.enforcerService.deleteComment({
-            payload: null,
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.comment ]
         });

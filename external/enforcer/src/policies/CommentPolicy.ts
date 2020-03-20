@@ -1,18 +1,20 @@
 import { Claims } from "../../../../core/src/auth/verify";
-import CommentModel from "../models/CommentModel";
+import { CommentModel } from "../models/CommentModel";
 import { describeMembership } from "../queries/util";
 import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
 import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
+import { CommentShared } from "../../../../lib/types/shared/CommentShared";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
-export const CommentPolicy: Policy<Resources, Actions> = {
+export const CommentPolicy: Policy<Resources, Actions, Partial<CommentShared>> = {
 
     'project.comment': {
         /**
          * Anyone can post or reply to a comment.
          */
-        create: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<CommentShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -24,8 +26,8 @@ export const CommentPolicy: Policy<Resources, Actions> = {
         /**
          * Only the author of the comment can edit it.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<CommentShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -55,8 +57,8 @@ export const CommentPolicy: Policy<Resources, Actions> = {
         /**
          * Anyone can reply to a comment.
          */
-        reply: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        reply: async (call: MaybeAuthenticatedServiceCall<Partial<CommentShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -81,8 +83,8 @@ export const CommentPolicy: Policy<Resources, Actions> = {
          * of the project that the comment is posted on can
          * delete a comment.
          */
-        delete: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        delete: async (call: MaybeAuthenticatedServiceCall<Partial<CommentShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -96,13 +98,13 @@ export const CommentPolicy: Policy<Resources, Actions> = {
             if (comment.projectId !== projectId) {
                 return getResourceMismatchView(projectId, commentId);
             }
-            if (comment.userId === claims.username) {
+            if (comment.userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
             }
             
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
                 return {
                     view: 'verbose'

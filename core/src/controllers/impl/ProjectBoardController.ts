@@ -50,7 +50,7 @@ export default class ProjectBoardController {
         VerifyPath('entry', isUUID) ])
     public async deleteBoardEntry(req: Request, res: Response) {
         const result = await this.enforcerService.deleteEntry({
-            payload: null,
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.entry ]
         });
