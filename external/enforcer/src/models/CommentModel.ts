@@ -2,8 +2,9 @@ import { Model } from "objection";
 import { Viewable } from "./Viewable";
 import { Comment } from "../types/Comment";
 import { CommentShared } from "../../../../lib/types/shared/CommentShared";
+import { BaseModel } from "./BaseModel";
 
-export class CommentModel extends Model implements CommentShared, Viewable<Comment.PartialView, Comment.VerboseView, Comment.FullView> {
+export class CommentModel extends BaseModel implements CommentShared, Viewable<Comment.PartialView, Comment.VerboseView, Comment.FullView> {
 
     static tableName = "comments";
 

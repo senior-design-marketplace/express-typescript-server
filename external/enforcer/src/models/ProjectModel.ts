@@ -8,8 +8,9 @@ import { MajorModel } from "./MajorModel";
 import { Viewable } from "./Viewable";
 import { Project } from "../types/Project";
 import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
+import { BaseModel } from "./BaseModel";
 
-export class ProjectModel extends Model implements ProjectShared, Viewable<Project.PartialView, Project.VerboseView, Project.FullView> {
+export class ProjectModel extends BaseModel implements ProjectShared, Viewable<Project.PartialView, Project.VerboseView, Project.FullView> {
 
     static tableName = "projects";
     

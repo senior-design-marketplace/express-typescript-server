@@ -5,8 +5,9 @@ import { BoardEntry } from "../types/BoardEntry";
 import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
 import { TextBoardEntry } from "../../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../../lib/types/base/MediaBoardEntry";
+import { BaseModel } from "./BaseModel";
 
-export class BoardItemModel extends Model implements BoardEntryShared, Viewable<BoardEntry.PartialView, BoardEntry.VerboseView, BoardEntry.FullView> {
+export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewable<BoardEntry.PartialView, BoardEntry.VerboseView, BoardEntry.FullView> {
 
 	static tableName = "boardItems";
 

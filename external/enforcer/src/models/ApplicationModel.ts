@@ -3,8 +3,10 @@ import { Application } from "../types/Application";
 import { Viewable } from "./Viewable";
 import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
 import { Status } from "../../../../lib/types/base/Status";
+import { InternalError } from "../../../../core/src/error/error";
+import { BaseModel } from "./BaseModel";
 
-export class ApplicationModel extends Model implements ApplicationShared, Viewable<Application.PartialView, Application.VerboseView, Application.FullView> {
+export class ApplicationModel extends BaseModel implements ApplicationShared, Viewable<Application.PartialView, Application.VerboseView, Application.FullView> {
 
 	static tableName = "applications";
 
@@ -17,7 +19,7 @@ export class ApplicationModel extends Model implements ApplicationShared, Viewab
     note!: string;
     
     public async getPartialView(transaction?: Transaction): Promise<Application.PartialView> {
-        throw new Error("Not implemented");
+        throw new InternalError("Not implemented");
     }
 
     public async getVerboseView(): Promise<Application.VerboseView> {

@@ -3,8 +3,9 @@ import { Tag as Bar } from "../../../../lib/types/base/Tag";
 import { Tag } from "../types/Tag";
 import { Viewable } from "./Viewable";
 import { TagShared } from "../../../../lib/types/shared/TagShared";
+import { BaseModel } from "./BaseModel";
 
-export class TagModel extends Model implements TagShared, Viewable<Tag.PartialView, Tag.VerboseView, Tag.FullView> {
+export class TagModel extends BaseModel implements TagShared, Viewable<Tag.PartialView, Tag.VerboseView, Tag.FullView> {
     
 	static tableName = "tagsValues";
 
