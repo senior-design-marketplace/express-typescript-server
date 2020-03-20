@@ -9,7 +9,7 @@ export interface Claims {
     givenName: string,
     familyName: string,
     email: string,
-    roles: Array<string>
+    roles: string
 }
 
 interface GuaranteedClaims {
@@ -25,7 +25,7 @@ interface ExpectedClaims {
     given_name: string;
     family_name: string;
     email: string;
-    roles: Array<string>
+    roles: string // comes in as a comma separated string
 }
 
 type ClaimVerificationValues = GuaranteedClaims & ExpectedClaims;

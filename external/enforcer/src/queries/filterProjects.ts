@@ -1,6 +1,5 @@
 import { OrderByDirection, QueryBuilder } from "objection";
-import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
-import ProjectModel from "../models/ProjectModel";
+import { ProjectModel } from "../models/ProjectModel";
 import { Project } from "../types/Project";
 
 type ProjectQuery = QueryBuilder<ProjectModel, ProjectModel[]>;
@@ -42,7 +41,7 @@ const filterFunctions: Record<string, FilterFunction> = {
     }
 }
 
-type SortFunction = (query: ProjectQuery, order: OrderByDirection) =>  ProjectQuery;
+type SortFunction = (query: ProjectQuery, order: OrderByDirection) => ProjectQuery;
 const sortFunctions: Partial<Record<string, SortFunction>> = {
     new: (query: ProjectQuery, order: OrderByDirection | undefined) => {
         return query.orderBy([{ column: 'createdAt', order }])
@@ -58,7 +57,7 @@ const sortFunctions: Partial<Record<string, SortFunction>> = {
     }
 }
 
-export default function execute(params: Project.QueryParams): Promise<ProjectShared[]> {
+export function filterProjects(params: Project.QueryParams = {}): Promise<ProjectModel[]> {
     const query = ProjectModel.query();
 
     for (const key of Object.keys(params)) {

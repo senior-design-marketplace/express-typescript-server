@@ -901,6 +901,15 @@ test('Load the root of the application unauthenticated', async () => {
     expect(response.statusCode).toBe(200);
 })
 
+test('Get a user who does not exist', async () => {
+    const response = await runner.runEvent({
+        httpMethod: "GET",
+        path: `/users/foo`
+    })
+
+    expect(response.statusCode).toBe(404);
+})
+
 function assertOrder(items: number[], descending?: boolean) {
     for (let i = 0; i < items.length - 1; i++) {
         const current = items[i];

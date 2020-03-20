@@ -1,25 +1,48 @@
 import { Claims } from "../../../../core/src/auth/verify";
-import InviteModel from "../models/InviteModel";
+import { InviteModel } from "../models/InviteModel";
 import { describeMembership } from "../queries/util";
 import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
 import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
+import { AuthenticatedServiceCall, MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { InviteShared } from "../../../../lib/types/shared/InviteShared";
+import { UserModel } from "../models/UserModel";
 
-export const InvitePolicy: Policy<Resources, Actions> = {
+export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
 
     'project.invite': {
         /**
          * Only administrators can create an invite for a project.
          */
-        create: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
             const projectId = resourceIds[0];
 
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
+
+                if (call.payload.role === 'ADVISOR') {
+                    if (!call.payload.targetId) {
+                        return {
+                            view: 'blocked',
+                            reason: 'No target specified'
+                        }
+                    }
+
+                    const target = await UserModel.query().findById(call.payload.targetId)
+                        .throwIfNotFound();
+
+                    if (!target.roles.includes("faculty")) {
+                        return {
+                            view: 'blocked',
+                            reason: 'Target cannot elevate to provided role'
+                        }
+                    }
+                }
+
                 return {
                     view: 'verbose'
                 }
@@ -35,8 +58,8 @@ export const InvitePolicy: Policy<Resources, Actions> = {
          * Only administrators and the targeted user can view the
          * invite.
          */
-        describe: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        describe: async (call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -51,13 +74,13 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 return getResourceMismatchView(projectId, inviteId);
             }
 
-            if (invite.targetId === claims.username) {
+            if (invite.targetId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
                 return {
                     view: 'verbose'
@@ -73,8 +96,8 @@ export const InvitePolicy: Policy<Resources, Actions> = {
          * Only the targeted user can update the invite.  The
          * invite must not have been updated already.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -96,7 +119,7 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 }
             }
 
-            if (invite.targetId === claims.username) {
+            if (invite.targetId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
@@ -112,8 +135,8 @@ export const InvitePolicy: Policy<Resources, Actions> = {
          * sent out.  If the invite has already been responded
          * to, then it is incapable of being deleted.
          */
-        delete: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        delete: async (call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -135,7 +158,7 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isAdministrator) {
                 return {
                     view: 'verbose'

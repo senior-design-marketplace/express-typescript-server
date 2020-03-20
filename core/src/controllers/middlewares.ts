@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import requireFromString from 'require-from-string';
 import { EnforcerService } from "../../../external/enforcer/src/EnforcerService";
+import { getDefaultMediaLink } from "../../../external/enforcer/src/queries/util";
 import { Claims, extractClaims } from '../auth/verify';
 import CodedError from "../error/CodedError";
 import { AuthenticationError, BadRequestError, InternalError } from "../error/error";
@@ -29,7 +30,9 @@ async function writeThroughUser(req: Request) {
                     id: req.claims.username,
                     firstName: req.claims.givenName,
                     lastName: req.claims.familyName,
-                    email: req.claims.email
+                    email: req.claims.email,
+                    thumbnailLink: getDefaultMediaLink(),
+                    roles: req.claims.roles
                 },
                 claims: req.claims,
                 resourceIds: [ req.claims.username ]
@@ -46,7 +49,8 @@ async function writeThroughUser(req: Request) {
                     id: req.claims.username,
                     firstName: req.claims.givenName,
                     lastName: req.claims.familyName,
-                    email: req.claims.email
+                    email: req.claims.email,
+                    roles: req.claims.roles
                 },
                 claims: req.claims,
                 resourceIds: [ req.claims.username ]

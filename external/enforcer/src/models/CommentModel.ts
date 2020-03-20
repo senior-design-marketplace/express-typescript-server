@@ -1,10 +1,9 @@
 import { Model } from "objection";
-import { join } from "path";
 import { Viewable } from "./Viewable";
 import { Comment } from "../types/Comment";
 import { CommentShared } from "../../../../lib/types/shared/CommentShared";
 
-export default class CommentModel extends Model implements CommentShared, Viewable<Comment.PartialView, Comment.VerboseView, Comment.FullView> {
+export class CommentModel extends Model implements CommentShared, Viewable<Comment.PartialView, Comment.VerboseView, Comment.FullView> {
 
     static tableName = "comments";
 

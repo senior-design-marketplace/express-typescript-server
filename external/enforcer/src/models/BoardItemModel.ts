@@ -6,26 +6,16 @@ import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared"
 import { TextBoardEntry } from "../../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../../lib/types/base/MediaBoardEntry";
 
-export default class BoardItemModel extends Model implements BoardEntryShared, Viewable<BoardEntry.PartialView, BoardEntry.VerboseView, BoardEntry.FullView> {
+export class BoardItemModel extends Model implements BoardEntryShared, Viewable<BoardEntry.PartialView, BoardEntry.VerboseView, BoardEntry.FullView> {
+
 	static tableName = "boardItems";
 
-    readonly id!: string;
-    readonly userId!: string;
-    readonly projectId!: string;
-    readonly document!: TextBoardEntry | MediaBoardEntry;
-    readonly createdAt!: Date;
-    readonly updatedAt!: Date;
-
-	static relationMappings = {
-		postedOn: {
-			relation: Model.BelongsToOneRelation,
-			modelClass: join(__dirname, "ProjectModel"),
-			join: {
-				from: "boardItems.projectId",
-				to: "projects.id"
-			}
-		}
-    };
+    id!: string;
+    userId!: string;
+    projectId!: string;
+    document!: TextBoardEntry | MediaBoardEntry;
+    createdAt!: Date;
+    updatedAt!: Date;
     
     static modifiers = {
         mostRecent(query) {

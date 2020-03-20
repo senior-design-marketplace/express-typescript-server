@@ -7,13 +7,7 @@ import { InviteNotification } from "../../../../lib/types/base/InviteNotificatio
 
 export class NotificationModel extends Model implements NotificationShared, Viewable<Notification.PartialView, Notification.VerboseView, Notification.FullView> {
     
-    static get tableName() {
-        return 'notifications';
-    }
-
-    static get idColumn() {
-        return 'id';
-    }
+    static tableName = "notifications";
 
     id!: string;
     userId!: string;

@@ -5,7 +5,7 @@ import { Viewable } from "./Viewable";
 import { Major } from "../types/Major";
 import { MajorShared } from "../../../../lib/types/shared/MajorShared";
 
-export default class MajorModel extends Model implements MajorShared, Viewable<Major.PartialView, Major.VerboseView, Major.FullView>{
+export class MajorModel extends Model implements MajorShared, Viewable<Major.PartialView, Major.VerboseView, Major.FullView>{
     
     static tableName = "majorsValues";
     

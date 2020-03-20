@@ -1,10 +1,10 @@
-import { MajorShared } from "../../../../lib/types/shared/MajorShared";
+import { MajorModel } from "../models/MajorModel";
 
 export namespace Major {
 
-    export type PartialView = MajorShared;
+    export type PartialView = MajorModel;
 
-    export type VerboseView = MajorShared;
+    export type VerboseView = MajorModel;
 
-    export type FullView = MajorShared;
+    export type FullView = MajorModel;
 }

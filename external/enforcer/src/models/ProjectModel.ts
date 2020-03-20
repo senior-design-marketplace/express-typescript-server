@@ -1,34 +1,34 @@
 import { Model, Transaction } from "objection";
 import { join } from "path";
-import UserModel from "./UserModel";
-import BoardItemModel from "./BoardItemModel";
-import ApplicationModel from "./ApplicationModel";
-import TagModel from "./TagModel";
-import MajorModel from "./MajorModel";
+import { UserModel } from "./UserModel";
+import { BoardItemModel } from "./BoardItemModel";
+import { ApplicationModel } from "./ApplicationModel";
+import { TagModel } from "./TagModel";
+import { MajorModel } from "./MajorModel";
 import { Viewable } from "./Viewable";
 import { Project } from "../types/Project";
 import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
 
-export default class ProjectModel extends Model implements ProjectShared, Viewable<Project.PartialView, Project.VerboseView, Project.FullView> {
+export class ProjectModel extends Model implements ProjectShared, Viewable<Project.PartialView, Project.VerboseView, Project.FullView> {
 
     static tableName = "projects";
     
-    readonly id!: string;
-    readonly title!: string;
-    readonly tagline!: string;
-    readonly acceptingApplications!: boolean;
-    readonly createdAt!: Date;
-    readonly coverLink!: string;
-    readonly thumbnailLink!: string;
-    readonly body!: string;
+    id!: string;
+    title!: string;
+    tagline!: string;
+    acceptingApplications!: boolean;
+    createdAt!: Date;
+    coverLink!: string;
+    thumbnailLink!: string;
+    body!: string;
 
-    readonly boardItems!: BoardItemModel[];
-    readonly applications!: ApplicationModel[];
-    readonly contributors!: UserModel[];
-    readonly administrators!: UserModel[]; 
-    readonly tags!: TagModel[];
-    readonly requestedMajors!: MajorModel[];
-    readonly starredBy!: UserModel[];
+    boardItems!: BoardItemModel[];
+    applications!: ApplicationModel[];
+    contributors!: UserModel[];
+    administrators!: UserModel[]; 
+    tags!: TagModel[];
+    requestedMajors!: MajorModel[];
+    starredBy!: UserModel[];
 
 	static relationMappings = {
         //one-to-many
@@ -123,7 +123,7 @@ export default class ProjectModel extends Model implements ProjectShared, Viewab
         }
     };
 
-    public async getPartialView(transaction?: Transaction): Promise<Project.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<ProjectModel> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -133,7 +133,7 @@ export default class ProjectModel extends Model implements ProjectShared, Viewab
         ]`)
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<Project.VerboseView> {
+    public async getVerboseView(transaction?: Transaction): Promise<ProjectModel> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -144,7 +144,7 @@ export default class ProjectModel extends Model implements ProjectShared, Viewab
         ]`)
     }
 
-    public async getFullView(transaction?: Transaction): Promise<Project.FullView> {
-        throw new Error("Not implemented");
+    public async getFullView(transaction?: Transaction): Promise<ProjectModel> {
+        return this.getVerboseView(transaction);
     }
 }

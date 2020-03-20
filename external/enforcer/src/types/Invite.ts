@@ -1,10 +1,10 @@
-import { InviteShared } from "../../../../lib/types/shared/InviteShared";
+import { InviteModel } from "../models/InviteModel";
 
 export namespace Invite {
 
     export type PartialView = never;
 
-    export type VerboseView = InviteShared;
+    export type VerboseView = InviteModel;
 
-    export type FullView = InviteShared;
+    export type FullView = InviteModel;
 }

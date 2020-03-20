@@ -1,10 +1,10 @@
-import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
+import { NotificationModel } from "../models/NotificationModel";
 
 export namespace Notification {
 
     export type PartialView = never;
 
-    export type VerboseView = NotificationShared;
+    export type VerboseView = NotificationModel;
 
-    export type FullView = NotificationShared;
+    export type FullView = NotificationModel;
 }

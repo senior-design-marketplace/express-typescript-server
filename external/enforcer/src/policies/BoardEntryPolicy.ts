@@ -1,25 +1,27 @@
 import { Claims } from "../../../../core/src/auth/verify";
-import BoardItemModel from "../models/BoardItemModel";
+import { BoardItemModel } from "../models/BoardItemModel";
 import { describeMembership } from "../queries/util";
 import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
 import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
+import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
-export const BoardEntryPolicy: Policy<Resources, Actions> = {
+export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShared>> = {
 
     'project.entry': {
         /**
          * Only a contributor or an administrator on a project can
          * create a board entry.
          */
-        create: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<BoardEntryShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
 
             if (isContributor || isAdministrator) {
                 return {
@@ -38,8 +40,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
          * entry.  Media board entries cannot be updated in this way.
          * They are updated by a separate backend process.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<BoardEntryShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -61,7 +63,7 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
                 }
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'
@@ -78,8 +80,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
          * Only a contributor or an administrator can delete a board
          * entry.
          */
-        delete: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        delete: async (call: MaybeAuthenticatedServiceCall<Partial<BoardEntryShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -94,7 +96,7 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
                 return getResourceMismatchView(projectId, entryId);
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'
@@ -109,8 +111,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
     },
 
     'project.entry.media': {
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<BoardEntryShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -125,7 +127,7 @@ export const BoardEntryPolicy: Policy<Resources, Actions> = {
                 return getResourceMismatchView(projectId, entryId);
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
+            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
             if (isContributor || isAdministrator) {
                 return {
                     view: 'verbose'

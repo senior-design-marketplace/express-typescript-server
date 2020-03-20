@@ -3,15 +3,17 @@ import { NotificationModel } from "../models/NotificationModel";
 import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
 import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
+import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
-export const NotificationPolicy: Policy<Resources, Actions> = {
+export const NotificationPolicy: Policy<Resources, Actions, Partial<NotificationShared>> = {
 
     'user.notification': {
         /**
          * A user can only access their own notifications.
          */
-        describe: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        describe: async (call: MaybeAuthenticatedServiceCall<Partial<NotificationShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
 
@@ -26,7 +28,7 @@ export const NotificationPolicy: Policy<Resources, Actions> = {
                 return getResourceMismatchView(userId, notificationId);
             }
 
-            if (userId === claims.username) {
+            if (userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }
@@ -40,8 +42,8 @@ export const NotificationPolicy: Policy<Resources, Actions> = {
         /**
          * A user can only update their own notifications.
          */
-        update: async (claims?: Claims, ...resourceIds: string[]) => {
-            if (!claims) {
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<NotificationShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
                 return getAuthenticationRequiredView();
             }
             
@@ -56,7 +58,7 @@ export const NotificationPolicy: Policy<Resources, Actions> = {
                 return getResourceMismatchView(userId, notificationId);
             }
 
-            if (userId === claims.username) {
+            if (userId === call.claims.username) {
                 return {
                     view: 'verbose'
                 }

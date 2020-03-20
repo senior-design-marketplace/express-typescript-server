@@ -33,7 +33,7 @@ export default class ProjectController {
             payload: req.body,
             claims: req.claims,
             resourceIds: []
-        })
+        }, { asAdmin: true })
 
         res.status(200).json(result);
 	}
@@ -44,7 +44,7 @@ export default class ProjectController {
         VerifyPath('project', isUUID) ])
 	public async getProjectById(req: Request, res: Response) {
         const result = await this.enforcerService.describeProject({
-            payload: null,
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project ]
         });
@@ -73,7 +73,7 @@ export default class ProjectController {
         VerifyPath('project', isUUID) ])
 	public async deleteProject(req: Request, res: Response) {
 		const result = await this.enforcerService.deleteProject({
-            payload: null,
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project ]
         });
