@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 import crypto from 'crypto-js';
-import secrets from '../../src/access/auth/secrets';
+import secrets from '../../src/auth/secrets';
 
 const cognito = new AWS.CognitoIdentityServiceProvider({
     region: 'us-east-1'

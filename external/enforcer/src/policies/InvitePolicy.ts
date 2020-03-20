@@ -1,27 +1,45 @@
-import { Claims } from "../../../../core/src/access/auth/verify";
-import InviteModel from "../../../../core/src/access/models/InviteModel";
-import { describeMembership } from "../../../../core/src/access/queries/util";
-import { Actions, Policy } from "../EnforcerService";
+import { Claims } from "../../../../core/src/auth/verify";
+import InviteModel from "../models/InviteModel";
+import { describeMembership } from "../queries/util";
+import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
+import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
 
 export const InvitePolicy: Policy<Resources, Actions> = {
 
-    'invite': {
+    'project.invite': {
         /**
          * Only administrators can create an invite for a project.
          */
-        create: async (claims: Claims, ...resourceIds: string[]) => {
+        create: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const projectId = resourceIds[0];
 
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User does not have appropriate credentials'
+            }
         },
 
         /**
          * Only administrators and the targeted user can view the
          * invite.
          */
-        read: async (claims: Claims, ...resourceIds: string[]) => {
+        describe: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const projectId = resourceIds[0];
             const inviteId = resourceIds[1];
 
@@ -29,19 +47,37 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 .findById(inviteId)
                 .throwIfNotFound();
 
+            if (invite.projectId !== projectId) {
+                return getResourceMismatchView(projectId, inviteId);
+            }
+
             if (invite.targetId === claims.username) {
-                return true;
+                return {
+                    view: 'verbose'
+                }
             }
 
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         },
 
         /**
          * Only the targeted user can update the invite.  The
          * invite must not have been updated already.
          */
-        update: async (claims: Claims, ...resourceIds: string[]) => {
+        update: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const projectId = resourceIds[0];
             const inviteId = resourceIds[1];
 
@@ -49,11 +85,26 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 .findById(inviteId)
                 .throwIfNotFound();
 
-            if (invite.status !== 'PENDING') {
-                return false;
+            if (invite.projectId !== projectId) {
+                return getResourceMismatchView(projectId, inviteId);
             }
 
-            return invite.targetId === claims.username;
+            if (invite.status !== 'PENDING') {
+                return {
+                    view: 'blocked',
+                    reason: 'Invite has already been responded to'
+                }
+            }
+
+            if (invite.targetId === claims.username) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         },
 
         /**
@@ -61,7 +112,11 @@ export const InvitePolicy: Policy<Resources, Actions> = {
          * sent out.  If the invite has already been responded
          * to, then it is incapable of being deleted.
          */
-        delete: async (claims: Claims, ...resourceIds: string[]) => {
+        delete: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const projectId = resourceIds[0];
             const inviteId = resourceIds[1];
 
@@ -69,12 +124,27 @@ export const InvitePolicy: Policy<Resources, Actions> = {
                 .findById(inviteId)
                 .throwIfNotFound();
 
+            if (invite.projectId !== projectId) {
+                return getResourceMismatchView(projectId, inviteId);
+            }
+
             if (invite.status !== 'PENDING') {
-                return false;
+                return {
+                    view: 'blocked',
+                    reason: 'Invite has already been responded to'
+                }
             }
 
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         }
     }
 }

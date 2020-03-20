@@ -1,18 +1,23 @@
-import { Claims } from "../../../../core/src/access/auth/verify";
-import ApplicationModel from "../../../../core/src/access/models/ApplicationModel";
-import ProjectModel from "../../../../core/src/access/models/ProjectModel";
-import { describeMembership } from "../../../../core/src/access/queries/util";
-import { Actions, Policy } from "../EnforcerService";
+import { Claims } from "../../../../core/src/auth/verify";
+import ApplicationModel from "../models/ApplicationModel";
+import ProjectModel from "../models/ProjectModel";
+import { describeMembership } from "../queries/util";
+import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
+import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
 
 export const ApplicationPolicy: Policy<Resources, Actions> = {
 
-    'application': {
+    'project.application': {
         /**
          * Anyone who is not part of the project can apply to it.
          * They must also not have an open application to the project.
          */
-        create: async (claims: Claims, ...resourceIds: string[]) => {
+        create: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const projectId = resourceIds[0];
 
             const project = await ProjectModel.query()
@@ -20,7 +25,10 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (!project.acceptingApplications) {
-                return false;
+                return {
+                    view: 'blocked',
+                    reason: 'Project is not accepting applications'
+                };
             }
 
             const hasOpenApplication = Boolean(await ApplicationModel.query()
@@ -30,18 +38,35 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
                 .resultSize());
 
             if (hasOpenApplication) {
-                return false;
+                return {
+                    view: 'blocked',
+                    reason: 'User has an open application for this project'
+                };
             }
 
             const { isContributor, isAdministrator } = await describeMembership(projectId, claims.username);
-            return !isContributor && !isAdministrator;
+
+            if (isContributor || isAdministrator) {
+                return {
+                    view: 'blocked',
+                    reason: 'User is already a member of this project'
+                }
+            }
+
+            return {
+                view: 'verbose'
+            };
         },
 
         /**
          * Only administrators and the author of the application 
          * can view it.
          */
-        read: async (claims: Claims, ...resourceIds: string[]) => {
+        describe: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const projectId = resourceIds[0];
             const applicationId = resourceIds[1];
 
@@ -50,15 +75,25 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (application.projectId !== projectId) {
-                return false;
+                return getResourceMismatchView(projectId, applicationId);
             }
 
             if (application.userId === claims.username) {
-                return true;
+                return {
+                    view: 'verbose'
+                };
             }
 
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+            
+            return {
+                view: 'hidden'
+            };
         },
 
         /**
@@ -66,7 +101,11 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
          * a response.  The application must not have been responded
          * to already.
          */
-        update: async (claims: Claims, ...resourceIds: string[]) => {
+        update: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const projectId = resourceIds[0];
             const applicationId = resourceIds[1];
 
@@ -75,22 +114,49 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (application.projectId !== projectId) {
-                return false;
+                return getResourceMismatchView(projectId, applicationId);
             }
 
             if (application.status !== 'PENDING') {
-                return false;
+                return {
+                    view: 'blocked',
+                    reason: 'Application has already been responded to'
+                }
             }
 
             const { isAdministrator } = await describeMembership(projectId, claims.username);
-            return isAdministrator;
+            if (isAdministrator) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
+        },
+
+        /**
+         * Only an administrator of the project to which the
+         * application is directed can respond to the application.
+         * The application must not have been responded to already.
+         */
+        //TODO: Implement
+        reply: async (claims?: Claims, ...resourceIds: string[]) => {
+            return {
+                view: 'full'
+            }
         },
 
         /**
          * Only the author of the application can delete it, so
          * long as it has not been responded to yet.
          */
-        delete: async (claims: Claims, ...resourceIds: string[]) => {
+        delete: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const projectId = resourceIds[0];
             const applicationId = resourceIds[1];
 
@@ -99,14 +165,25 @@ export const ApplicationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (application.projectId !== projectId) {
-                return false;
+                return getResourceMismatchView(projectId, applicationId);
             }
 
             if (application.status !== 'PENDING') {
-                return false;
+                return {
+                    view: 'blocked',
+                    reason: 'Application has already been responded to'
+                }
             }
 
-            return application.userId === claims.username;
+            if(application.userId === claims.username) {
+                return {
+                    view: 'verbose',
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         }
     }
 }

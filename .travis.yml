@@ -3,11 +3,11 @@ node_js:
   - 12
 before_script:
   - openssl aes-256-cbc -K $encrypted_39a6a527caee_key -iv $encrypted_39a6a527caee_iv -in knexfile.ts.enc -out knexfile.ts -d
-  - openssl aes-256-cbc -K $encrypted_8a3bf5846ad5_key -iv $encrypted_8a3bf5846ad5_iv -in ./core/src/access/auth/secrets.ts.enc -out ./core/src/access/auth/secrets.ts -d
+  - openssl aes-256-cbc -K $encrypted_8a3bf5846ad5_key -iv $encrypted_8a3bf5846ad5_iv -in ./core/src/auth/secrets.ts.enc -out ./core/src/auth/secrets.ts -d
   - openssl aes-256-cbc -K $encrypted_a4866d6c9882_key -iv $encrypted_a4866d6c9882_iv -in ./core/test/integ/creds.ts.enc -out ./core/test/integ/creds.ts -d
   - npm run db:export:stage
   - npm run db:deploy:stage
-  - npm run schema:generate
+  - npm run types:generate
 script: npm run test:integ:stage
 deploy:
   - provider: script

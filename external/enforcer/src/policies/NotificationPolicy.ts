@@ -1,15 +1,20 @@
-import { Claims } from "../../../../core/src/access/auth/verify";
-import { NotificationModel } from "../../../../core/src/access/models/NotificationModel";
-import { Actions, Policy } from "../EnforcerService";
+import { Claims } from "../../../../core/src/auth/verify";
+import { NotificationModel } from "../models/NotificationModel";
+import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
+import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
 
 export const NotificationPolicy: Policy<Resources, Actions> = {
 
-    'notification': {
+    'user.notification': {
         /**
          * A user can only access their own notifications.
          */
-        read: async (claims: Claims, ...resourceIds: string[]) => {
+        describe: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+
             const userId = resourceIds[0];
             const notificationId = resourceIds[1];
 
@@ -18,16 +23,28 @@ export const NotificationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (notification.userId !== userId) {
-                return false;
+                return getResourceMismatchView(userId, notificationId);
             }
 
-            return userId === claims.username;
+            if (userId === claims.username) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         },
 
         /**
          * A user can only update their own notifications.
          */
-        update: async (claims: Claims, ...resourceIds: string[]) => {
+        update: async (claims?: Claims, ...resourceIds: string[]) => {
+            if (!claims) {
+                return getAuthenticationRequiredView();
+            }
+            
             const userId = resourceIds[0];
             const notificationId = resourceIds[1];
 
@@ -36,10 +53,18 @@ export const NotificationPolicy: Policy<Resources, Actions> = {
                 .throwIfNotFound();
 
             if (notification.userId !== userId) {
-                return false;
+                return getResourceMismatchView(userId, notificationId);
             }
 
-            return userId === claims.username;
+            if (userId === claims.username) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'hidden'
+            }
         }
     }
 }

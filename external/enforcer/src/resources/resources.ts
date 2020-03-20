@@ -1,41 +1,21 @@
-enum UserResourcesEnum {
-    'user',
-    'user.avatar'
-}
+export type MediaResources = 
+    | "project.thumbnail" 
+    | "project.cover"
+    | "project.entry.media"
+    | "user.avatar";
 
-enum ProjectResourcesEnum {
-    'project',
-    'project.thumbnail',
-    'project.cover'    
-}
-
-enum ApplicationResoucesEnum {
-    'application',
-    'application.status'
-}
-
-enum InviteResourcesEnum {
-    'invite',
-    'invite.status'
-}
-
-enum CommentResourcesEnum {
-    'comment'
-}
-
-enum EntryResourcesEnum {
-    'entry'
-}
-
-enum NotificationResourcesEnum {
-    'notification'
-}
-
-export type Resources = 
-    keyof typeof UserResourcesEnum 
-    | keyof typeof ProjectResourcesEnum
-    | keyof typeof ApplicationResoucesEnum
-    | keyof typeof InviteResourcesEnum
-    | keyof typeof CommentResourcesEnum
-    | keyof typeof EntryResourcesEnum
-    | keyof typeof NotificationResourcesEnum
+export type Resources =
+    | 'user'
+    | 'user.notification'
+    | 'user.star'
+    
+    | 'project'
+    | 'project.majors'
+    | 'project.tags'
+    | 'project.contributor'
+    | 'project.administrator'
+    | 'project.application'
+    | 'project.invite'
+    | 'project.comment'
+    | 'project.entry'
+    | MediaResources;

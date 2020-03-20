@@ -25,8 +25,8 @@
     
 	// keep build steps out of deployment
 	"exclude": [
-        "core/src/schemas/generate.ts", 
-        "core/src/access/export.ts",
+        "core/src/types/generate.ts", 
+        "external/enforcer/src/export.ts",
 
         "core/test/**/*",
         "external/**/test/**/*"

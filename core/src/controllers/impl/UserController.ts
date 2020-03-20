@@ -2,21 +2,23 @@ import { ClassOptions, ClassWrapper, Controller, Get, Middleware, Patch } from "
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from '../middlewares';
-import UserService from '../../service/UserService';
 import { isUUID } from 'validator';
+import { EnforcerService } from "../../../../external/enforcer/src/EnforcerService";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("users")
 export default class UserController {
-    constructor(private readonly service: UserService) {}
+
+    constructor(private enforcerService: EnforcerService) {}
 
     @Get(":user")
     public async describeUser(req: Request, res: Response) {
-        const result = await this.service.describeUser({
+        const result = await this.enforcerService.describeUser({
             payload: null,
-            resourceId: req.params.user
-        })
+            claims: req.claims,
+            resourceIds: [ req.params.user ]
+        });
 
         res.status(200).json(result);
     }
@@ -24,13 +26,13 @@ export default class UserController {
     @Patch(":user")
     @Middleware([ 
         RequiresAuth,
-        VerifyBody('UserMutable') ])
+        VerifyBody('UpdateUser') ])
     public async updateUser(req: Request, res: Response) {
-        const result = await this.service.updateUser({
-            payload: req.verified,
-            resourceId: req.params.user,
-            claims: req.claims
-        })
+        const result = await this.enforcerService.updateUser({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.user ]
+        });
 
         res.status(200).json(result);
     }
@@ -39,14 +41,13 @@ export default class UserController {
     @Middleware([
         RequiresAuth,
         VerifyPath('notification', isUUID),
-        VerifyBody('NotificationMutable') ])
+        VerifyBody('UpdateNotification') ])
     public async updateNotificationAsRead(req: Request, res: Response) {
-        const result = await this.service.updateNotificationAsRead({
-            payload: req.verified,
-            outerResourceId: req.params.user,
-            innerResourceId: req.params.notification,
-            claims: req.claims
-        })
+        const result = await this.enforcerService.updateNotification({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.user, req.params.notification ]
+        });
 
         res.status(200).json(result);
     }

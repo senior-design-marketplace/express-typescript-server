@@ -1,27 +1,28 @@
 import { ClassOptions, ClassWrapper, Controller, Delete, Middleware, Patch, Post } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
-import ProjectBoardService from "../../service/ProjectBoardService";
 import { RequiresAuth, VerifyBody, VerifyPath } from '../middlewares';
 import { isUUID } from 'validator';
+import { EnforcerService } from "../../../../external/enforcer/src/EnforcerService";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("projects/:project/board")
 export default class ProjectBoardController {
-	constructor(private readonly service: ProjectBoardService) {}
+
+	constructor(private enforcerService: EnforcerService) {}
 
     @Post()
     @Middleware([ 
         RequiresAuth,
-        VerifyBody('BoardEntryImmutable'), 
+        VerifyBody('CreateBoardEntry'), 
         VerifyPath('project', isUUID) ])
     public async createBoardEntry(req: Request, res: Response) {
-        const result = await this.service.createBoardEntry({
-            payload: req.verified,
-            resourceId: req.params.project,
-            claims: req.claims
-        })
+        const result = await this.enforcerService.createEntry({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project ]
+        });
 
         res.status(200).json(result);
     }
@@ -29,16 +30,15 @@ export default class ProjectBoardController {
     @Patch(":entry")
     @Middleware([ 
         RequiresAuth,
-        VerifyBody('BoardEntryMutable'), 
+        VerifyBody('UpdateBoardEntry'), 
         VerifyPath('project', isUUID), 
         VerifyPath('entry', isUUID) ])
     public async updateBoardEntry(req: Request, res: Response) {
-        const result = await this.service.updateBoardEntry({
-            payload: req.verified,
-            outerResourceId: req.params.project,
-            innerResourceId: req.params.entry,
-            claims: req.claims
-        })
+        const result = await this.enforcerService.updateEntry({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.entry ]
+        });
 
         res.status(200).json(result);
     }
@@ -49,12 +49,11 @@ export default class ProjectBoardController {
         VerifyPath('project', isUUID), 
         VerifyPath('entry', isUUID) ])
     public async deleteBoardEntry(req: Request, res: Response) {
-        const result = await this.service.deleteBoardEntry({
+        const result = await this.enforcerService.deleteEntry({
             payload: null,
-            outerResourceId: req.params.project,
-            innerResourceId: req.params.entry,
-            claims: req.claims
-        })
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.entry ]
+        });
 
         res.status(200).json(result);
     }

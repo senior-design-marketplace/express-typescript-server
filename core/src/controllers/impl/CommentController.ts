@@ -1,27 +1,27 @@
-import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post, Delete } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Middleware, Post, Delete } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
-import CommentService from "../../service/CommentService";
 import { isUUID } from 'validator';
+import { EnforcerService } from "../../../../external/enforcer/src/EnforcerService";
 
 @ClassWrapper(AsyncHandler)
 @ClassOptions({ mergeParams: true })
 @Controller("projects/:project/comments")
 export default class CommentController {
-    constructor(private readonly service: CommentService) {}
+    constructor(private readonly enforcerService: EnforcerService) {}
 
     @Post()
     @Middleware([ 
         RequiresAuth, 
-        VerifyBody("CommentImmutable"), 
+        VerifyBody("CreateComment"), 
         VerifyPath('project', isUUID) ])
     public async createComment(req: Request, res: Response) {
-        const result = await this.service.createComment({
-            payload: req.verified,
-            resourceId: req.params.project,
-            claims: req.claims
-        })
+        const result = await this.enforcerService.createComment({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project ],
+        });
 
         res.status(200).json(result);
     }
@@ -29,15 +29,14 @@ export default class CommentController {
     @Post(":comment")
     @Middleware([ 
         RequiresAuth, 
-        VerifyBody("CommentImmutable"), 
+        VerifyBody("CreateComment"), 
         VerifyPath('project', isUUID), 
         VerifyPath('comment', isUUID) ])
     public async replyComment(req: Request, res: Response) {
-        const result = await this.service.replyComment({
-            payload: req.verified,
-            outerResourceId: req.params.project,
-            innerResourceId: req.params.comment,
-            claims: req.claims
+        const result = await this.enforcerService.replyComment({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.comment ]
         });
 
         res.status(200).json(result);
@@ -50,12 +49,11 @@ export default class CommentController {
         VerifyPath('comment', isUUID)
     ])
     public async deleteComment(req: Request, res: Response) {
-        const result = await this.service.deleteComment({
+        const result = await this.enforcerService.deleteComment({
             payload: null,
-            outerResourceId: req.params.project,
-            innerResourceId: req.params.comment,
-            claims: req.claims
-        })
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.comment ]
+        });
 
         res.status(200).json(result);
     }

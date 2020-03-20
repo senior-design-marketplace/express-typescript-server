@@ -1,16 +1,15 @@
 import { Request, Response } from "express";
-import pick from 'lodash/pick';
-import { Claims, extractClaims } from '../access/auth/verify';
-import { WriteThroughUserQuery } from '../access/queries/WriteThroughUserQuery';
+import requireFromString from 'require-from-string';
+import { EnforcerService } from "../../../external/enforcer/src/EnforcerService";
+import { Claims, extractClaims } from '../auth/verify';
 import CodedError from "../error/CodedError";
-import { AuthenticationError, BadRequestError } from "../error/error";
-import { extractors } from "./extractors";
+import { AuthenticationError, BadRequestError, InternalError } from "../error/error";
+import * as validators from '../types/build/validators.json';
 
 declare global {
     namespace Express {
         export interface Request {
-            claims: Claims,
-            verified?: any
+            claims: Claims
         }
     }
 }
@@ -21,12 +20,42 @@ declare global {
  * from Cognito into our database.
  */
 async function writeThroughUser(req: Request) {
-    const query: WriteThroughUserQuery = req.app.get('writeThroughUserQuery');
+    const enforcerService: EnforcerService = req.app.get('enforcerService');
 
     try {
-        await query.execute(req.claims);
-    } catch (e) {
-        // nothing, do not let this failure prevent client from continuing
+        await enforcerService.createUser(
+            {
+                payload: {
+                    id: req.claims.username,
+                    firstName: req.claims.givenName,
+                    lastName: req.claims.familyName,
+                    email: req.claims.email
+                },
+                claims: req.claims,
+                resourceIds: [ req.claims.username ]
+            },
+            {
+                asAdmin: true,
+                noRelations: true
+            }
+        )
+    } catch (err) {
+        await enforcerService.updateUser(
+            {
+                payload: {
+                    id: req.claims.username,
+                    firstName: req.claims.givenName,
+                    lastName: req.claims.familyName,
+                    email: req.claims.email
+                },
+                claims: req.claims,
+                resourceIds: [ req.claims.username ]
+            },
+            {
+                asAdmin: true,
+                noRelations: true
+            }
+        )
     }
 }
 
@@ -45,7 +74,7 @@ export async function RespondsToAuth(req: Request, res: Response, next) {
     try {
         await examineToken(req);
         next();
-    } catch (e) {
+    } catch (err) {
         next(); // disregard exception
     }
 }
@@ -54,8 +83,8 @@ export async function RequiresAuth (req: Request, res: Response, next) {
     try {
         await examineToken(req);
         next();
-    } catch (e) {
-        next(e);
+    } catch (err) {
+        next(err);
     }
 }
 
@@ -67,35 +96,15 @@ export function VerifyPath(param: string, validator: ValidatorFunction) {
     }
 }
 
-function getVerificationParameters(param: string) {
-    const validator = extractors[param].validator;
-    const keys = extractors[param].extract;
-
-    if (!validator || !keys) throw new Error(`Unknown schema for name ${name}, did you add this in ${__filename}?`);
-    return { validator, keys };
-}
-
-// for now, assume that these calls are mutually exclusive
 export function VerifyBody(param: string) {
-	return (req: Request, res: Response, next) => {
-        const { validator, keys } = getVerificationParameters(param);
-
-        if (!validator(req.body)) next(new BadRequestError('Malformed request'));
-        else {
-            req.verified = pick(req.body, ...keys);
-            next();
-        }
-    }
-}
-
-export function VerifyQuery(param: string) {
     return (req: Request, res: Response, next) => {
-        const { validator, keys } = getVerificationParameters(param);
+        const code = validators[param];
 
-        if (!validator(req.query)) next(new BadRequestError('Malformed request'));
+        if (!code) next(new InternalError(`No validator function found for "${param}"`));
         else {
-            req.verified = pick(req.query, ...keys);
-            next();
+            const validator = requireFromString(code);
+            if (!validator(req.body)) next(new BadRequestError('Malformed request'));
+            else next();
         }
     }
 }

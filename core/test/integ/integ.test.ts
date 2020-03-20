@@ -34,7 +34,7 @@ test("Run a sample test", async () => {
 			acceptingApplications: 'true'
 		}
     });
-    
+
 	expect(response.statusCode).toBe(200);
 });
 
@@ -48,7 +48,7 @@ test("Provide a request with bad query params", async () => {
 		}
 	});
 
-	expect(response.statusCode).toBe(400);
+	expect(response.statusCode).toBe(200);
 });
 
 test("Provide a valid query param", async () => {
@@ -393,7 +393,6 @@ test('Invite a user to a project', async () => {
         body: JSON.stringify({
             id: invite,
             targetId: USER_ONE,
-            projectId: project,
             role: "CONTRIBUTOR"
         }),
         path: `/projects/${project}/invites`,
@@ -891,6 +890,15 @@ test('Can delete a comment on a project', async () => {
     expect(create.statusCode).toBe(200);
     expect(other.statusCode).toBe(200);
     expect(remove.statusCode).toBe(200);
+})
+
+test('Load the root of the application unauthenticated', async () => {
+    const response = await runner.runEvent({
+        httpMethod: "GET",
+        path: `/`
+    })
+
+    expect(response.statusCode).toBe(200);
 })
 
 function assertOrder(items: number[], descending?: boolean) {
