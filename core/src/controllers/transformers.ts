@@ -12,7 +12,8 @@ export function extractValue(params: (TagShared | MajorShared)[]) {
 
 export const transformers = {
     'tags': extractValue,
-    'majors': extractValue
+    'majors': extractValue, // need both because supported majors and requested majors differ by name, should consolidate
+    'requestedMajors': extractValue
 }
 
 export function applyTransformation(obj: object) {

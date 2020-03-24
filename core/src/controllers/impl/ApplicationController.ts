@@ -1,4 +1,4 @@
-import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Middleware, Patch, Post, Delete } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
@@ -36,6 +36,22 @@ export default class ApplicationController {
     public async replyProjectApplication(req: Request, res: Response) {
         const result = await this.enforcerService.replyApplication({
             payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.application ]
+        });
+
+        res.status(200).json(result);
+    }
+
+    @Delete(":application")
+    @Middleware([
+        RequiresAuth,
+        VerifyPath('project', isUUID),
+        VerifyPath('application', isUUID)
+    ])
+    public async deleteApplication(req: Request, res: Response) {
+        const result = await this.enforcerService.deleteApplication({
+            payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.application ]
         });
