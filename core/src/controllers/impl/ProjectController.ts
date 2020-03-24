@@ -15,13 +15,18 @@ export default class ProjectController {
 
 	@Get()
 	public async getProjects(req: Request, res: Response) {
-        const result = await this.enforcerService.listProjects({
-            payload: req.query,
-            claims: req.claims,
-            resourceIds: []
-        })
+        const result = await this.enforcerService.listProjects(
+            {
+                payload: req.query,
+                claims: req.claims,
+                resourceIds: [],
+            },
+            {
+                noRelations: true
+            }
+        );
 
-        res.status(200).json(result);
+        res.status(200).json(applyTransformation(result));
 	}
 
 	@Post()
@@ -33,7 +38,7 @@ export default class ProjectController {
             payload: req.body,
             claims: req.claims,
             resourceIds: []
-        }, { asAdmin: true })
+        });
 
         res.status(200).json(result);
 	}
