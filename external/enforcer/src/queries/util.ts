@@ -4,7 +4,7 @@ import { UserShared } from "../../../../lib/types/shared/UserShared";
 import { ProjectModel } from "../models/ProjectModel";
 
 const BASE_URL = 'https://marqetplace-staging-photos.s3.amazonaws.com/defaults/'
-const NUM_DEFAULTS = 100;
+const NUM_DEFAULTS = 500;
 const DEFAULT_EXTENSION = '.jpeg';
 
 /**
