@@ -1,4 +1,4 @@
-import { ClassOptions, ClassWrapper, Controller, Middleware, Post, Delete } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Middleware, Post, Delete, Patch } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
@@ -34,6 +34,23 @@ export default class CommentController {
         VerifyPath('comment', isUUID) ])
     public async replyComment(req: Request, res: Response) {
         const result = await this.enforcerService.replyComment({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.comment ]
+        });
+
+        res.status(200).json(result);
+    }
+
+    @Patch(":comment")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody("UpdateComment"),
+        VerifyPath('project', isUUID),
+        VerifyPath('comment', isUUID)
+    ])
+    public async updateComment(req: Request, res: Response) {
+        const result = await this.enforcerService.updateComment({
             payload: req.body,
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.comment ]
