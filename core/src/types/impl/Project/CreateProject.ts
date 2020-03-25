@@ -6,4 +6,5 @@ export type CreateProject =
         | 'title'
         | 'tagline'>
     & Partial<Pick<ProjectShared,
-        | 'acceptingApplications'>>
+        | 'acceptingApplications'
+        | 'body'>>
