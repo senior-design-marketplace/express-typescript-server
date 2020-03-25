@@ -53,6 +53,14 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
                 'status'
             ]
         },
+        comments: {
+            relation: Model.HasManyRelation,
+            modelClass: join(__dirname, "CommentModel"),
+            join: {
+                from: "projects.id",
+                to: "comments.projectId"
+            }
+        },
         //many-to-many
         contributors: {
             relation: Model.ManyToManyRelation,
@@ -128,6 +136,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
+            comments,
             boardItems(mostRecent),
             contributors,
             administrators
@@ -138,6 +147,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
+            comments,
             boardItems(mostRecent),
             contributors,
             administrators,
