@@ -1,12 +1,11 @@
 import { Model, Transaction } from "objection";
 import { join } from "path";
 import { Major as Foo } from "../../../../lib/types/base/Major";
-import { Viewable } from "./Viewable";
-import { Major } from "../types/Major";
 import { MajorShared } from "../../../../lib/types/shared/MajorShared";
 import { BaseModel } from "./BaseModel";
+import { Viewable } from "./Viewable";
 
-export class MajorModel extends BaseModel implements MajorShared, Viewable<Major.PartialView, Major.VerboseView, Major.FullView>{
+export class MajorModel extends BaseModel implements MajorShared, Viewable{
     
     static tableName = "majorsValues";
     
@@ -29,15 +28,15 @@ export class MajorModel extends BaseModel implements MajorShared, Viewable<Major
 		}
     };
 
-    public async getPartialView(transaction?: Transaction): Promise<Major.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<MajorShared> {
         return this;
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<Major.VerboseView> {
+    public async getVerboseView(transaction?: Transaction): Promise<MajorShared> {
         return this;
     }
     
-    public async getFullView(transaction?: Transaction): Promise<Major.FullView> {
+    public async getFullView(transaction?: Transaction): Promise<MajorShared> {
         return this;
     }
 }

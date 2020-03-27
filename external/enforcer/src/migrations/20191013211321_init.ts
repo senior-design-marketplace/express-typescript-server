@@ -202,7 +202,13 @@ export async function up(knex: Knex): Promise<any> {
 				.notNullable()
 				.references("id")
 				.inTable("users")
-				.onDelete("CASCADE");
+                .onDelete("CASCADE");
+                
+            table
+                .string("responderId", constants.SMALL)
+                .references("id")
+                .inTable("users")
+                .onDelete("CASCADE");
 
 			table
 				.string("status", constants.SMALL)
@@ -322,10 +328,35 @@ export async function up(knex: Knex): Promise<any> {
                 .inTable("comments")
                 .onDelete("CASCADE");
         })
+        .createTable("historyEvents", table => {
+            table.uuid("id").primary();
+
+            table.string("type", constants.SMALL);
+
+            table.json("before");
+            table.json("after");
+
+            table.dateTime("createdAt")
+                .notNullable()
+                .defaultTo(knex.fn.now());
+
+            table.uuid("projectId")
+                .notNullable()
+                .references("id")
+                .inTable("projects")
+                .onDelete("CASCADE");
+
+            table.string("initiateId")
+                .notNullable()
+                .references("id")
+                .inTable("users")
+                .onDelete("CASCADE");
+        })
 }
 
 export async function down(knex: Knex): Promise<any> {
     return knex.schema
+        .dropTableIfExists("historyEvents")
         .dropTableIfExists("comments")
         .dropTableIfExists("invites")
         .dropTableIfExists("rolesValues")

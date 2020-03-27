@@ -31,7 +31,6 @@ import boolParser from 'express-query-boolean';
 import cookieParser from "cookie-parser";
 
 import { EventEmitter } from "events";
-import { EventHandler } from "./EventHandler";
 
 // enforcement policies
 import { Enforcer, Actions } from "../../external/enforcer/src/Enforcer";
@@ -45,22 +44,31 @@ import { NotificationPolicy } from "../../external/enforcer/src/policies/Notific
 import { Resources } from "../../external/enforcer/src/resources/resources";
 import { EnforcerService } from "../../external/enforcer/src/EnforcerService.js";
 
+import { registerNotificationEventHandlers } from "../../external/eventConsumers/NotificationConsumer";
+import { registerHistoryEventHandlers } from "../../external/eventConsumers/HistoryConsumer";
+
 import AWS from "aws-sdk";
 AWS.config.update({ region: "us-east-1" });
 
 class App extends Server {
-    static emitter = new EventEmitter();
-    static enforcer = new Enforcer<Resources, Actions, object>();    
-    static requestFactory = new MediaRequestFactory(new AWS.S3());
-    static enforcerService = new EnforcerService(App.enforcer, App.requestFactory);
 
-    static eventHandler = new EventHandler(
-        App.emitter,
-        App.enforcerService,
-    );
+    private enforcer: Enforcer<Resources, Actions, object>;
+    private emitter: EventEmitter;
+    
+
+    private requestFactory: MediaRequestFactory;
+    private enforcerService: EnforcerService;
 
 	constructor() {
         super();
+
+        this.enforcer = new Enforcer();
+        this.emitter = new EventEmitter();
+        registerNotificationEventHandlers(this.emitter);
+        registerHistoryEventHandlers(this.emitter);
+
+        this.requestFactory = new MediaRequestFactory(new AWS.S3());
+        this.enforcerService = new EnforcerService(this.enforcer, this.emitter, this.requestFactory)
 
         /**
          * enable parsing and other middlewares before routes so that
@@ -85,7 +93,7 @@ class App extends Server {
          * Also allow authentication middlware to write through
          * user changes to the database.
          */
-        this.app.set('enforcerService', App.enforcerService);
+        this.app.set('enforcerService', this.enforcerService);
     }
     
     private enablePreRouteMiddleware(): void {
@@ -110,7 +118,7 @@ class App extends Server {
     }
 
     private enableEnforcementPolicies(): void {
-        App.enforcer.addPolicies([
+        this.enforcer.addPolicies([
             UserPolicy,
             ProjectPolicy,
             ApplicationPolicy,
@@ -124,14 +132,14 @@ class App extends Server {
 	//basically a doctor with all these injections
 	private enableRoutes(): void {
 		const controllers: any[] = [];
-		controllers.push(new ProjectController(App.enforcerService));
-        controllers.push(new MediaController(App.enforcerService));
-        controllers.push(new RootController(App.enforcerService));
-        controllers.push(new UserController(App.enforcerService));
-        controllers.push(new InviteController(App.enforcerService));
-        controllers.push(new ApplicationController(App.enforcerService));
-        controllers.push(new ProjectBoardController(App.enforcerService));
-        controllers.push(new CommentController(App.enforcerService));
+		controllers.push(new ProjectController(this.enforcerService));
+        controllers.push(new MediaController(this.enforcerService));
+        controllers.push(new RootController(this.enforcerService));
+        controllers.push(new UserController(this.enforcerService));
+        controllers.push(new InviteController(this.enforcerService));
+        controllers.push(new ApplicationController(this.enforcerService));
+        controllers.push(new ProjectBoardController(this.enforcerService));
+        controllers.push(new CommentController(this.enforcerService));
 
 		super.addControllers(controllers);
 	}

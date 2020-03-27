@@ -1,13 +1,12 @@
-import { Model, Transaction } from "objection";
-import { Invite } from "../types/Invite";
-import { Viewable } from "./Viewable";
-import { InviteShared } from "../../../../lib/types/shared/InviteShared";
+import { Transaction } from "objection";
+import { InternalError } from "../../../../core/src/error/error";
 import { Role } from "../../../../lib/types/base/Role";
 import { Status } from "../../../../lib/types/base/Status";
-import { InternalError } from "../../../../core/src/error/error";
+import { InviteShared } from "../../../../lib/types/shared/InviteShared";
 import { BaseModel } from "./BaseModel";
+import { Viewable } from "./Viewable";
 
-export class InviteModel extends BaseModel implements InviteShared, Viewable<Invite.PartialView, Invite.VerboseView, Invite.FullView> {
+export class InviteModel extends BaseModel implements InviteShared, Viewable {
 
     static tableName = "invites";
     
@@ -21,15 +20,15 @@ export class InviteModel extends BaseModel implements InviteShared, Viewable<Inv
     updatedAt!: Date;
     note!: string;
 
-    public async getPartialView(transaction?: Transaction): Promise<Invite.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<InviteShared> {
         throw new InternalError("Not implemented");
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<Invite.VerboseView> {
+    public async getVerboseView(transaction?: Transaction): Promise<InviteShared> {
         return this;
     }
 
-    public async getFullView(transaction?: Transaction): Promise<Invite.FullView> {
+    public async getFullView(transaction?: Transaction): Promise<InviteShared> {
         return this;
     }
 }

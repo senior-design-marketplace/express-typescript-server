@@ -1,13 +1,12 @@
-import { Model, Transaction } from "objection";
-import { Viewable } from "./Viewable";
-import { Notification } from "../types/Notification";
-import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
+import { Transaction } from "objection";
+import { InternalError } from "../../../../core/src/error/error";
 import { ApplicationNotification } from "../../../../lib/types/base/ApplicationNotification";
 import { InviteNotification } from "../../../../lib/types/base/InviteNotification";
-import { InternalError } from "../../../../core/src/error/error";
+import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
 import { BaseModel } from "./BaseModel";
+import { Viewable } from "./Viewable";
 
-export class NotificationModel extends BaseModel implements NotificationShared, Viewable<Notification.PartialView, Notification.VerboseView, Notification.FullView> {
+export class NotificationModel extends BaseModel implements NotificationShared, Viewable {
     
     static tableName = "notifications";
 
@@ -17,15 +16,15 @@ export class NotificationModel extends BaseModel implements NotificationShared, 
     document!: ApplicationNotification | InviteNotification;
     createdAt!: Date;
 
-    public async getPartialView(transaction?: Transaction): Promise<Notification.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<NotificationShared> {
         throw new InternalError("Not implemented");
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<Notification.VerboseView> {
+    public async getVerboseView(transaction?: Transaction): Promise<NotificationShared> {
         return this;
     }
 
-    public async getFullView(transaction?: Transaction): Promise<Notification.FullView> {
+    public async getFullView(transaction?: Transaction): Promise<NotificationShared> {
         return this;
     }
 }
