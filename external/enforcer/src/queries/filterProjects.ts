@@ -10,10 +10,10 @@ const filterFunctions: Record<string, FilterFunction> = {
         return query.joinRelated('tags')
             .where("tag", param);
     },
-    advisorId: (query: ProjectQuery, param: string | boolean) => {
+    advisor: (query: ProjectQuery, param: string | boolean) => {
         return query.joinRelated('administrators')
             .where('isAdvisor', true)
-            .andWhere('userId', param)
+            .andWhere('lastName', 'like', `%${param}%`) // see SQL pattern matching
     },
     hasAdvisor: (query: ProjectQuery, param: string | boolean) => {
         if (param) {
@@ -44,7 +44,7 @@ const filterFunctions: Record<string, FilterFunction> = {
 type SortFunction = (query: ProjectQuery, order: OrderByDirection) => ProjectQuery;
 const sortFunctions: Partial<Record<string, SortFunction>> = {
     new: (query: ProjectQuery, order: OrderByDirection | undefined) => {
-        return query.orderBy([{ column: 'createdAt', order }])
+        return query.orderBy('createdAt', order);
     },
     popular: (query: ProjectQuery, order: OrderByDirection | undefined) => {
         return query.select([
@@ -57,7 +57,7 @@ const sortFunctions: Partial<Record<string, SortFunction>> = {
     }
 }
 
-export function filterProjects(params: Project.QueryParams = {}): Promise<ProjectModel[]> {
+export async function filterProjects(params: Project.QueryParams = {}): Promise<ProjectModel[]> {
     const query = ProjectModel.query();
 
     for (const key of Object.keys(params)) {
@@ -78,5 +78,8 @@ export function filterProjects(params: Project.QueryParams = {}): Promise<Projec
         }
     }
 
-    return query.limit(25);
+    const page = params.page || 0;
+    const perPage = params.perPage || 24;
+
+    return (await query.page(page, Math.min(perPage, 24))).results;
 }

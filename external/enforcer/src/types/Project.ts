@@ -35,5 +35,7 @@ export namespace Project {
         // sorts
         sortBy?: 'new' | 'popular'
         order?: 'reverse'
+        page?: number
+        perPage?: number
     }
 }
