@@ -1,12 +1,11 @@
-import { Model, Transaction } from "objection";
-import { Application } from "../types/Application";
-import { Viewable } from "./Viewable";
-import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
-import { Status } from "../../../../lib/types/base/Status";
+import { Transaction } from "objection";
 import { InternalError } from "../../../../core/src/error/error";
+import { Status } from "../../../../lib/types/base/Status";
+import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
 import { BaseModel } from "./BaseModel";
+import { Viewable } from "./Viewable";
 
-export class ApplicationModel extends BaseModel implements ApplicationShared, Viewable<Application.PartialView, Application.VerboseView, Application.FullView> {
+export class ApplicationModel extends BaseModel implements ApplicationShared, Viewable {
 
 	static tableName = "applications";
 
@@ -15,18 +14,19 @@ export class ApplicationModel extends BaseModel implements ApplicationShared, Vi
     updatedAt!: Date;
     projectId!: string;
     userId!: string;
+    responderId!: string;
     status!: Status;
     note!: string;
     
-    public async getPartialView(transaction?: Transaction): Promise<Application.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<ApplicationShared> {
         throw new InternalError("Not implemented");
     }
 
-    public async getVerboseView(): Promise<Application.VerboseView> {
+    public async getVerboseView(): Promise<ApplicationShared> {
         return this;
     }
 
-    public async getFullView(): Promise<Application.FullView> {
+    public async getFullView(): Promise<ApplicationShared> {
         return this;
     }
 }

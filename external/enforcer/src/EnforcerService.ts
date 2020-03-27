@@ -1,7 +1,8 @@
 import { S3 } from "aws-sdk";
-import { Transaction, UniqueViolationError } from "objection";
+import { EventEmitter } from "events";
+import { Model, Transaction, UniqueViolationError } from "objection";
 import { Claims } from "../../../core/src/auth/verify";
-import { AuthenticationError, AuthorizationError, NotFoundError } from "../../../core/src/error/error";
+import { AuthenticationError, AuthorizationError, InternalError, NotFoundError } from "../../../core/src/error/error";
 import { AllowedMedia } from "../../../lib/types/base/AllowedMedia";
 import { Image } from "../../../lib/types/base/Image";
 import { Major } from "../../../lib/types/base/Major";
@@ -16,6 +17,7 @@ import { ProjectShared } from "../../../lib/types/shared/ProjectShared";
 import { ResponseShared } from "../../../lib/types/shared/ResponseShared";
 import { TagShared } from "../../../lib/types/shared/TagShared";
 import { UserShared } from "../../../lib/types/shared/UserShared";
+import { EventConsumer } from "../../eventConsumers/EventConsumer";
 import { Strip, Suppress } from "./decorators";
 import { Actions, EnforcementResult, Enforcer } from "./Enforcer";
 import { MediaRequestFactory } from "./MediaRequestFactory";
@@ -35,6 +37,8 @@ import { filterProjects } from "./queries/filterProjects";
 import { getDefaultMediaLink } from "./queries/util";
 import { Resources } from "./resources/resources";
 import { Project } from "./types/Project";
+import { HistoryEventConsumer } from "../../eventConsumers/HistoryConsumer";
+import { NotificationEventConsumer } from "../../eventConsumers/NotificationConsumer";
 
 export type Options = {
     asAdmin?: boolean,
@@ -54,6 +58,7 @@ export class EnforcerService {
 
     constructor(
         private enforcer: Enforcer<Resources, Actions, object>,
+        private emitter: EventEmitter,
         private mediaRequestFactory: MediaRequestFactory) {}
 
     //TODO: we might want some types for contributors and administrators here, especially if they have extra properties
@@ -197,7 +202,7 @@ export class EnforcerService {
     }
 
     @Strip()
-    public async createNotification(call: AuthenticatedServiceCall<Partial<NotificationShared>>, options?: Options): Promise<Partial<NotificationShared>> {
+    public async createNotification(call: MaybeAuthenticatedServiceCall<Partial<NotificationShared>>, options?: Options): Promise<Partial<NotificationShared>> {
         const result = await this.enforce('create', 'user.notification', call, options, ...call.resourceIds);
 
         const notification = await NotificationModel.query(options?.transaction)
@@ -248,6 +253,13 @@ export class EnforcerService {
                 ...call.payload
             });
 
+        this.emitEvents([{ 
+            type: "APPLICATION_CREATED",
+            projectId: projectId,
+            initiateId: call.claims.username,
+            after: application
+        }]);
+
         return this.handleView(result, application, options);
     }
 
@@ -269,24 +281,59 @@ export class EnforcerService {
     public async replyApplication(call: AuthenticatedServiceCall<ResponseShared>, options?: Options): Promise<Partial<ApplicationShared>> {
         const result = await this.enforce('reply', 'project.application', call, options, ...call.resourceIds);
 
+        // allow someone else to hook into our transaction if they so choose, not
+        // sure if this will stay
+        const transaction = options?.transaction || await Model.startTransaction();
+        const events: EventConsumer<ApplicationModel>[] = [];
+
         const projectId = call.resourceIds[0];
         const applicationId = call.resourceIds[1];
 
-        const application = await ApplicationModel.query(options?.transaction)
-            .patchAndFetchById(applicationId, { status: call.payload.response })
-            .throwIfNotFound();
+        try {
+            const before = await ApplicationModel.query(transaction)
+                .findById(applicationId)
+                .throwIfNotFound();
 
-        switch (application.status) {
-            case 'ACCEPTED':
-                await this.createContributor(projectId, application.userId);
-                break;
-            case 'REJECTED':
-                break;
-            case 'PENDING':
-                throw new Error("Application may only be accepted or rejected");
+            const after = await ApplicationModel.query(transaction)
+                .patchAndFetchById(applicationId, 
+                    { 
+                        responderId: call.claims.username,
+                        status: call.payload.response 
+                    }
+                )
+                .throwIfNotFound();
+
+            switch (after.status) {
+                case 'ACCEPTED':
+                    await this.createContributor(projectId, after.userId, { transaction });
+
+                    events.push({ 
+                        type: "APPLICATION_ACCEPTED",
+                        projectId,
+                        initiateId: after.responderId,
+                        before,
+                        after
+                    });
+                
+                case 'REJECTED':
+                    events.push({
+                        type: "APPLICATION_REJECTED",
+                        projectId,
+                        initiateId: after.responderId,
+                        before,
+                        after
+                    });
+                    break;
+            }
+        
+            await transaction.commit();
+
+            this.emitEvents(events);
+            return this.handleView(result, after, options);
+        } catch (err) {
+            await transaction.rollback();
+            throw new InternalError();
         }
-
-        return this.handleView(result, application, options);
     }
 
     public async deleteApplication(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
@@ -295,9 +342,20 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const applicationId = call.resourceIds[1];
 
+        const application = await ApplicationModel.query()
+            .findById(applicationId)
+            .throwIfNotFound();
+
         await ApplicationModel.query(options?.transaction)
             .deleteById(applicationId)
             .throwIfNotFound();
+
+        this.emitEvents([{
+            type: "APPLICATION_DELETED",
+            projectId,
+            initiateId: call.claims.username,
+            before: application
+        }])
     }
 
     @Strip()
@@ -313,6 +371,13 @@ export class EnforcerService {
                 ...call.payload
             });
 
+        this.emitEvents([{
+            type: "ENTRY_CREATED",
+            projectId,
+            initiateId: call.claims.username,
+            after: entry
+        }])
+
         return this.handleView(result, entry, options);
     }
 
@@ -323,11 +388,23 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const entryId = call.resourceIds[1];
 
-        const entry = await BoardItemModel.query(options?.transaction)
+        const before = await BoardItemModel.query()
+            .findById(entryId)
+            .throwIfNotFound();
+
+        const after = await BoardItemModel.query(options?.transaction)
             .patchAndFetchById(entryId, call.payload)
             .throwIfNotFound();
 
-        return this.handleView(result, entry, options);
+        this.emitEvents([{
+            type: "ENTRY_UPDATED",
+            projectId,
+            initiateId: call.claims.username,
+            before,
+            after 
+        }])
+
+        return this.handleView(result, after, options);
     }
 
     public async deleteEntry(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
@@ -336,9 +413,20 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const entryId = call.resourceIds[1];
 
+        const entry = await BoardItemModel.query()
+            .findById(entryId)
+            .throwIfNotFound();
+
         await BoardItemModel.query(options?.transaction)
             .deleteById(entryId)
             .throwIfNotFound();
+
+        this.emitEvents([{
+            type: "ENTRY_DELETED",
+            projectId,
+            initiateId: call.claims.username,
+            before: entry            
+        }]);
     }
 
     @Strip()
@@ -354,6 +442,13 @@ export class EnforcerService {
                 status: "PENDING",
                 ...call.payload
             });
+
+        this.emitEvents([{
+            type: "INVITE_CREATED",
+            projectId,
+            initiateId: call.claims.username,
+            after: invite       
+        }]);
 
         return this.handleView(result, invite, options);
     }
@@ -379,31 +474,55 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const inviteId = call.resourceIds[1];
 
-        const invite = await InviteModel.query(options?.transaction)
+        const before = await InviteModel.query()
+            .findById(inviteId)
+            .throwIfNotFound()
+
+        const after = await InviteModel.query(options?.transaction)
             .patchAndFetchById(inviteId, { status: call.payload.response })
             .throwIfNotFound();
 
-        switch (invite.status) {
+        const events: EventConsumer<InviteModel>[] = [];
+
+        switch (after.status) {
             case 'ACCEPTED':
-                switch (invite.role) {
+                events.push({
+                    type: "INVITE_ACCEPTED",
+                    projectId,
+                    initiateId: after.initiateId,
+                    before,
+                    after
+                });
+
+                switch (after.role) {
                     case 'CONTRIBUTOR':
-                        await this.createContributor(projectId, invite.targetId, options);
+                        await this.createContributor(projectId, after.targetId, options);
                         break;
                     case 'ADMINISTRATOR':
-                        await this.createAdministrator(projectId, invite.targetId, false, options);
+                        await this.createAdministrator(projectId, after.targetId, false, options);
                         break;
                     case 'ADVISOR':
-                        await this.createAdministrator(projectId, invite.targetId, true, options);
+                        await this.createAdministrator(projectId, after.targetId, true, options);
                         break;
                 }
                 break;
+
             case 'REJECTED':
+                events.push({
+                    type: "INVITE_REJECTED",
+                    projectId,
+                    initiateId: call.claims.username,
+                    before,
+                    after
+                });
                 break;
+
             case 'PENDING':
                 throw new Error("Invite may only be accepted or rejected");
         }
 
-        return this.handleView(result, invite, options);
+        this.emitEvents(events);
+        return this.handleView(result, after, options);
     }
 
     public async deleteInvite(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
@@ -412,9 +531,20 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const inviteId = call.resourceIds[1];
 
+        const invite = await InviteModel.query()
+            .findById(inviteId)
+            .throwIfNotFound();
+
         await InviteModel.query(options?.transaction)
             .deleteById(inviteId)
             .throwIfNotFound();
+
+        this.emitEvents([{
+            type: "INVITE_DELETED",
+            projectId,
+            initiateId: call.claims.username,
+            before: invite
+        }])
     }
 
     @Strip()
@@ -431,6 +561,13 @@ export class EnforcerService {
 
         // user then becomes an administrator of the project
         await this.createAdministrator(project.id, call.claims.username, call.claims.roles.includes("faculty"), options);
+
+        this.emitEvents([{
+            type: "PROJECT_CREATED",
+            projectId: project.id,
+            initiateId: call.claims.username,
+            after: project
+        }]);
 
         return this.handleView(result, project, options);
     }
@@ -460,11 +597,24 @@ export class EnforcerService {
         const result = await this.enforce('update', 'project', call, options, ...call.resourceIds);
 
         const projectId = call.resourceIds[0];
-        const project = await ProjectModel.query(options?.transaction)
+
+        const before = await ProjectModel.query(options?.transaction)
+            .findById(projectId)
+            .throwIfNotFound();
+
+        const after = await ProjectModel.query(options?.transaction)
             .patchAndFetchById(projectId, call.payload)
             .throwIfNotFound();
 
-        return this.handleView(result, project, options);
+        this.emitEvents([{
+            type: "PROJECT_UPDATED",
+            projectId,
+            initiateId: call.claims.username,
+            before,
+            after
+        }])
+
+        return this.handleView(result, after, options);
     }
 
     public async deleteProject(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
@@ -528,6 +678,7 @@ export class EnforcerService {
 
         const projectId = call.resourceIds[0];
 
+        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
             key: `projects/${projectId}/thumbnail`,
@@ -540,6 +691,7 @@ export class EnforcerService {
 
         const projectId = call.resourceIds[0];
 
+        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: `marqetplace-staging-photos`,
             key: `projects/${projectId}/cover`,
@@ -553,6 +705,7 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const entryId = call.resourceIds[1];
 
+        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: `marqetplace-staging-photos`,
             key: `projects/${projectId}/board/${entryId}`,
@@ -584,9 +737,10 @@ export class EnforcerService {
         }
     }
 
-    private handleView<T, U, V>(enforcement: EnforcementResult, instance: Viewable<T, U, V>, options?: Options);
-    private handleView<T, U, V>(enforcement: EnforcementResult, instances: Viewable<T, U, V>[], options?: Options);
-    private handleView<T, U, V>(enforcement: EnforcementResult, instances: Viewable<T, U, V> | Viewable<T, U, V>[], options?: Options) {
+    //TODO: these should never be part of a transaction
+    private handleView(enforcement: EnforcementResult, instance: Viewable, options?: Options);
+    private handleView(enforcement: EnforcementResult, instances: Viewable[], options?: Options);
+    private handleView(enforcement: EnforcementResult, instances: Viewable | Viewable[], options?: Options) {
         if (Array.isArray(instances)) return Promise.all(instances.map(instance => this.handleView(enforcement, instance, options)));
 
         if (options?.noRelations) return instances;
@@ -598,5 +752,11 @@ export class EnforcerService {
             case 'full':
                 return instances.getFullView(options?.transaction);
         }
+    }
+
+    private emitEvents<T extends Viewable>(events: (HistoryEventConsumer<T> | NotificationEventConsumer<T>)[]) {
+        events.map(event => {
+            this.emitter.emit(event.type, event) // happen to match the event name
+        })
     }
 }

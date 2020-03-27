@@ -7,7 +7,7 @@ import { TextBoardEntry } from "../../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../../lib/types/base/MediaBoardEntry";
 import { BaseModel } from "./BaseModel";
 
-export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewable<BoardEntry.PartialView, BoardEntry.VerboseView, BoardEntry.FullView> {
+export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewable {
 
 	static tableName = "boardItems";
 
@@ -24,15 +24,15 @@ export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewa
         }
     }
 
-    public async getPartialView(): Promise<BoardEntry.PartialView> {
+    public async getPartialView(): Promise<BoardEntryShared> {
         return this;
     }
 
-    public async getVerboseView(): Promise<BoardEntry.VerboseView> {
+    public async getVerboseView(): Promise<BoardEntryShared> {
         return this;
     }
 
-    public async getFullView(): Promise<BoardEntry.FullView> {
+    public async getFullView(): Promise<BoardEntryShared> {
         return this;
     }
 }

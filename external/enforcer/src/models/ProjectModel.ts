@@ -1,16 +1,15 @@
 import { Model, Transaction } from "objection";
 import { join } from "path";
-import { UserModel } from "./UserModel";
-import { BoardItemModel } from "./BoardItemModel";
-import { ApplicationModel } from "./ApplicationModel";
-import { TagModel } from "./TagModel";
-import { MajorModel } from "./MajorModel";
-import { Viewable } from "./Viewable";
-import { Project } from "../types/Project";
 import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
+import { ApplicationModel } from "./ApplicationModel";
 import { BaseModel } from "./BaseModel";
+import { BoardItemModel } from "./BoardItemModel";
+import { MajorModel } from "./MajorModel";
+import { TagModel } from "./TagModel";
+import { UserModel } from "./UserModel";
+import { Viewable } from "./Viewable";
 
-export class ProjectModel extends BaseModel implements ProjectShared, Viewable<Project.PartialView, Project.VerboseView, Project.FullView> {
+export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
 
     static tableName = "projects";
     
@@ -61,6 +60,15 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
                 to: "comments.projectId"
             }
         },
+        history: {
+            relation: Model.HasManyRelation,
+            modelClass: join(__dirname, "HistoryEventModel"),
+            join: {
+                from: "projects.id",
+                to: "historyEvents.projectId"
+            }
+        },
+
         //many-to-many
         contributors: {
             relation: Model.ManyToManyRelation,
@@ -132,7 +140,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
         }
     };
 
-    public async getPartialView(transaction?: Transaction): Promise<ProjectModel> {
+    public async getPartialView(transaction?: Transaction): Promise<ProjectShared> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -143,7 +151,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
         ]`)
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<ProjectModel> {
+    public async getVerboseView(transaction?: Transaction): Promise<ProjectShared> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -151,11 +159,12 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable<P
             boardItems(mostRecent),
             contributors,
             administrators,
-            applications
+            applications,
+            history
         ]`)
     }
 
-    public async getFullView(transaction?: Transaction): Promise<ProjectModel> {
+    public async getFullView(transaction?: Transaction): Promise<ProjectShared> {
         return this.getVerboseView(transaction);
     }
 }

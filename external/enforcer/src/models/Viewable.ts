@@ -1,10 +1,10 @@
 import { Transaction } from "objection";
 
-export interface Viewable<P, V, F> {
+export interface Viewable {
 
-    getPartialView(transaction?: Transaction): Promise<P>;
+    getPartialView(transaction?: Transaction): Promise<object>;
 
-    getVerboseView(transaction?: Transaction): Promise<V>;
+    getVerboseView(transaction?: Transaction): Promise<object>;
 
-    getFullView(transaction?: Transaction): Promise<F>;
+    getFullView(transaction?: Transaction): Promise<object>;
 }

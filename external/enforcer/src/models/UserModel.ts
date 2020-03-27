@@ -1,13 +1,12 @@
 import { Model, Transaction } from "objection";
 import { join } from "path";
+import { UserShared } from "../../../../lib/types/shared/UserShared";
 import { ApplicationModel } from "./ApplicationModel";
+import { BaseModel } from "./BaseModel";
 import { ProjectModel } from "./ProjectModel";
 import { Viewable } from "./Viewable";
-import { UserShared } from "../../../../lib/types/shared/UserShared";
-import { User } from "../types/User";
-import { BaseModel } from "./BaseModel";
 
-export class UserModel extends BaseModel implements UserShared, Viewable<User.PartialView, User.VerboseView, User.FullView> {
+export class UserModel extends BaseModel implements UserShared, Viewable {
 
 	static tableName = "users";
 
@@ -72,28 +71,38 @@ export class UserModel extends BaseModel implements UserShared, Viewable<User.Pa
 				},
 				to: "projects.id"
 			}
-		}
+        },
+        notifications: {
+            relation: Model.HasManyRelation,
+            modelClass: join(__dirname, "NotificationModel"),
+            join: {
+                from: "users.id",
+                to: "notifications.userId"
+            }
+        }
     };
     
-    public async getPartialView(transaction?: Transaction): Promise<User.PartialView> {
+    public async getPartialView(transaction?: Transaction): Promise<UserShared> {
         return this;
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<User.VerboseView> {
+    public async getVerboseView(transaction?: Transaction): Promise<UserShared> {
         return this.$fetchGraph(`[
             applications,
             starred,
             contributorOn,
-            administratorOn
+            administratorOn,
+            notifications
         ]`)
     }
 
-    public async getFullView(transaction?: Transaction): Promise<User.FullView> {
+    public async getFullView(transaction?: Transaction): Promise<UserShared> {
         return this.$fetchGraph(`[
             applications,
             starred,
             contributorOn,
-            administratorOn
+            administratorOn,
+            notifications
         ]`)
     }
 }

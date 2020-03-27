@@ -28,6 +28,11 @@ export interface ApplicationShared {
      */
     userId: string;
 
+    /**
+     * The user that responded to the application
+     */
+    responderId: string;
+
     createdAt: Date;
 
     updatedAt: Date;
