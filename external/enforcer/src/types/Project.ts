@@ -31,6 +31,7 @@ export namespace Project {
         hasAdvisor?: boolean
         major?: Major
         acceptingApplications?: boolean
+        title?: string
 
         // sorts
         sortBy?: 'new' | 'popular'

@@ -38,6 +38,9 @@ const filterFunctions: Record<string, FilterFunction> = {
     },
     acceptingApplications: (query: ProjectQuery, param: string | boolean) => {
         return query.where('acceptingApplications', param);
+    },
+    title: (query: ProjectQuery, param: string | boolean) => {
+        return query.where('title', 'like', `%${param}%`);
     }
 }
 
