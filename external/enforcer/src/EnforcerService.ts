@@ -314,6 +314,7 @@ export class EnforcerService {
                         before,
                         after
                     });
+                    break;
                 
                 case 'REJECTED':
                     events.push({
