@@ -1,35 +1,20 @@
 import { EventFactory } from "../EventFactory";
 
 import GatewayRunner from "../local";
-import TokenFactory from '../tokenFactory';
 import creds from '../creds';
 import uuid from 'uuid/v4';
+import * as tokens from "../tokens.json";
 
 import { Application } from "../../../../external/enforcer/src/types/Application";
 import { GenericRequestFactory } from "../GenericRequestFactory";
 
 const runner: GatewayRunner = new GatewayRunner();
-const tokenFactory: TokenFactory = new TokenFactory();
-const eventFactory: EventFactory = new EventFactory(tokenFactory);
+const eventFactory: EventFactory = new EventFactory(tokens);
 const requestFactory: GenericRequestFactory = new GenericRequestFactory(runner, eventFactory);
 
 const USER_ZERO = creds[0].username;
 const USER_ONE = creds[1].username;
 const USER_TWO = creds[2].username;
-
-beforeAll(async () => {
-    for (const login of creds) {
-        await tokenFactory.login(login.username, login.password);
-    }
-});
-
-afterAll(async () => {
-    await runner.close();
-});
-
-const sleep = (milliseconds) => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-  }
 
 describe('Applications', () => {
     describe('can be replied to', () => {

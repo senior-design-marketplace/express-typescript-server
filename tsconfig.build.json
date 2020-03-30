@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig",
+    "exclude": [
+        "core/src/types/generate.ts", 
+        "external/enforcer/src/export.ts",
+
+        "core/**/test/**/*",
+        "external/**/test/**/*"
+    ]
+}

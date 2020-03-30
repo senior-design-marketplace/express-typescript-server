@@ -1,31 +1,20 @@
 import { EventFactory } from "../EventFactory";
 
 import GatewayRunner from "../local";
-import TokenFactory from '../tokenFactory';
 import creds from '../creds';
 import uuid from 'uuid/v4';
+import * as tokens from "../tokens.json";
 
 import { CommentShared } from "../../../../lib/types/shared/CommentShared";
 import { GenericRequestFactory } from "../GenericRequestFactory";
 
 const runner: GatewayRunner = new GatewayRunner();
-const tokenFactory: TokenFactory = new TokenFactory();
-const eventFactory: EventFactory = new EventFactory(tokenFactory);
+const eventFactory: EventFactory = new EventFactory(tokens);
 const requestFactory: GenericRequestFactory = new GenericRequestFactory(runner, eventFactory);
 
 const USER_ZERO = creds[0].username;
 const USER_ONE = creds[1].username;
 const USER_TWO = creds[2].username;
-
-beforeAll(async () => {
-    for (const login of creds) {
-        await tokenFactory.login(login.username, login.password);
-    }
-});
-
-afterAll(async () => {
-    await runner.close();
-});
 
 describe('Comments', () => {
     test('can be created', async () => {

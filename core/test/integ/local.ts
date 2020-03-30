@@ -3,8 +3,10 @@ import { handler } from "../../../lambda.js";
 import { Server } from "http";
 
 /**
- * Allow us to call a lambda function with a gateway event passed
- * to this function for local integration testing.
+ * The Gateway Runner is a local copy of the gateway.  It can
+ * be configured to to point to the staging DB or a local
+ * instance.  Keep in mind that running a Postgres instance
+ * will leave open handles and prevent Jest from exiting.
  */
 export default class GatewayRunner {
 	private server?: Server;

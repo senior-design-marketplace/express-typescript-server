@@ -7,10 +7,11 @@
 	],
 	"main": "lambda.js",
 	"scripts": {
-		"tsc": "ttsc",
+		"tsc": "ttsc --project ./tsconfig.build.json",
 		"test:integ:local": "cross-env NODE_ENV=test npm run test:integ:child",
 		"test:integ:stage": "cross-env NODE_ENV=staging npm run test:integ:child",
-		"test:integ:child": "npm run db:export:child && knex seed:run && ttsc && npm run claudia:build && jest -c jest.config.integ.js --forceExit",
+		"test:integ:prime": "ts-node core/test/integ/scripts/loginTestUsers.ts",
+		"test:integ:child": "npm run db:export:child && knex seed:run && npm run tsc && npm run claudia:build && npm run test:integ:prime && jest -c jest.config.integ.js --forceExit",
 		"test:unit": "jest -c jest.config.unit.js",
 		"types:generate": "ts-node core/src/types/generate",
 		"claudia:build": "claudia generate-serverless-express-proxy --config core/claudia.json --express-module build/core/src/app",

@@ -1,5 +1,3 @@
-import TokenFactory from "./tokenFactory";
-
 //TODO: find an actual type for this
 type Verb = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 
@@ -39,10 +37,10 @@ export class Event {
 export class EventFactory {
 
     private event?: Event;
-    private tokenFactory: TokenFactory;
+    private tokens: Record<string, string>;
 
-    constructor(tokenFactory: TokenFactory) {
-        this.tokenFactory = tokenFactory;
+    constructor(tokens: Record<string, string>) {
+        this.tokens = tokens;
     }
 
     public createEvent(verb: Verb, path: string) {
@@ -73,7 +71,7 @@ export class EventFactory {
             throw "Event not initialized"
         }
 
-        this.event.withToken(this.tokenFactory.getToken(username));
+        this.event.withToken(this.tokens[username]);
         return this;
     }
 

@@ -18,17 +18,7 @@
         ]
 	},
     "include": [
-        "core/src/**/*",
-        "external/**/src/**/*", 
-        "external/enforcer"
-    ],
-    
-	// keep build steps out of deployment
-	"exclude": [
-        "core/src/types/generate.ts", 
-        "external/enforcer/src/export.ts",
-
-        "core/test/**/*",
-        "external/**/test/**/*"
+        "core",
+        "external"
     ]
 }

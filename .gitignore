@@ -12,6 +12,7 @@ knexfile.ts
 env.json
 creds.ts
 secrets.ts
+tokens.json
 
 # editor
 .vscode

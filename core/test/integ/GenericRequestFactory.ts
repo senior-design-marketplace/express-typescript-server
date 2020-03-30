@@ -4,6 +4,11 @@ import GatewayRunner from "./local";
 import { ProjectShared } from "../../../lib/types/shared/ProjectShared";
 import { ApplicationShared } from "../../../lib/types/shared/ApplicationShared";
 import { CommentShared } from "../../../lib/types/shared/CommentShared";
+import { Role } from "../../../lib/types/base/Role";
+import { InviteShared } from "../../../lib/types/shared/InviteShared";
+import { TextBoardEntry } from "../../../lib/types/base/TextBoardEntry";
+import { MediaBoardEntry } from "../../../lib/types/base/MediaBoardEntry";
+import { getDefaultMediaLink } from "../../../external/enforcer/src/queries/util";
 
 type GenericResponse = {
     resourceId: string;
@@ -68,6 +73,60 @@ export class GenericRequestFactory {
                 })
                 .withUser(creator)
                 .build()
+        );
+
+        return {
+            resourceId: id,
+            payload: response
+        };
+    }
+
+    public async createGenericInvite(creator: string, target: string, project: string, role: Role, options?: Partial<InviteShared>): Promise<GenericResponse> {
+        const id = uuid();
+
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent('POST', `/projects/${project}/invites`)
+                .withBody({
+                    id,
+                    targetId: target,
+                    role
+                })
+                .withUser(creator)
+                .build()
+        );
+
+        return {
+            resourceId: id,
+            payload: response
+        };
+    }
+
+    private getGenericBoardEntryDocument(type: "TEXT" | "MEDIA"): TextBoardEntry | MediaBoardEntry {
+        switch (type) {
+            case "TEXT":
+                return {
+                    type: "TEXT",
+                    body: "Wow, so generic"
+                }
+            case "MEDIA":
+                return {
+                    type: "MEDIA",
+                    mediaLink: getDefaultMediaLink()
+                }
+        }
+    }
+
+    public async createGenericBoardEntry(creator: string, project: string, type: "TEXT" | "MEDIA"): Promise<GenericResponse> {
+        const id = uuid();
+
+        const document = this.getGenericBoardEntryDocument(type);
+
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent("POST", `/projects/${project}/board`)
+                .withBody({
+                    id,
+                    document
+                })
         );
 
         return {
