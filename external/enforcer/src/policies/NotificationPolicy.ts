@@ -1,10 +1,9 @@
-import { Claims } from "../../../../core/src/auth/verify";
-import { NotificationModel } from "../models/NotificationModel";
-import { Actions, Policy } from "../Enforcer";
-import { Resources } from "../resources/resources";
-import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
 import { NotificationShared } from "../../../../lib/types/shared/NotificationShared";
+import { Actions, Policy } from "../Enforcer";
 import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { NotificationModel } from "../models/NotificationModel";
+import { Resources } from "../resources/resources";
+import { getAuthenticationRequiredView, getResourceMismatchView } from "./util";
 
 export const NotificationPolicy: Policy<Resources, Actions, Partial<NotificationShared>> = {
 

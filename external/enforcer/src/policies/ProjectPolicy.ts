@@ -1,10 +1,9 @@
+import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
 import { Actions, Policy } from "../Enforcer";
-import { Claims } from "../../../../core/src/auth/verify";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { describeMembership } from "../queries/util";
 import { Resources } from "../resources/resources";
 import { getAuthenticationRequiredView } from "./util";
-import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
-import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 
 export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> = {
 
@@ -43,8 +42,8 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
 
             const projectId = resourceIds[0];
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }
@@ -66,8 +65,8 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }
@@ -89,8 +88,8 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
 
             const projectId = resourceIds[0];
             
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }
@@ -111,8 +110,8 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
 
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }
@@ -133,8 +132,8 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }

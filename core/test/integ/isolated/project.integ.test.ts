@@ -47,7 +47,6 @@ describe('Projects', () => {
         expect(expected.title).toBe(body.title);
         expect(expected.tagline).toBe(body.tagline);
 
-        // user is an administrator
         expect(true).toBe(body.administrators.some(user => {
             return user.id === USER_ZERO
         }))

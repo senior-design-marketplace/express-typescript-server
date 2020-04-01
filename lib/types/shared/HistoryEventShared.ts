@@ -1,5 +1,5 @@
 import { HistoryEvent } from "../events/HistoryEvent";
-import { Viewable } from "../../../external/enforcer/src/models/Viewable";
+import { ViewableModel } from "../../../external/enforcer/src/models/ViewableModel";
 
 export interface HistoryEventShared {
 
@@ -30,7 +30,17 @@ export interface HistoryEventShared {
      */
     createdAt: Date;
 
-    before?: Viewable;
+    /**
+     * A view of the model before modification.
+     * If the model was created in this event,
+     * this will be undefined.
+     */
+    before?: ViewableModel;
 
-    after?: Viewable;
+    /**
+     * A view of the model after modification.
+     * If the model was deleted in this event,
+     * this will be undefined.
+     */
+    after?: ViewableModel;
 }

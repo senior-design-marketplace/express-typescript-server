@@ -135,41 +135,51 @@ export async function up(knex: Knex): Promise<any> {
 
 			//composite primary key
 			table.primary(["projectId", "userId"]);
-		})
-		.createTable("contributors", table => {
-			table
+        })
+        .createTable("rolesValues", table => {
+            table.string("value", constants.SMALL).primary();
+        })
+        .createTable("members", table => {
+            table
 				.uuid("projectId")
 				.references("id")
 				.inTable("projects")
 				.onDelete("CASCADE");
-
-			table
-				.string("userId", constants.SMALL)
-				.references("id")
-				.inTable("users")
-				.onDelete("CASCADE");
-
-			table.primary(["projectId", "userId"]);
-		})
-		.createTable("administrators", table => {
-			table
-				.uuid("projectId")
-				.references("id")
-				.inTable("projects")
-				.onDelete("CASCADE");
-
+            
+            // provides a hook to query on all members,
+            // and enforces that a user can have only
+            // one membership type
 			table
 				.string("userId", constants.SMALL)
 				.references("id")
 				.inTable("users")
                 .onDelete("CASCADE");
-                
+
+            // exclusive arc table pattern, requires
+            // raw constraint enforcement
+            table.string("contributorId", constants.SMALL)
+                .references("id")
+                .inTable("users")
+
+            table.string("administratorId", constants.SMALL)
+                .references("id")
+                .inTable("users")
+
             table.boolean("isAdvisor")
                 .notNullable()
                 .defaultTo(false);
 
 			table.primary(["projectId", "userId"]);
-		})
+        })
+        .raw(`
+            ALTER TABLE "members"
+            ADD CONSTRAINT "exactlyOneMemberType" check(
+                (
+                    ("contributorId" is not null)::integer +
+                    ("administratorId" is not null)::integer
+                ) = 1
+            )
+        `)
 
 		.createTable("statuses", table => {
 			table.string("value", constants.SMALL).primary();
@@ -241,9 +251,6 @@ export async function up(knex: Knex): Promise<any> {
 				.inTable("users")
                 .onDelete("CASCADE");
         })
-        .createTable("rolesValues", table => {
-            table.string("value", constants.SMALL).primary();
-        })
         .createTable("invites", table => {
             table.uuid("id").primary();
 
@@ -287,7 +294,12 @@ export async function up(knex: Knex): Promise<any> {
                 .references("value")
                 .inTable("rolesValues")
                 .onDelete("CASCADE")
-                .onUpdate("CASCADE")
+                .onUpdate("CASCADE");
+
+            table
+                .boolean("isAdvisor")
+                .notNullable()
+                .defaultTo(false);
 
             table
 				.string("status", constants.SMALL)
@@ -359,12 +371,11 @@ export async function down(knex: Knex): Promise<any> {
         .dropTableIfExists("historyEvents")
         .dropTableIfExists("comments")
         .dropTableIfExists("invites")
-        .dropTableIfExists("rolesValues")
         .dropTableIfExists("notifications")
 		.dropTableIfExists("applications")
-		.dropTableIfExists("statuses")
-		.dropTableIfExists("administrators")
-		.dropTableIfExists("contributors")
+        .dropTableIfExists("statuses")
+        .dropTableIfExists("members")
+        .dropTableIfExists("rolesValues")
 		.dropTableIfExists("stars")
 		.dropTableIfExists("tags")
 		.dropTableIfExists("tagsValues")

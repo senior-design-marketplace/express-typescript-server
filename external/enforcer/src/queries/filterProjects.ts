@@ -11,7 +11,7 @@ const filterFunctions: Record<string, FilterFunction> = {
             .where("tag", param);
     },
     advisor: (query: ProjectQuery, param: string | boolean) => {
-        return query.joinRelated('administrators')
+        return query.joinRelated('members')
             .where('isAdvisor', true)
             .andWhere('lastName', 'like', `%${param}%`) // see SQL pattern matching
     },
@@ -20,14 +20,14 @@ const filterFunctions: Record<string, FilterFunction> = {
             return query.whereIn(
                 'projects.id',
                 ProjectModel.query().select('projects.id')
-                    .joinRelated('administrators')
+                    .joinRelated('members')
                     .where('isAdvisor', true)
             )
         } else {
             return query.whereNotIn(
                 'projects.id',
                 ProjectModel.query().select('projects.id')
-                    .joinRelated('administrators')
+                    .joinRelated('members')
                     .where('isAdvisor', true)
             )
         }

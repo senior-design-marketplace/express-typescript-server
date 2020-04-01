@@ -1,5 +1,6 @@
 import { TagShared } from "../../../lib/types/shared/TagShared";
 import { MajorShared } from "../../../lib/types/shared/MajorShared";
+import { ProjectShared } from "../../../lib/types/shared/ProjectShared";
 
 /**
  * An object comes in as a set of keys and values.  We can

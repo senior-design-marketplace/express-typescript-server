@@ -2,14 +2,13 @@ import { Model, Transaction } from "objection";
 import { join } from "path";
 import { ProjectShared } from "../../../../lib/types/shared/ProjectShared";
 import { ApplicationModel } from "./ApplicationModel";
-import { BaseModel } from "./BaseModel";
 import { BoardItemModel } from "./BoardItemModel";
 import { MajorModel } from "./MajorModel";
 import { TagModel } from "./TagModel";
 import { UserModel } from "./UserModel";
-import { Viewable } from "./Viewable";
+import { ViewableModel } from "./ViewableModel";
 
-export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
+export class ProjectModel extends ViewableModel implements ProjectShared {
 
     static tableName = "projects";
     
@@ -24,8 +23,9 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
 
     boardItems!: BoardItemModel[];
     applications!: ApplicationModel[];
+    members!: UserModel[];
     contributors!: UserModel[];
-    administrators!: UserModel[]; 
+    administrators!: UserModel[];
     tags!: TagModel[];
     requestedMajors!: MajorModel[];
     starredBy!: UserModel[];
@@ -70,15 +70,26 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
         },
 
         //many-to-many
+        members: {
+            relation: Model.ManyToManyRelation,
+            modelClass: join(__dirname, "UserModel"),
+            join: {
+                from: "projects.id",
+                through: {
+                    from: "members.projectId",
+                    to: "members.userId"
+                },
+                to: "users.id"
+            }
+        },
         contributors: {
             relation: Model.ManyToManyRelation,
             modelClass: join(__dirname, "UserModel"),
             join: {
                 from: "projects.id",
                 through: {
-                    //contributors is the join table
-                    from: "contributors.projectId",
-                    to: "contributors.userId"
+                    from: "members.projectId",
+                    to: "members.contributorId"
                 },
                 to: "users.id"
             }
@@ -89,12 +100,8 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
             join: {
                 from: "projects.id",
                 through: {
-                    //administrators is the join table
-                    from: "administrators.projectId",
-                    to: "administrators.userId",
-                    extra: [
-                        "isAdvisor"
-                    ]
+                    from: "members.projectId",
+                    to: "members.administratorId"
                 },
                 to: "users.id"
             }
@@ -140,7 +147,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
         }
     };
 
-    public async getPartialView(transaction?: Transaction): Promise<ProjectShared> {
+    public async getPartialView(transaction?: Transaction): Promise<ProjectModel> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -151,7 +158,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
         ]`)
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<ProjectShared> {
+    public async getVerboseView(transaction?: Transaction): Promise<ProjectModel> {
         return this.$fetchGraph(`[
             tags,
             requestedMajors,
@@ -164,7 +171,7 @@ export class ProjectModel extends BaseModel implements ProjectShared, Viewable {
         ]`)
     }
 
-    public async getFullView(transaction?: Transaction): Promise<ProjectShared> {
+    public async getFullView(transaction?: Transaction): Promise<ProjectModel> {
         return this.getVerboseView(transaction);
     }
 }

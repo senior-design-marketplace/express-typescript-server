@@ -9,6 +9,7 @@ import { InviteShared } from "../../../lib/types/shared/InviteShared";
 import { TextBoardEntry } from "../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../lib/types/base/MediaBoardEntry";
 import { getDefaultMediaLink } from "../../../external/enforcer/src/queries/util";
+import { Membership } from "../../../lib/types/base/Membership";
 
 type GenericResponse = {
     resourceId: string;
@@ -81,7 +82,7 @@ export class GenericRequestFactory {
         };
     }
 
-    public async createGenericInvite(creator: string, target: string, project: string, role: Role, options?: Partial<InviteShared>): Promise<GenericResponse> {
+    public async createGenericInvite(creator: string, target: string, project: string, membership: Membership, options?: Partial<InviteShared>): Promise<GenericResponse> {
         const id = uuid();
 
         const response = await this.runner.runEvent(
@@ -89,7 +90,7 @@ export class GenericRequestFactory {
                 .withBody({
                     id,
                     targetId: target,
-                    role
+                    ...membership
                 })
                 .withUser(creator)
                 .build()
@@ -133,5 +134,37 @@ export class GenericRequestFactory {
             resourceId: id,
             payload: response
         };
+    }
+
+    public async acceptApplication(creator: string, project: string, application: string): Promise<GenericResponse> {
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent("PATCH", `/projects/${project}/applications/${application}`)
+                .withBody({
+                    response: "ACCEPTED"
+                })
+                .withUser(creator)
+                .build()
+        )
+
+        return {
+            resourceId: application,
+            payload: response
+        }
+    }
+
+    public async acceptInvite(creator: string, project: string, invite: string): Promise<GenericResponse> {
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent("PATCH", `/projects/${project}/invites/${invite}`)
+                .withBody({
+                    response: "ACCEPTED"
+                })
+                .withUser(creator)
+                .build()
+        )
+
+        return {
+            resourceId: invite,
+            payload: response
+        }
     }
 }

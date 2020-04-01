@@ -1,4 +1,3 @@
-export type Role =
+export type Role = 
     | 'CONTRIBUTOR'
     | 'ADMINISTRATOR'
-    | 'ADVISOR'

@@ -1,9 +1,8 @@
-import { Actions, Policy } from "../Enforcer";
-import { Resources } from "../resources/resources";
-import { Claims } from "../../../../core/src/auth/verify";
-import { getAuthenticationRequiredView } from "./util";
 import { UserShared } from "../../../../lib/types/shared/UserShared";
+import { Actions, Policy } from "../Enforcer";
 import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { Resources } from "../resources/resources";
+import { getAuthenticationRequiredView } from "./util";
 
 export const UserPolicy: Policy<Resources, Actions, Partial<UserShared>> = {
 

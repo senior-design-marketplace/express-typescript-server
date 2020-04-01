@@ -1,7 +1,7 @@
-import { Role } from "../base/Role";
 import { Status } from "../base/Status";
+import { Membership } from "../base/Membership";
 
-export interface InviteShared {
+export interface InviteShared extends Membership {
     
     /**
      * The id of the invite
@@ -22,11 +22,6 @@ export interface InviteShared {
      * The project to which the target is being invited
      */
     projectId: string;
-
-    /**
-     * The role that the target will be elevated to
-     */
-    role: Role;
 
     /**
      * The current status of the invite

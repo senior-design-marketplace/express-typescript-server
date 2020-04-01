@@ -1,13 +1,9 @@
-import { Model } from "objection";
-import { join } from "path";
-import { Viewable } from "./Viewable";
-import { BoardEntry } from "../types/BoardEntry";
-import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
-import { TextBoardEntry } from "../../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../../lib/types/base/MediaBoardEntry";
-import { BaseModel } from "./BaseModel";
+import { TextBoardEntry } from "../../../../lib/types/base/TextBoardEntry";
+import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
+import { ViewableModel } from "./ViewableModel";
 
-export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewable {
+export class BoardItemModel extends ViewableModel implements BoardEntryShared {
 
 	static tableName = "boardItems";
 
@@ -24,15 +20,15 @@ export class BoardItemModel extends BaseModel implements BoardEntryShared, Viewa
         }
     }
 
-    public async getPartialView(): Promise<BoardEntryShared> {
+    public async getPartialView(): Promise<BoardItemModel> {
         return this;
     }
 
-    public async getVerboseView(): Promise<BoardEntryShared> {
+    public async getVerboseView(): Promise<BoardItemModel> {
         return this;
     }
 
-    public async getFullView(): Promise<BoardEntryShared> {
+    public async getFullView(): Promise<BoardItemModel> {
         return this;
     }
 }

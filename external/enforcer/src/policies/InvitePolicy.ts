@@ -1,12 +1,11 @@
-import { Claims } from "../../../../core/src/auth/verify";
-import { InviteModel } from "../models/InviteModel";
-import { describeMembership } from "../queries/util";
-import { Actions, Policy } from "../Enforcer";
-import { Resources } from "../resources/resources";
-import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
-import { AuthenticatedServiceCall, MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { InviteShared } from "../../../../lib/types/shared/InviteShared";
+import { Actions, Policy } from "../Enforcer";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { InviteModel } from "../models/InviteModel";
 import { UserModel } from "../models/UserModel";
+import { describeMembership } from "../queries/util";
+import { Resources } from "../resources/resources";
+import { getAuthenticationRequiredView, getResourceMismatchView } from "./util";
 
 export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
 
@@ -21,10 +20,10 @@ export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
             
             const projectId = resourceIds[0];
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
 
-                if (call.payload.role === 'ADVISOR') {
+                if (call.payload.isAdvisor) {
                     if (!call.payload.targetId) {
                         return {
                             view: 'blocked',
@@ -80,8 +79,8 @@ export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }
@@ -158,8 +157,8 @@ export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }

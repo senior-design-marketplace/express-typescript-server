@@ -70,8 +70,8 @@ export default class ProjectController {
         })
 
 		res.status(200).json(result);
-	}
-
+    }
+    
 	@Delete(":project")
 	@Middleware([ 
         RequiresAuth, 
@@ -84,5 +84,36 @@ export default class ProjectController {
         });
 
 		res.status(200).json(result);
+    }
+
+    @Patch(":project/members/:member")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody("UpdateMember"),
+        VerifyPath('project', isUUID)
+    ])
+    public async updateMember(req: Request, res: Response) {
+        const result = await this.enforcerService.updateProjectMember({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.member ]
+        })
+
+        res.status(200).json(result);
+    }
+
+    @Delete(":project/members/:member")
+    @Middleware([
+        RequiresAuth,
+        VerifyPath('project', isUUID)
+    ])
+    public async deleteMember(req: Request, res: Response) {
+        const result = await this.enforcerService.deleteProjectMember({
+            payload: {},
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.member ]
+        })
+
+        res.status(200).json(result);
     }
 }

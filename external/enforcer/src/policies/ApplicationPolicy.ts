@@ -1,12 +1,11 @@
-import { Claims } from "../../../../core/src/auth/verify";
+import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
+import { Actions, Policy } from "../Enforcer";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { ApplicationModel } from "../models/ApplicationModel";
 import { ProjectModel } from "../models/ProjectModel";
 import { describeMembership } from "../queries/util";
-import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
-import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
-import { ApplicationShared } from "../../../../lib/types/shared/ApplicationShared";
-import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { getAuthenticationRequiredView, getResourceMismatchView } from "./util";
 
 export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationShared>> = {
 
@@ -34,9 +33,9 @@ export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationSh
             }
 
             const hasOpenApplication = Boolean(await ApplicationModel.query()
-                .where('projectId', projectId)
-                .andWhere('userId', call.claims.username)
-                .andWhere('status', 'PENDING')
+                .modify('forProject', projectId)
+                .modify('forUser', call.claims.username)
+                .modify('onlyPending')
                 .resultSize());
 
             if (hasOpenApplication) {
@@ -46,9 +45,9 @@ export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationSh
                 };
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
+            const membership = await describeMembership(projectId, call.claims.username);
 
-            if (isContributor || isAdministrator) {
+            if (membership) {
                 return {
                     view: 'blocked',
                     reason: 'User is already a member of this project'
@@ -86,8 +85,8 @@ export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationSh
                 };
             }
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }
@@ -126,8 +125,8 @@ export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationSh
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }
@@ -166,8 +165,8 @@ export const ApplicationPolicy: Policy<Resources, Actions, Partial<ApplicationSh
                 }
             }
 
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }

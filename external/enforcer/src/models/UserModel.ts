@@ -2,11 +2,10 @@ import { Model, Transaction } from "objection";
 import { join } from "path";
 import { UserShared } from "../../../../lib/types/shared/UserShared";
 import { ApplicationModel } from "./ApplicationModel";
-import { BaseModel } from "./BaseModel";
 import { ProjectModel } from "./ProjectModel";
-import { Viewable } from "./Viewable";
+import { ViewableModel } from "./ViewableModel";
 
-export class UserModel extends BaseModel implements UserShared, Viewable {
+export class UserModel extends ViewableModel implements UserShared {
 
 	static tableName = "users";
 
@@ -47,30 +46,30 @@ export class UserModel extends BaseModel implements UserShared, Viewable {
 				},
 				to: "projects.id"
 			}
-		},
-		contributorOn: {
-			relation: Model.ManyToManyRelation,
-			modelClass: join(__dirname, "ProjectModel"),
-			join: {
-				from: "users.id",
-				through: {
-					from: "contributors.userId",
-					to: "contributors.projectId"
-				},
+        },
+        contributorOn: {
+            relation: Model.ManyToManyRelation,
+            modelClass: join(__dirname, "ProjectModel"),
+            join: {
+                from: "users.id",
+                through: {
+                    from: "members.contributorId",
+                    to: "members.projectId"
+                },
                 to: "projects.id"
-			}
-		},
-		administratorOn: {
-			relation: Model.ManyToManyRelation,
-			modelClass: join(__dirname, "ProjectModel"),
-			join: {
-				from: "users.id",
-				through: {
-					from: "administrators.userId",
-					to: "administrators.projectId"
-				},
-				to: "projects.id"
-			}
+            }
+        },
+        administratorOn: {
+            relation: Model.ManyToManyRelation,
+            modelClass: join(__dirname, "ProjectModel"),
+            join: {
+                from: "users.id",
+                through: {
+                    from: "members.administratorId",
+                    to: "members.projectId"
+                },
+                to: "projects.id"
+            }
         },
         notifications: {
             relation: Model.HasManyRelation,
@@ -82,27 +81,21 @@ export class UserModel extends BaseModel implements UserShared, Viewable {
         }
     };
     
-    public async getPartialView(transaction?: Transaction): Promise<UserShared> {
+    public async getPartialView(transaction?: Transaction): Promise<UserModel> {
         return this;
     }
 
-    public async getVerboseView(transaction?: Transaction): Promise<UserShared> {
+    public async getVerboseView(transaction?: Transaction): Promise<UserModel> {
         return this.$fetchGraph(`[
             applications,
             starred,
             contributorOn,
-            administratorOn,
+            administratorOn.applications(onlyPending) as pendingApplications,
             notifications
-        ]`)
+        ]`);
     }
 
-    public async getFullView(transaction?: Transaction): Promise<UserShared> {
-        return this.$fetchGraph(`[
-            applications,
-            starred,
-            contributorOn,
-            administratorOn,
-            notifications
-        ]`)
+    public async getFullView(transaction?: Transaction): Promise<UserModel> {
+        return this.getVerboseView();
     }
 }

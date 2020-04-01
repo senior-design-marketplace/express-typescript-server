@@ -18,27 +18,27 @@ import { ResponseShared } from "../../../lib/types/shared/ResponseShared";
 import { TagShared } from "../../../lib/types/shared/TagShared";
 import { UserShared } from "../../../lib/types/shared/UserShared";
 import { EventConsumer } from "../../eventConsumers/EventConsumer";
-import { Strip, Suppress } from "./decorators";
 import { Actions, EnforcementResult, Enforcer } from "./Enforcer";
 import { MediaRequestFactory } from "./MediaRequestFactory";
-import { AdministratorModel } from "./models/AdministratorModel";
 import { ApplicationModel } from "./models/ApplicationModel";
 import { BoardItemModel } from "./models/BoardItemModel";
 import { CommentModel } from "./models/CommentModel";
-import { ContributorModel } from "./models/ContributorModel";
 import { InviteModel } from "./models/InviteModel";
 import { MajorModel } from "./models/MajorModel";
 import { NotificationModel } from "./models/NotificationModel";
 import { ProjectModel } from "./models/ProjectModel";
 import { TagModel } from "./models/TagModel";
 import { UserModel } from "./models/UserModel";
-import { Viewable } from "./models/Viewable";
 import { filterProjects } from "./queries/filterProjects";
-import { getDefaultMediaLink } from "./queries/util";
+import { getDefaultMediaLink, describeMembership } from "./queries/util";
 import { Resources } from "./resources/resources";
 import { Project } from "./types/Project";
 import { HistoryEventConsumer } from "../../eventConsumers/HistoryConsumer";
 import { NotificationEventConsumer } from "../../eventConsumers/NotificationConsumer";
+import { MemberModel } from "./models/MemberModel";
+import { Membership } from "../../../lib/types/base/Membership";
+import uuid from "uuid/v4";
+import { ViewableModel } from "./models/ViewableModel";
 
 export type Options = {
     asAdmin?: boolean,
@@ -61,32 +61,6 @@ export class EnforcerService {
         private emitter: EventEmitter,
         private mediaRequestFactory: MediaRequestFactory) {}
 
-    //TODO: we might want some types for contributors and administrators here, especially if they have extra properties
-    @Suppress(UniqueViolationError)
-    private async createContributor(projectId: string, userId: string, options?: Options): Promise<void> {
-        await ContributorModel.query(options?.transaction)
-            .insert({ projectId, userId });
-    }
-
-    @Suppress(NotFoundError)
-    private async deleteContributor(projectId: string, userId: string, options?: Options): Promise<void> {
-        await ContributorModel.query(options?.transaction)
-            .deleteById([ projectId, userId ]);
-    }
-
-    @Suppress(UniqueViolationError)
-    private async createAdministrator(projectId: string, userId: string, isAdvisor: boolean, options?: Options): Promise<void> {
-        await AdministratorModel.query(options?.transaction)
-            .insert({ projectId, userId, isAdvisor });
-    }
-
-    @Suppress(NotFoundError)
-    private async deleteAdministrator(projectId: string, userId: string, options?: Options): Promise<void> {
-        await AdministratorModel.query(options?.transaction)
-            .deleteById([ projectId, userId ]);
-    }
-
-    @Strip()
     public async listMajors(call: MaybeAuthenticatedServiceCall<object>, options?: Options): Promise<MajorShared[]> {
         const result: EnforcementResult = { view: 'full' }; // unauthenticated methods by default return full view
 
@@ -94,7 +68,6 @@ export class EnforcerService {
         return this.handleView(result, majors, options);
     }
 
-    @Strip()
     public async updateMajors(call: AuthenticatedServiceCall<Major[]>, options?: Options): Promise<MajorShared[]> {
         const result = await this.enforce('update', 'project.majors', call, options, ...call.resourceIds);
 
@@ -114,7 +87,6 @@ export class EnforcerService {
         return this.handleView(result, majors, options);
     }
 
-    @Strip()
     public async listTags(call: MaybeAuthenticatedServiceCall<object>, options?: Options): Promise<TagShared[]> {
         const result: EnforcementResult = { view: 'full' };
 
@@ -122,7 +94,6 @@ export class EnforcerService {
         return this.handleView(result, tags, options);
     }
 
-    @Strip()
     public async updateTags(call: AuthenticatedServiceCall<Tag[]>, options?: Options): Promise<TagShared[]> {
         const result = await this.enforce('update', 'project.tags', call, options, ...call.resourceIds);
 
@@ -142,7 +113,6 @@ export class EnforcerService {
         return this.handleView(result, tags, options);
     }    
 
-    @Strip()
     public async createComment(call: AuthenticatedServiceCall<Partial<CommentShared>>, options?: Options): Promise<Partial<CommentShared>> {
         const result = await this.enforce('create', 'project.comment', call, options, ...call.resourceIds);
 
@@ -158,7 +128,6 @@ export class EnforcerService {
         return this.handleView(result, comment, options);
     }
 
-    @Strip()
     public async updateComment(call: AuthenticatedServiceCall<Partial<CommentShared>>, options?: Options): Promise<Partial<CommentShared>> {
         const result = await this.enforce('update', 'project.comment', call, options, ...call.resourceIds);
 
@@ -172,7 +141,6 @@ export class EnforcerService {
         return this.handleView(result, comment, options);
     }
 
-    @Strip()
     public async replyComment(call: AuthenticatedServiceCall<Partial<CommentShared>>, options?: Options): Promise<Partial<CommentShared>> {
         const result = await this.enforce('reply', 'project.comment', call, options, ...call.resourceIds);
 
@@ -201,7 +169,6 @@ export class EnforcerService {
             .throwIfNotFound();
     }
 
-    @Strip()
     public async createNotification(call: MaybeAuthenticatedServiceCall<Partial<NotificationShared>>, options?: Options): Promise<Partial<NotificationShared>> {
         const result = await this.enforce('create', 'user.notification', call, options, ...call.resourceIds);
 
@@ -214,7 +181,6 @@ export class EnforcerService {
         return this.handleView(result, notification, options);
     }
 
-    @Strip()
     public async updateNotification(call: AuthenticatedServiceCall<Partial<NotificationShared>>, options?: Options): Promise<Partial<NotificationShared>> {
         const result = await this.enforce('update', 'user.notification', call, options, ...call.resourceIds);
 
@@ -239,7 +205,6 @@ export class EnforcerService {
             .throwIfNotFound();
     }
 
-    @Strip()
     public async createApplication(call: AuthenticatedServiceCall<Partial<ApplicationShared>>, options?: Options): Promise<Partial<ApplicationShared>> {
         const result = await this.enforce('create', 'project.application', call, options, ...call.resourceIds);
 
@@ -263,7 +228,6 @@ export class EnforcerService {
         return this.handleView(result, application, options);
     }
 
-    @Strip()
     public async updateApplication(call: AuthenticatedServiceCall<Partial<ApplicationShared>>, options?: Options): Promise<Partial<ApplicationShared>> {
         const result = await this.enforce('update', 'project.application', call, options, ...call.resourceIds);
 
@@ -277,7 +241,6 @@ export class EnforcerService {
         return this.handleView(result, application, options);
     }
 
-    @Strip()
     public async replyApplication(call: AuthenticatedServiceCall<ResponseShared>, options?: Options): Promise<Partial<ApplicationShared>> {
         const result = await this.enforce('reply', 'project.application', call, options, ...call.resourceIds);
 
@@ -305,7 +268,12 @@ export class EnforcerService {
 
             switch (after.status) {
                 case 'ACCEPTED':
-                    await this.createContributor(projectId, after.userId, { transaction });
+                    await MemberModel.query().insert({
+                        projectId: projectId,
+                        userId: after.userId,
+                        contributorId: after.userId,
+                        isAdvisor: false
+                    })
 
                     events.push({ 
                         type: "APPLICATION_ACCEPTED",
@@ -359,7 +327,6 @@ export class EnforcerService {
         }])
     }
 
-    @Strip()
     public async createEntry(call: AuthenticatedServiceCall<Partial<BoardEntryShared>>, options?: Options): Promise<Partial<BoardEntryShared>> {
         const result = await this.enforce('create', 'project.entry', call, options, ...call.resourceIds);
 
@@ -382,7 +349,6 @@ export class EnforcerService {
         return this.handleView(result, entry, options);
     }
 
-    @Strip()
     public async updateEntry(call: AuthenticatedServiceCall<Partial<BoardEntryShared>>, options?: Options): Promise<Partial<BoardEntryShared>> {
         const result = await this.enforce('update', 'project.entry', call, options, ...call.resourceIds);
 
@@ -430,8 +396,7 @@ export class EnforcerService {
         }]);
     }
 
-    @Strip()
-    public async createInvite(call: AuthenticatedServiceCall<Partial<InviteShared>>, options?: Options): Promise<Partial<InviteShared>> {
+    public async createInvite(call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, options?: Options): Promise<Partial<InviteShared>> {
         const result = await this.enforce('create', 'project.invite', call, options, ...call.resourceIds);
         
         const projectId = call.resourceIds[0];
@@ -439,7 +404,7 @@ export class EnforcerService {
         const invite = await InviteModel.query(options?.transaction)
             .insertAndFetch({
                 projectId: projectId,
-                initiateId: call.claims.username,
+                initiateId: call.claims!.username,
                 status: "PENDING",
                 ...call.payload
             });
@@ -447,14 +412,13 @@ export class EnforcerService {
         this.emitEvents([{
             type: "INVITE_CREATED",
             projectId,
-            initiateId: call.claims.username,
+            initiateId: call.claims!.username,
             after: invite       
         }]);
 
         return this.handleView(result, invite, options);
     }
 
-    @Strip()
     public async updateInvite(call: AuthenticatedServiceCall<Partial<InviteShared>>, options?: Options): Promise<Partial<InviteShared>> {
         const result = await this.enforce('update', 'project.invite', call, options, ...call.resourceIds);
 
@@ -468,7 +432,6 @@ export class EnforcerService {
         return this.handleView(result, invite, options);
     }
 
-    @Strip()
     public async replyInvite(call: AuthenticatedServiceCall<ResponseShared>, options?: Options): Promise<Partial<InviteShared>> {
         const result = await this.enforce('reply', 'project.invite', call, options, ...call.resourceIds);
 
@@ -496,14 +459,21 @@ export class EnforcerService {
                 });
 
                 switch (after.role) {
-                    case 'CONTRIBUTOR':
-                        await this.createContributor(projectId, after.targetId, options);
+                    case "CONTRIBUTOR":
+                        await MemberModel.query().insert({
+                            projectId,
+                            userId: after.targetId,
+                            contributorId: after.targetId,
+                            isAdvisor: after.isAdvisor
+                        })
                         break;
-                    case 'ADMINISTRATOR':
-                        await this.createAdministrator(projectId, after.targetId, false, options);
-                        break;
-                    case 'ADVISOR':
-                        await this.createAdministrator(projectId, after.targetId, true, options);
+                    case "ADMINISTRATOR":
+                        await MemberModel.query().insert({
+                            projectId,
+                            userId: after.targetId,
+                            administratorId: after.targetId,
+                            isAdvisor: after.isAdvisor
+                        })
                         break;
                 }
                 break;
@@ -548,7 +518,6 @@ export class EnforcerService {
         }])
     }
 
-    @Strip()
     public async createProject(call: AuthenticatedServiceCall<ProjectModel>, options?: Options): Promise<Partial<ProjectShared>> {
         const result = await this.enforce('create', 'project', call, options, ...call.resourceIds);
 
@@ -560,8 +529,13 @@ export class EnforcerService {
                 ...call.payload
             });
 
-        // user then becomes an administrator of the project
-        await this.createAdministrator(project.id, call.claims.username, call.claims.roles.includes("faculty"), options);
+        //TODO: for now, the user cannot avoid becoming an advisor if they are faculty
+        await MemberModel.query().insert({
+            projectId: project.id,
+            userId: call.claims.username,
+            administratorId: call.claims.username,
+            isAdvisor: call.claims.roles.includes("faculty")
+        })
 
         this.emitEvents([{
             type: "PROJECT_CREATED",
@@ -573,7 +547,6 @@ export class EnforcerService {
         return this.handleView(result, project, options);
     }
 
-    @Strip()
     public async listProjects(call: MaybeAuthenticatedServiceCall<Project.QueryParams>, options?: Options): Promise<Partial<ProjectShared>[]> {
         const result = await this.enforce('list', 'project', call, options, ...call.resourceIds);
 
@@ -581,7 +554,6 @@ export class EnforcerService {
         return this.handleView(result, projects, options);
     }
 
-    @Strip()
     public async describeProject(call: MaybeAuthenticatedServiceCall<object>, options?: Options): Promise<Partial<ProjectShared>> {
         const result = await this.enforce('describe', 'project', call, options, ...call.resourceIds);
 
@@ -593,7 +565,6 @@ export class EnforcerService {
         return this.handleView(result, project, options);
     }
 
-    @Strip()
     public async updateProject(call: AuthenticatedServiceCall<Partial<ProjectShared>>, options?: Options): Promise<Partial<ProjectShared>> {
         const result = await this.enforce('update', 'project', call, options, ...call.resourceIds);
 
@@ -627,7 +598,74 @@ export class EnforcerService {
             .throwIfNotFound();
     }
 
-    @Strip()
+    public async updateProjectMember(call: MaybeAuthenticatedServiceCall<Membership>, options?: Options): Promise<void> {
+        const result = await this.enforce('update', 'project.member', call, options, ...call.resourceIds);
+
+        const projectId = call.resourceIds[0];
+        const userId = call.resourceIds[1];
+
+        const membership = await describeMembership(projectId, userId);
+
+        // TODO: thread this into the same transaction
+        // requires an invite due to some promotion of the user
+        if ((membership!.role === "CONTRIBUTOR" && call.payload.role === "ADMINISTRATOR") || (!membership!.isAdvisor && call.payload.isAdvisor)) {
+            
+            // assert that the user can elevate to advisor status
+            if (!membership!.isAdvisor && call.payload.isAdvisor) {
+                const target = await this.describeUser(
+                    {
+                        payload: {},
+                        resourceIds: [ userId ]
+                    }, 
+                    {
+                        asAdmin: true,
+                        noRelations: true
+                    }
+                )
+
+                if (!target.roles?.includes("faculty")) {
+                    throw new AuthorizationError("Target is not capable of becoming an advisor");
+                }
+            }
+
+            await this.createInvite(
+                {
+                    payload: {
+                        id: uuid(),
+                        initiateId: call.claims!.username,
+                        targetId: userId,
+                        role: call.payload.role,
+                        isAdvisor: call.payload.isAdvisor,
+                        note: "(This is an auto-generated invite via a promotion request)"
+        
+                    },
+                    claims: call.claims,
+                    resourceIds: [ projectId ]
+                }, 
+                {
+                    noRelations: true
+                }
+            )
+        }
+
+        // must be a demotion, equal movements are prevented by the enforcer
+        else {
+            await MemberModel.query().findById([ projectId, userId ])
+                .throwIfNotFound()
+                .patch(call.payload);
+        }
+    }
+
+    public async deleteProjectMember(call: MaybeAuthenticatedServiceCall<object>, options?: Options): Promise<void> {
+        const result = await this.enforce('delete', 'project.member', call, options, ...call.resourceIds);
+
+        const projectId = call.resourceIds[0];
+        const userId = call.resourceIds[1];
+
+        await MemberModel.query().deleteById([ projectId, userId ])
+            .throwIfNotFound()
+    }
+
     public async createUser(call: AuthenticatedServiceCall<Partial<UserShared>>, options?: Options): Promise<Partial<UserShared>> {
         const result = await this.enforce('create', 'user', call, options, ...call.resourceIds);
 
@@ -638,7 +676,6 @@ export class EnforcerService {
         return this.handleView(result, user, options);
     }
 
-    @Strip()
     public async describeUser(call: MaybeAuthenticatedServiceCall<object>, options?: Options): Promise<Partial<UserShared>> {
         const result = await this.enforce('describe', 'user', call, options, ...call.resourceIds);
 
@@ -650,7 +687,6 @@ export class EnforcerService {
         return this.handleView(result, user, options);
     }
 
-    @Strip()
     public async updateUser(call: AuthenticatedServiceCall<Partial<UserShared>>, options?: Options): Promise<Partial<UserShared>> {
         const result = await this.enforce('update', 'user', call, options, ...call.resourceIds);
         
@@ -674,12 +710,13 @@ export class EnforcerService {
         });
     }
 
+    // Events for these are tricky, as they should be generated by the media handler,
+    // which operates in a separate process.  Would need a distributed event broker.
     public async updateProjectThumbnail(call: AuthenticatedServiceCall<{ type: Image }>): Promise<Partial<S3.PresignedPost>> {
         await this.enforce('update', 'project.thumbnail', call, undefined, ...call.resourceIds);
 
         const projectId = call.resourceIds[0];
 
-        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: 'marqetplace-staging-photos',
             key: `projects/${projectId}/thumbnail`,
@@ -692,7 +729,6 @@ export class EnforcerService {
 
         const projectId = call.resourceIds[0];
 
-        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: `marqetplace-staging-photos`,
             key: `projects/${projectId}/cover`,
@@ -706,7 +742,6 @@ export class EnforcerService {
         const projectId = call.resourceIds[0];
         const entryId = call.resourceIds[1];
 
-        // TODO: event is not generated here, but instead by a media handler?
         return this.mediaRequestFactory.knownFileRequest({
             bucket: `marqetplace-staging-photos`,
             key: `projects/${projectId}/board/${entryId}`,
@@ -739,23 +774,24 @@ export class EnforcerService {
     }
 
     //TODO: these should never be part of a transaction
-    private handleView(enforcement: EnforcementResult, instance: Viewable, options?: Options);
-    private handleView(enforcement: EnforcementResult, instances: Viewable[], options?: Options);
-    private handleView(enforcement: EnforcementResult, instances: Viewable | Viewable[], options?: Options) {
+    private handleView(enforcement: EnforcementResult, instance: ViewableModel, options?: Options);
+    private handleView(enforcement: EnforcementResult, instances: ViewableModel[], options?: Options);
+    private async handleView(enforcement: EnforcementResult, instances: ViewableModel | ViewableModel[], options?: Options): Promise<object> {
         if (Array.isArray(instances)) return Promise.all(instances.map(instance => this.handleView(enforcement, instance, options)));
-
         if (options?.noRelations) return instances;
         switch (enforcement.view) {
             case 'partial':
-                return instances.getPartialView(options?.transaction);
+                return (await instances.getPartialView(options?.transaction)).toJSON();
             case 'verbose':
-                return instances.getVerboseView(options?.transaction);
+                return (await instances.getVerboseView(options?.transaction)).toJSON();
             case 'full':
-                return instances.getFullView(options?.transaction);
+                return (await instances.getFullView(options?.transaction)).toJSON();
+            default:
+                throw new InternalError();
         }
     }
 
-    private emitEvents<T extends Viewable>(events: (HistoryEventConsumer<T> | NotificationEventConsumer<T>)[]) {
+    private emitEvents<T extends ViewableModel>(events: (HistoryEventConsumer<T> | NotificationEventConsumer<T>)[]) {
         events.map(event => {
             this.emitter.emit(event.type, event) // happen to match the event name
         })

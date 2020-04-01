@@ -1,7 +1,7 @@
 import { HistoryEvent } from "../../../../lib/types/events/HistoryEvent";
 import { HistoryEventShared } from "../../../../lib/types/shared/HistoryEventShared";
 import { BaseModel } from "./BaseModel";
-import { Viewable } from "./Viewable";
+import { ViewableModel } from "./ViewableModel";
 
 export class HistoryEventModel extends BaseModel implements HistoryEventShared {
 
@@ -13,8 +13,8 @@ export class HistoryEventModel extends BaseModel implements HistoryEventShared {
     createdAt!: Date;
     type!: HistoryEvent;
 
-    before!: Viewable;
-    after!: Viewable;
+    before!: ViewableModel;
+    after!: ViewableModel;
 
     static modifiers = {
         mostRecent(query) {

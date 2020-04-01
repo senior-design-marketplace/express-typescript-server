@@ -7,10 +7,10 @@ import { InviteNotification } from "../../lib/types/base/InviteNotification";
 import { Event } from "../../lib/types/events/Base";
 import { ApplicationModel } from "../enforcer/src/models/ApplicationModel";
 import { InviteModel } from "../enforcer/src/models/InviteModel";
-import { Viewable } from "../enforcer/src/models/Viewable";
+import { ViewableModel } from "../enforcer/src/models/ViewableModel";
 import { EventConsumer } from "./EventConsumer";
 
-export type NotificationEventConsumer<T extends Viewable> = Required<Pick<EventConsumer<T>,
+export type NotificationEventConsumer<T extends ViewableModel> = Required<Pick<EventConsumer<T>,
     | "type"
     | "initiateId"
     | "after">>

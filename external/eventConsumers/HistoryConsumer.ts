@@ -2,10 +2,10 @@ import { EventEmitter } from "events";
 import uuid from "uuid/v4";
 import { HistoryEvent } from "../../lib/types/events/HistoryEvent";
 import { HistoryEventModel } from "../enforcer/src/models/HistoryEventModel";
+import { ViewableModel } from "../enforcer/src/models/ViewableModel";
 import { EventConsumer } from "./EventConsumer";
-import { Viewable } from "../enforcer/src/models/Viewable";
 
-export type HistoryEventConsumer<T extends Viewable> = {
+export type HistoryEventConsumer<T extends ViewableModel> = {
     type: HistoryEvent
 } & Pick<EventConsumer<T>,
     | "projectId"
@@ -35,7 +35,7 @@ const handlers: Set<HistoryEvent> = new Set([
  * Log is the same for each, so we do not need to break out into
  * each model instance
  */
-async function createEvent<T extends Viewable>(params: HistoryEventConsumer<T>) {
+async function createEvent<T extends ViewableModel>(params: HistoryEventConsumer<T>) {
     await HistoryEventModel.query()
         .insert({
             id: uuid(),
@@ -43,7 +43,7 @@ async function createEvent<T extends Viewable>(params: HistoryEventConsumer<T>) 
         });
 }
 
-export function registerHistoryEventHandlers<T extends Viewable>(emitter: EventEmitter) {
+export function registerHistoryEventHandlers<T extends ViewableModel>(emitter: EventEmitter) {
     for (const handler of handlers) {
         emitter.on(handler, async (params: HistoryEventConsumer<T>) => {
             await createEvent(params);

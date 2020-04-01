@@ -79,13 +79,16 @@ test('Load the root of the application', async () => {
 
 test('Invite a user to a project', async () => {
     const project = (await requestFactory.createGenericProject(USER_ZERO)).resourceId;
-    const invite = (await requestFactory.createGenericInvite(USER_ZERO, USER_ONE, project, "CONTRIBUTOR")).payload;
+    const invite = (await requestFactory.createGenericInvite(USER_ZERO, USER_ONE, project, {
+        role: "CONTRIBUTOR",
+        isAdvisor: false
+    })).payload;
 
     expect(invite.statusCode).toBe(200);
 })
 
 test('Create a project with a user not yet in the users table', async () => {
-    const response = (await requestFactory.createGenericProject(USER_ZERO)).payload;
+    const response = (await requestFactory.createGenericProject(USER_TWO)).payload;
 
     expect(response.statusCode).toBe(200);
 })

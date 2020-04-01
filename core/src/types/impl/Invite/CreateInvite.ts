@@ -4,6 +4,7 @@ export type CreateInvite =
     | Pick<InviteShared,
         | 'id'
         | 'targetId'
-        | 'role'>
+        | 'role'
+        | 'isAdvisor'>
     & Partial<Pick<InviteShared,
         | 'note'>>

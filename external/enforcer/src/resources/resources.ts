@@ -12,6 +12,7 @@ export type Resources =
     | 'project'
     | 'project.majors'
     | 'project.tags'
+    | 'project.member'
     | 'project.contributor'
     | 'project.administrator'
     | 'project.application'

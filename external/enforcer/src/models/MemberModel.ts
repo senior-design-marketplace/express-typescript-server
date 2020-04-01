@@ -1,12 +1,14 @@
-import { Model } from "objection";
 import { BaseModel } from "./BaseModel";
 
-export class AdministratorModel extends BaseModel {
+export class MemberModel extends BaseModel {
 
-	static tableName = "administrators";
+	static tableName = "members";
     static idColumn = ["projectId", "userId"];
 
     projectId!: string;
     userId!: string;
+
+    contributorId!: string;
+    administratorId!: string;
     isAdvisor!: boolean;
 }

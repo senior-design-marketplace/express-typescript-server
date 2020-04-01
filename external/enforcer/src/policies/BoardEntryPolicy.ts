@@ -1,11 +1,10 @@
-import { Claims } from "../../../../core/src/auth/verify";
+import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
+import { Actions, Policy } from "../Enforcer";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { BoardItemModel } from "../models/BoardItemModel";
 import { describeMembership } from "../queries/util";
-import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
-import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
-import { BoardEntryShared } from "../../../../lib/types/shared/BoardEntryShared";
-import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { getAuthenticationRequiredView, getResourceMismatchView } from "./util";
 
 export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShared>> = {
 
@@ -21,9 +20,9 @@ export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShar
             
             const projectId = resourceIds[0];
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
+            const membership = await describeMembership(projectId, call.claims.username);
 
-            if (isContributor || isAdministrator) {
+            if (membership) {
                 return {
                     view: 'verbose'
                 }
@@ -63,8 +62,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShar
                 }
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }
@@ -96,8 +95,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShar
                 return getResourceMismatchView(projectId, entryId);
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }
@@ -127,8 +126,8 @@ export const BoardEntryPolicy: Policy<Resources, Actions, Partial<BoardEntryShar
                 return getResourceMismatchView(projectId, entryId);
             }
 
-            const { isContributor, isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isContributor || isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
                 return {
                     view: 'verbose'
                 }

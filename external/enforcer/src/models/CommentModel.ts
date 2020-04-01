@@ -1,8 +1,7 @@
 import { CommentShared } from "../../../../lib/types/shared/CommentShared";
-import { BaseModel } from "./BaseModel";
-import { Viewable } from "./Viewable";
+import { ViewableModel } from "./ViewableModel";
 
-export class CommentModel extends BaseModel implements CommentShared, Viewable {
+export class CommentModel extends ViewableModel implements CommentShared {
 
     static tableName = "comments";
 
@@ -13,15 +12,15 @@ export class CommentModel extends BaseModel implements CommentShared, Viewable {
     body!: string;
     createdAt!: Date;
 
-    public async getPartialView(): Promise<CommentShared> {
+    public async getPartialView(): Promise<CommentModel> {
         return this;
     }
 
-    public async getVerboseView(): Promise<CommentShared> {
+    public async getVerboseView(): Promise<CommentModel> {
         return this;
     }
 
-    public async getFullView(): Promise<CommentShared> {
+    public async getFullView(): Promise<CommentModel> {
         return this;
     }
 }

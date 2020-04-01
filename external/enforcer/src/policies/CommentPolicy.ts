@@ -1,11 +1,10 @@
-import { Claims } from "../../../../core/src/auth/verify";
+import { CommentShared } from "../../../../lib/types/shared/CommentShared";
+import { Actions, Policy } from "../Enforcer";
+import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { CommentModel } from "../models/CommentModel";
 import { describeMembership } from "../queries/util";
-import { Actions, Policy } from "../Enforcer";
 import { Resources } from "../resources/resources";
-import { getResourceMismatchView, getAuthenticationRequiredView } from "./util";
-import { CommentShared } from "../../../../lib/types/shared/CommentShared";
-import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
+import { getAuthenticationRequiredView, getResourceMismatchView } from "./util";
 
 export const CommentPolicy: Policy<Resources, Actions, Partial<CommentShared>> = {
 
@@ -104,8 +103,8 @@ export const CommentPolicy: Policy<Resources, Actions, Partial<CommentShared>> =
                 }
             }
             
-            const { isAdministrator } = await describeMembership(projectId, call.claims.username);
-            if (isAdministrator) {
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership?.role === "ADMINISTRATOR") {
                 return {
                     view: 'verbose'
                 }

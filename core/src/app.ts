@@ -41,6 +41,7 @@ import { InvitePolicy } from "../../external/enforcer/src/policies/InvitePolicy"
 import { BoardEntryPolicy } from "../../external/enforcer/src/policies/BoardEntryPolicy";
 import { CommentPolicy } from "../../external/enforcer/src/policies/CommentPolicy";
 import { NotificationPolicy } from "../../external/enforcer/src/policies/NotificationPolicy";
+import { MemberPolicy } from "../../external/enforcer/src/policies/MemberPolicy.js";
 import { Resources } from "../../external/enforcer/src/resources/resources";
 import { EnforcerService } from "../../external/enforcer/src/EnforcerService.js";
 
@@ -125,7 +126,8 @@ class App extends Server {
             InvitePolicy,
             BoardEntryPolicy,
             CommentPolicy,
-            NotificationPolicy
+            NotificationPolicy,
+            MemberPolicy
         ]);
     }
     
