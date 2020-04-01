@@ -37,6 +37,19 @@ const handlers: Record<string, Handler> = {
             })
     },
 
+    'resume': async (link: string) => {
+        const tokens = getTokens(link, 6);
+
+        const userId = tokens[4];
+
+        await UserModel.query()
+            .findById(userId)
+            .throwIfNotFound()
+            .patch({
+                resumeLink: link
+            })
+    },
+
     'cover': async (link: string) => {
         const tokens = getTokens(link, 6);
 

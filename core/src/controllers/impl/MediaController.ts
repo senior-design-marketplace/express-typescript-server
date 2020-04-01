@@ -26,6 +26,21 @@ export default class MediaController {
         res.status(200).json(result);
     }
 
+    @Post("users/:user/resume")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody('CreateDocumentMedia')
+    ])
+    public async newResume(req: Request, res: Response) {
+        const result = await this.enforcerService.updateUserResume({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.user ]
+        });
+
+        res.status(200).json(result);
+    }
+
     @Post("projects/:project/cover")
     @Middleware([ 
         RequiresAuth,

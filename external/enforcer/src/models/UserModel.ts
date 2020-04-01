@@ -15,6 +15,7 @@ export class UserModel extends ViewableModel implements UserShared {
     email!: string;
     bio!: string;
     thumbnailLink!: string;
+    resumeLink!: string
     joinedAt!: Date;
     roles!: string;
 

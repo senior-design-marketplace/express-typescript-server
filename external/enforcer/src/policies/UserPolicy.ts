@@ -85,5 +85,30 @@ export const UserPolicy: Policy<Resources, Actions, Partial<UserShared>> = {
                 reason: 'User does not have appropriate credentials'
             }
         }
+    },
+
+    
+    'user.resume': {
+        /**
+         * A user can only update their own resume
+         */
+        update: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+            
+            const userId = resourceIds[0];
+
+            if (userId === call.claims.username) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User does not have appropriate credentials'
+            }
+        }
     }
 }

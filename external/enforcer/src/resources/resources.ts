@@ -2,7 +2,8 @@ export type MediaResources =
     | "project.thumbnail" 
     | "project.cover"
     | "project.entry.media"
-    | "user.avatar";
+    | "user.avatar"
+    | "user.resume";
 
 export type Resources =
     | 'user'

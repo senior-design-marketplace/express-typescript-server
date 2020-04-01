@@ -23,6 +23,7 @@ export async function up(knex: Knex): Promise<any> {
             //not-required
             table.string("bio", constants.MEDIUM);
             table.string("thumbnailLink", constants.MEDIUM);
+            table.string("resumeLink", constants.MEDIUM);
         })
 		.createTable("projects", table => {
             

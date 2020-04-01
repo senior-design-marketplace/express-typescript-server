@@ -18,7 +18,8 @@ export class MediaRequestFactory {
         JPEG: 'image/jpeg',
         PNG: 'image/png',
         GIF: 'image/gif',
-        MP4: 'video/mp4'
+        MP4: 'video/mp4',
+        PDF: 'application/pdf'
     }
 
     constructor(private readonly s3: AWS.S3) {}

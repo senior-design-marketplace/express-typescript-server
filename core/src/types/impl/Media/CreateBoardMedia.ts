@@ -1,5 +1,6 @@
-import { AllowedMedia } from "../../../../../lib/types/base/AllowedMedia";
+import { Image } from "../../../../../lib/types/base/Image";
+import { Video } from "../../../../../lib/types/base/Video";
 
 export type CreateBoardMedia = {
-    type: AllowedMedia
+    type: Image | Video
 }
