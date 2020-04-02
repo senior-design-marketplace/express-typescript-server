@@ -72,6 +72,7 @@ test('Load the root of the application', async () => {
     const response = await runner.runEvent(
         eventFactory.createEvent("GET", "/")
             .withUser(USER_ZERO)
+            .build()
     );
 
     expect(response.statusCode).toBe(200);
@@ -174,19 +175,19 @@ test('Can delete a comment on a project', async () => {
 })
 
 test('Load the root of the application unauthenticated', async () => {
-    const response = await runner.runEvent({
-        httpMethod: "GET",
-        path: `/`
-    })
+    const response = await runner.runEvent(
+        eventFactory.createEvent("GET", "/")
+            .build()
+    )
 
     expect(response.statusCode).toBe(200);
 })
 
 test('Get a user who does not exist', async () => {
-    const response = await runner.runEvent({
-        httpMethod: "GET",
-        path: `/users/foo`
-    })
+    const response = await runner.runEvent(
+        eventFactory.createEvent("GET", "/users/foo")
+            .build()
+    )
 
     expect(response.statusCode).toBe(404);
 })

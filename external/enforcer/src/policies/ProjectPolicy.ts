@@ -102,6 +102,49 @@ export const ProjectPolicy: Policy<Resources, Actions, Partial<ProjectShared>> =
         }
     },
 
+    'project.majors': {
+        update: async(call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const projectId = resourceIds[0];
+
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User does not have appropriate credentials'
+            }
+        }
+    },
+
+    'project.tags': {
+        update: async(call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const projectId = resourceIds[0];
+
+            const membership = await describeMembership(projectId, call.claims.username);
+            if (membership) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            return {
+                view: 'blocked',
+                reason: 'User does not have appropriate credentials'
+            }
+        }
+    },
     'project.thumbnail': {
         update: async (call: MaybeAuthenticatedServiceCall<Partial<ProjectShared>>, ...resourceIds: string[]) => {
             if (!call.claims) {

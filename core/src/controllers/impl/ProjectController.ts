@@ -1,4 +1,4 @@
-import { ClassOptions, ClassWrapper, Controller, Delete, Get, Middleware, Patch, Post } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Delete, Get, Middleware, Patch, Post, Put } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, RespondsToAuth, VerifyBody, VerifyPath } from "../middlewares";
@@ -55,7 +55,7 @@ export default class ProjectController {
         });
 
         res.status(200).json(applyTransformation(result));
-	}
+    }
 
     @Patch(":project")
     @Middleware([ 
@@ -112,6 +112,38 @@ export default class ProjectController {
             payload: {},
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.member ]
+        })
+
+        res.status(200).json(result);
+    }
+
+    @Put(":project/majors")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody("UpdateMajors"),
+        VerifyPath('project', isUUID),
+    ])
+    public async updateProjectMajors(req: Request, res: Response) {
+        const result = await this.enforcerService.updateMajors({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project ]
+        })
+
+        res.status(200).json(result);
+    }
+
+    @Put(":project/tags")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody("UpdateTags"),
+        VerifyPath('project', isUUID)
+    ])
+    public async updateProjectTags(req: Request, res: Response) {
+        const result = await this.enforcerService.updateTags({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project ]
         })
 
         res.status(200).json(result);

@@ -4,7 +4,6 @@ import GatewayRunner from "./local";
 import { ProjectShared } from "../../../lib/types/shared/ProjectShared";
 import { ApplicationShared } from "../../../lib/types/shared/ApplicationShared";
 import { CommentShared } from "../../../lib/types/shared/CommentShared";
-import { Role } from "../../../lib/types/base/Role";
 import { InviteShared } from "../../../lib/types/shared/InviteShared";
 import { TextBoardEntry } from "../../../lib/types/base/TextBoardEntry";
 import { MediaBoardEntry } from "../../../lib/types/base/MediaBoardEntry";
@@ -128,6 +127,8 @@ export class GenericRequestFactory {
                     id,
                     document
                 })
+                .withUser(creator)
+                .build()
         );
 
         return {
@@ -154,7 +155,7 @@ export class GenericRequestFactory {
 
     public async acceptInvite(creator: string, project: string, invite: string): Promise<GenericResponse> {
         const response = await this.runner.runEvent(
-            this.eventFactory.createEvent("PATCH", `/projects/${project}/invites/${invite}`)
+            this.eventFactory.createEvent("POST", `/projects/${project}/invites/${invite}`)
                 .withBody({
                     response: "ACCEPTED"
                 })

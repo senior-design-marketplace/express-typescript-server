@@ -1,12 +1,8 @@
 import { S3 } from "aws-sdk";
 import { EventEmitter } from "events";
-import { Model, Transaction, UniqueViolationError } from "objection";
+import { Model, Transaction } from "objection";
 import { Claims } from "../../../core/src/auth/verify";
 import { AuthenticationError, AuthorizationError, InternalError, NotFoundError } from "../../../core/src/error/error";
-import { AllowedMedia } from "../../../lib/types/base/AllowedMedia";
-import { Image } from "../../../lib/types/base/Image";
-import { Major } from "../../../lib/types/base/Major";
-import { Tag } from "../../../lib/types/base/Tag";
 import { ApplicationShared } from "../../../lib/types/shared/ApplicationShared";
 import { BoardEntryShared } from "../../../lib/types/shared/BoardEntryShared";
 import { CommentShared } from "../../../lib/types/shared/CommentShared";
@@ -42,6 +38,9 @@ import { ViewableModel } from "./models/ViewableModel";
 import { CreateDocumentMedia } from "../../../core/src/types/impl/Media/CreateDocumentMedia";
 import { CreateImageMedia } from "../../../core/src/types/impl/Media/CreateImageMedia";
 import { CreateBoardMedia } from "../../../core/src/types/impl/Media/CreateBoardMedia";
+import { UpdateTags } from "../../../core/src/types/impl/Project/UpdateTags";
+import { UpdateMajors } from "../../../core/src/types/impl/Project/UpdateMajors";
+import unique from "lodash/uniq";
 
 export type Options = {
     asAdmin?: boolean,
@@ -71,7 +70,7 @@ export class EnforcerService {
         return this.handleView(result, majors, options);
     }
 
-    public async updateMajors(call: AuthenticatedServiceCall<Major[]>, options?: Options): Promise<MajorShared[]> {
+    public async updateMajors(call: AuthenticatedServiceCall<UpdateMajors>, options?: Options): Promise<MajorShared[]> {
         const result = await this.enforce('update', 'project.majors', call, options, ...call.resourceIds);
 
         const projectId = call.resourceIds[0];
@@ -84,7 +83,7 @@ export class EnforcerService {
             .unrelate();
 
         await project.$relatedQuery('requestedMajors', options?.transaction)
-            .relate(call.payload);
+            .relate(unique(call.payload));
 
         const majors = await project.$relatedQuery('requestedMajors', options?.transaction);
         return this.handleView(result, majors, options);
@@ -97,7 +96,7 @@ export class EnforcerService {
         return this.handleView(result, tags, options);
     }
 
-    public async updateTags(call: AuthenticatedServiceCall<Tag[]>, options?: Options): Promise<TagShared[]> {
+    public async updateTags(call: AuthenticatedServiceCall<UpdateTags>, options?: Options): Promise<TagShared[]> {
         const result = await this.enforce('update', 'project.tags', call, options, ...call.resourceIds);
 
         const projectId = call.resourceIds[0];
@@ -110,7 +109,7 @@ export class EnforcerService {
             .unrelate();
 
         await project.$relatedQuery('tags', options?.transaction)
-            .relate(call.payload);
+            .relate(unique(call.payload));
 
         const tags = await project.$relatedQuery('tags', options?.transaction);
         return this.handleView(result, tags, options);
@@ -653,9 +652,23 @@ export class EnforcerService {
 
         // must be a demotion, equal movements are prevented by the enforcer
         else {
-            await MemberModel.query().findById([ projectId, userId ])
-                .throwIfNotFound()
-                .patch(call.payload);
+            await MemberModel.query().deleteById([ projectId, userId ]);
+
+            if (membership!.role === "ADMINISTRATOR" && call.payload.role === "CONTRIBUTOR") {
+                await MemberModel.query().insert({
+                    projectId,
+                    userId,
+                    contributorId: userId,
+                    isAdvisor: call.payload.isAdvisor
+                })
+            } else {
+                await MemberModel.query().insert({
+                    projectId,
+                    userId,
+                    administratorId: userId,
+                    isAdvisor: call.payload.isAdvisor
+                })
+            }
         }
     }
 

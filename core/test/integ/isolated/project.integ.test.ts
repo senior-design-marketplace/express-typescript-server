@@ -17,6 +17,32 @@ const USER_ONE = creds[1].username;
 const USER_TWO = creds[2].username;
 
 describe('Projects', () => {
+    test('can have their majors updated', async () => {
+        const project = (await requestFactory.createGenericProject(USER_ZERO)).resourceId;
+        const response = await runner.runEvent(
+            eventFactory.createEvent("PUT", `/projects/${project}/majors`)
+                .withBody([
+                    "Computer Science"
+                ])
+                .withUser(USER_ZERO)
+                .build()
+        )
+
+        expect(response.statusCode).toBe(200);
+    })
+    test('can have their tags updated', async () => {
+        const project = (await requestFactory.createGenericProject(USER_ZERO)).resourceId;
+        const response = await runner.runEvent(
+            eventFactory.createEvent("PUT", `/projects/${project}/tags`)
+                .withBody([
+                    "Programming"
+                ])
+                .withUser(USER_ZERO)
+                .build()
+        )
+
+        expect(response.statusCode).toBe(200);
+    })
     test('give a 404 if they do not exist', async () => {
         const response = await runner.runEvent(
             eventFactory.createEvent('GET', `/projects/${uuid()}`)

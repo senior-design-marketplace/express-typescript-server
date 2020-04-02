@@ -52,6 +52,7 @@ describe('Project members', () => {
                     isAdvisor: false
                 })
                 .withUser(USER_ZERO)
+                .build()
         )
 
         expect(response.statusCode).toBe(200);
@@ -66,6 +67,7 @@ describe('Project members', () => {
         const response = await runner.runEvent(
             eventFactory.createEvent("DELETE", `/projects/${project}/members/${USER_ONE}`)
                 .withUser(USER_ZERO)
+                .build()
         )
 
         expect(response.statusCode).toBe(200);

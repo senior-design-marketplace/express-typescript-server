@@ -1,6 +1,7 @@
 //BORROWED FROM DOCS: https://github.com/awslabs/aws-serverless-express/tree/master/examples/basic-starter
 import { handler } from "../../../lambda.js";
 import { Server } from "http";
+import { Event } from "./EventFactory.js";
 
 /**
  * The Gateway Runner is a local copy of the gateway.  It can
@@ -11,7 +12,7 @@ import { Server } from "http";
 export default class GatewayRunner {
 	private server?: Server;
 
-	public runEvent(event: any): Promise<any> {
+	public runEvent(event: Event): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.server = handler(event, {
 				succeed: (val: any) => {

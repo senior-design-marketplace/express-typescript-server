@@ -129,6 +129,43 @@ export const InvitePolicy: Policy<Resources, Actions, Partial<InviteShared>> = {
             }
         },
 
+        reply: async (call: MaybeAuthenticatedServiceCall<Partial<InviteShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const projectId = resourceIds[0];
+            const inviteId = resourceIds[1];
+
+            const invite = await InviteModel.query()
+                .findById(inviteId)
+                .throwIfNotFound();
+
+            if (invite.projectId !== projectId) {
+                return getResourceMismatchView(projectId, inviteId);
+            }
+
+            if (invite.status !== 'PENDING') {
+                return {
+                    view: 'blocked',
+                    reason: 'Invite has already been responded to'
+                }
+            }
+
+            if (invite.targetId === call.claims.username) {
+                return {
+                    view: 'verbose'
+                }
+            }
+
+            // TODO: Should we show the resource to administrators?
+            // they have rights to see it.  Perhaps should be blocked
+            // instead of hidden for them.
+            return {
+                view: 'hidden'
+            }
+        },
+
         /**
          * Only administrators can delete an invite once it is
          * sent out.  If the invite has already been responded

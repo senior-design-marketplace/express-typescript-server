@@ -1,37 +1,12 @@
 //TODO: find an actual type for this
 type Verb = "GET" | "POST" | "PATCH" | "DELETE" | "PUT";
 
-export class Event {
-
-    private httpMethod: Verb;
-    private path: string;
-    private body?: string;
-    private queryStringParameters: any;
-    private headers: any;
-
-    constructor(verb: Verb, path: string) {
-        this.httpMethod = verb;
-        this.path = path;
-        this.queryStringParameters = {};
-        this.headers = {
-            "content-type": "application/json"
-        };
-    }
-
-    public withBody(params: object): Event {
-        this.body = JSON.stringify(params);
-        return this;
-    }
-
-    public withQuery(params: object): Event {
-        this.queryStringParameters = Object.assign(this.queryStringParameters, params); // don't overwrite token
-        return this;
-    }
-
-    public withToken(token: string): Event {
-        this.queryStringParameters.id_token = token;
-        return this;
-    }
+export interface Event {
+    httpMethod: Verb,
+    path: string,
+    body?: string,
+    queryStringParameters: any,
+    headers: any
 }
 
 export class EventFactory {
@@ -43,8 +18,16 @@ export class EventFactory {
         this.tokens = tokens;
     }
 
-    public createEvent(verb: Verb, path: string) {
-        this.event = new Event(verb, path);
+    public createEvent(httpMethod: Verb, path: string) {
+        this.event = {
+            httpMethod,
+            path,
+            queryStringParameters: {},
+            headers: {
+                "content-type": "application/json"
+            }
+        }
+
         return this;
     }
 
@@ -53,7 +36,7 @@ export class EventFactory {
             throw "Event not initialized"
         }
         
-        this.event.withBody(params);
+        this.event.body = JSON.stringify(params);
         return this;
     }
 
@@ -61,8 +44,7 @@ export class EventFactory {
         if (!this.event) {
             throw "Event not initialized"
         }
-
-        this.event.withQuery(params);
+        this.event.queryStringParameters = Object.assign(this.event.queryStringParameters, params);
         return this;
     }
 
@@ -71,11 +53,15 @@ export class EventFactory {
             throw "Event not initialized"
         }
 
-        this.event.withToken(this.tokens[username]);
+        this.event.queryStringParameters.id_token = this.tokens[username];
         return this;
     }
 
-    public build() {
+    public build(): Event {
+        if (!this.event) {
+            throw new Error("No event exists to be built");
+        }
+
         const copy = this.event;
         this.event = undefined;
         return copy;
