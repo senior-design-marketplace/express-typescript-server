@@ -714,6 +714,29 @@ export class EnforcerService {
         return this.handleView(result, user, options);
     }
 
+    public async createUserStar(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
+        const result = await this.enforce('create', 'user.star', call, options, ...call.resourceIds);
+
+        const userId = call.resourceIds[0];
+        const projectId = call.resourceIds[1];
+
+        await UserModel.relatedQuery("starred")
+            .for(userId)
+            .relate(projectId);
+    }
+
+    public async deleteUserStar(call: AuthenticatedServiceCall<object>, options?: Options): Promise<void> {
+        const result = await this.enforce('delete', 'user.star', call, options, ...call.resourceIds);
+
+        const userId = call.resourceIds[0];
+        const projectId = call.resourceIds[1];
+
+        await UserModel.relatedQuery("starred")
+            .for(userId)
+            .where("projectId", projectId)
+            .unrelate();
+    }
+
     public async updateUserAvatar(call: AuthenticatedServiceCall<CreateImageMedia>): Promise<Partial<S3.PresignedPost>> {
         await this.enforce('update', 'user.avatar', call, undefined, ...call.resourceIds);
 

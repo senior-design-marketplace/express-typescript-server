@@ -3,6 +3,7 @@ import { Actions, Policy } from "../Enforcer";
 import { MaybeAuthenticatedServiceCall } from "../EnforcerService";
 import { Resources } from "../resources/resources";
 import { getAuthenticationRequiredView } from "./util";
+import { UserModel } from "../models/UserModel";
 
 export const UserPolicy: Policy<Resources, Actions, Partial<UserShared>> = {
 
@@ -61,6 +62,76 @@ export const UserPolicy: Policy<Resources, Actions, Partial<UserShared>> = {
                 reason: 'User does not have appropriate credentials'
             }
         }
+    },
+
+    'user.star': {
+        create: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const userId = resourceIds[0];
+            const projectId = resourceIds[1];
+
+            if (userId !== call.claims.username) {
+                return {
+                    view: 'blocked',
+                    reason: 'User does not have appropriate credentials'
+                }
+            }
+
+            const isStarred = Boolean(
+                await UserModel.relatedQuery("starred")
+                    .for(userId)
+                    .where("projectId", projectId)
+                    .resultSize()
+            )
+
+            if (isStarred) {
+                return {
+                    view: 'blocked',
+                    reason: 'User has already starred this project'
+                }
+            }
+
+            return {
+                view: 'verbose'
+            }
+        },
+
+        delete: async (call: MaybeAuthenticatedServiceCall<Partial<UserShared>>, ...resourceIds: string[]) => {
+            if (!call.claims) {
+                return getAuthenticationRequiredView();
+            }
+
+            const userId = resourceIds[0];
+            const projectId = resourceIds[1];
+
+            if (userId !== call.claims.username) {
+                return {
+                    view: 'blocked',
+                    reason: 'User does not have appropriate credentials'
+                }
+            }
+
+            const isStarred = Boolean(
+                await UserModel.relatedQuery("starred")
+                    .for(userId)
+                    .where("projectId", projectId)
+                    .resultSize()
+            )
+
+            if (!isStarred) {
+                return {
+                    view: 'blocked',
+                    reason: 'User has not starred this project'
+                }
+            }
+
+            return {
+                view: 'verbose'
+            }
+        }    
     },
 
     'user.avatar': {

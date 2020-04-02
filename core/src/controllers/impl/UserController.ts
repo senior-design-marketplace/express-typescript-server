@@ -1,4 +1,4 @@
-import { ClassOptions, ClassWrapper, Controller, Get, Middleware, Patch } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Get, Middleware, Patch, Post, Delete } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from '../middlewares';
@@ -47,6 +47,36 @@ export default class UserController {
             payload: req.body,
             claims: req.claims,
             resourceIds: [ req.params.user, req.params.notification ]
+        });
+
+        res.status(200).json(result);
+    }
+
+    @Post(":user/stars/:project")
+    @Middleware([
+        RequiresAuth,
+        VerifyPath('project', isUUID)
+    ])
+    public async createStar(req: Request, res: Response) {
+        const result = await this.enforcerService.createUserStar({
+            payload: {},
+            claims: req.claims,
+            resourceIds: [ req.params.user, req.params.project ]
+        });
+
+        res.status(200).json(result);
+    }
+
+    @Delete(":user/stars/:project")
+    @Middleware([
+        RequiresAuth,
+        VerifyPath('project', isUUID)
+    ])
+    public async deleteStar(req: Request, res: Response) {
+        const result = await this.enforcerService.deleteUserStar({
+            payload: {},
+            claims: req.claims,
+            resourceIds: [ req.params.user, req.params.project ]
         });
 
         res.status(200).json(result);

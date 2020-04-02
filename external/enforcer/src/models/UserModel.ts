@@ -20,7 +20,7 @@ export class UserModel extends ViewableModel implements UserShared {
     roles!: string;
 
     applications!: ApplicationModel[];
-    stars!: ProjectModel[];
+    starred!: ProjectModel[];
     contributorOn!: ProjectModel[];
     administratorOn!: ProjectModel[];
 

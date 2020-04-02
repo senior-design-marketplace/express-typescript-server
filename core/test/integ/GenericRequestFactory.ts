@@ -168,4 +168,29 @@ export class GenericRequestFactory {
             payload: response
         }
     }
-}
+
+    public async starProject(creator: string, project: string): Promise<GenericResponse> {
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent("POST", `/users/${creator}/stars/${project}`)
+                .withUser(creator)
+                .build()
+        )
+
+        return {
+            resourceId: project,
+            payload: response
+        }
+    }
+
+    public async unstarProject(creator: string, project: string): Promise<GenericResponse> {
+        const response = await this.runner.runEvent(
+            this.eventFactory.createEvent("DELETE", `/users/${creator}/stars/${project}`)
+                .withUser(creator)
+                .build()
+        )
+
+        return {
+            resourceId: project,
+            payload: response
+        }
+    }}
