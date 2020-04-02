@@ -31,22 +31,9 @@ describe('Applications', () => {
                 project
             )).resourceId; 
 
-            const response = await runner.runEvent(
-                eventFactory.createEvent('PATCH', `/projects/${project}/applications/${application}`)
-                    .withBody({
-                        response: "ACCEPTED"
-                    })
-                    .withUser(USER_ZERO)
-                    .build()
-            );
+            const response = (await requestFactory.acceptApplication(USER_ZERO, project, application)).payload;
 
             expect(response.statusCode).toBe(200);
-
-            const other = await runner.runEvent(
-                eventFactory.createEvent('GET', `/projects/${project}`)
-                    .withUser(USER_ZERO)
-                    .build()
-            )
         })
     })
 
@@ -106,14 +93,7 @@ describe('Applications', () => {
             const project = (await requestFactory.createGenericProject(USER_ZERO)).resourceId;
             const application = (await requestFactory.createGenericApplication(USER_ONE, project)).resourceId
 
-            await runner.runEvent(
-                eventFactory.createEvent('PATCH', `/projects/${project}/applications/${application}`)
-                    .withBody({
-                        response: 'ACCEPTED'
-                    })
-                    .withUser(USER_ZERO)
-                    .build()
-            )
+            await requestFactory.acceptApplication(USER_ZERO, project, application);
 
             const response = await runner.runEvent(
                 eventFactory.createEvent('DELETE', `/projects/${project}/applications/${application}`)

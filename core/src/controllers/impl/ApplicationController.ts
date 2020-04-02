@@ -27,7 +27,7 @@ export default class ApplicationController {
         res.status(200).json(result);
     }
 
-    @Patch(":application")
+    @Post(":application")
     @Middleware([ 
         RequiresAuth,
         VerifyBody("CreateResponse"), 
@@ -39,6 +39,22 @@ export default class ApplicationController {
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.application ]
         });
+
+        res.status(200).json(result);
+    }
+
+    @Patch(":application")
+    @Middleware([
+        RequiresAuth,
+        VerifyBody("UpdateApplication"),
+        VerifyPath('project', isUUID) 
+    ])
+    public async updateProjectApplication(req: Request, res: Response) {
+        const result = await this.enforcerService.updateApplication({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.application ]
+        })
 
         res.status(200).json(result);
     }

@@ -139,7 +139,7 @@ export class GenericRequestFactory {
 
     public async acceptApplication(creator: string, project: string, application: string): Promise<GenericResponse> {
         const response = await this.runner.runEvent(
-            this.eventFactory.createEvent("PATCH", `/projects/${project}/applications/${application}`)
+            this.eventFactory.createEvent("POST", `/projects/${project}/applications/${application}`)
                 .withBody({
                     response: "ACCEPTED"
                 })

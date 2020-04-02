@@ -1,4 +1,4 @@
-import { ClassOptions, ClassWrapper, Controller, Middleware, Post, Delete } from "@overnightjs/core";
+import { ClassOptions, ClassWrapper, Controller, Middleware, Post, Delete, Patch } from "@overnightjs/core";
 import { Request, Response } from "express";
 import AsyncHandler from "express-async-handler";
 import { RequiresAuth, VerifyBody, VerifyPath } from "../middlewares";
@@ -35,6 +35,22 @@ export default class InviteController {
         VerifyPath('invite', isUUID) ])
     public async inviteReply(req: Request, res: Response) {
         const result = await this.enforcerService.replyInvite({
+            payload: req.body,
+            claims: req.claims,
+            resourceIds: [ req.params.project, req.params.invite ]
+        });
+
+        res.status(200).json(result);
+    }
+
+    @Patch(":invite")
+    @Middleware([
+        VerifyBody('UpdateInvite'),
+        VerifyPath('project', isUUID),
+        VerifyPath('invite', isUUID)
+    ])
+    public async updateInvite(req: Request, res: Response) {
+        const result = await this.enforcerService.updateInvite({
             payload: req.body,
             claims: req.claims,
             resourceIds: [ req.params.project, req.params.invite ]
