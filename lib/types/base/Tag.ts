@@ -1,21 +1,40 @@
-export type Tag =
-    | 'Programming'
-    | 'Artificial Intelligence'
-    | 'Machine Learning'
-    | 'Deep Learning'
-    | 'Data Mining'
-    | 'Virtual Reality'
-    | 'Augmented Reality'
-    | 'Automotive'
-    | 'Robotics'
-    | 'Mechatronics / Automation'
-    | 'Thermal / fluids'
-    | 'Aviation / Aerospace Systems'
-    | 'Biomedical'
-    | 'Product Development'
-    | 'Energy / Sustainability'
-    | 'Competition'
-    | 'Thermal / Fluids / Energy Sustainability'
-    | 'Site / Civil Design'
-    | 'Structural'
-    | 'Transportation'
+export const tagList = [
+    'Programming',
+    'Artificial Intelligence',
+    'Machine Learning',
+    'Deep Learning',
+    'Data Mining',
+    'Virtual Reality',
+    'Augmented Reality',
+    'Automotive',
+    'Robotics',
+    'Mechatronics / Automation',
+    'Thermal Dynamics / Fluids',
+    'Aviation / Aerospace Systems',
+    'Biomedical',
+    'Product Development',
+    'Competition',
+    'Energy Sustainability',
+    'Site / Civil Design',
+    'Structural',
+    'Transportation',
+    'Construction',
+    'Strategic Thinking',
+    'Banking',
+    'Social Skills',
+    'Situational Learning',
+    'Sports',
+    'Money Management',
+    'Rocketry',
+    'Energy',
+    'Health Care',
+    'Boating',
+    'Acoustics',
+    'Public Works',
+    'Project Management',
+    'Leadership',
+    'Automation',
+    'Circuitry'
+] as const;
+
+export type Tag = (typeof tagList)[number];

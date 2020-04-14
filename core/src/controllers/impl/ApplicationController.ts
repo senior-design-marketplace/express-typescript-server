@@ -47,7 +47,8 @@ export default class ApplicationController {
     @Middleware([
         RequiresAuth,
         VerifyBody("UpdateApplication"),
-        VerifyPath('project', isUUID) 
+        VerifyPath('project', isUUID),
+        VerifyPath('application', isUUID)
     ])
     public async updateProjectApplication(req: Request, res: Response) {
         const result = await this.enforcerService.updateApplication({
